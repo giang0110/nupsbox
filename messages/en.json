@@ -1,0 +1,27 @@
+{
+  "brand": {
+    "tagline": "Save Space. Live Large."
+  },
+  "nav": {
+    "storage": "Mini storage",
+    "pricing": "Pricing",
+    "solutions": "Solutions",
+    "locations": "Locations",
+    "about": "About NupsBox",
+    "contact": "Contact",
+    "quote": "Get a quote"
+  },
+  "home": {
+    "eyebrow": "MINI STORAGE • HO CHI MINH CITY",
+    "title": "Your business needs space. Not another expensive office.",
+    "subtitle": "Flexible private storage for online sellers and growing businesses — close to customers, cost-efficient, and ready to scale with you.",
+    "primaryCta": "Find your storage",
+    "secondaryCta": "View pricing"
+  },
+  "actions": {
+    "phone": "Call",
+    "zalo": "Zalo",
+    "findStorage": "Find storage"
+  },
+  "storageFinder": {}
+}
