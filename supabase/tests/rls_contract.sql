@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(14);
 
 select policies_are('public', 'leads', array['leads_staff_read', 'leads_staff_update'], 'leads exposes only staff policies');
 select policies_are('public', 'audit_log', array['audit_log_admin_read'], 'audit log is admin-only');
@@ -14,6 +14,14 @@ select policy_roles_are('public', 'site_settings', 'site_settings_admin_write', 
 
 select has_function('public', 'current_app_role', array[]::text[], 'role helper exists');
 select has_function('public', 'is_admin', array[]::text[], 'admin helper exists');
+select ok(
+  not has_function_privilege('anon', 'public.current_app_role()', 'EXECUTE'),
+  'anon cannot execute current_app_role'
+);
+select ok(
+  not has_function_privilege('anon', 'public.is_admin()', 'EXECUTE'),
+  'anon cannot execute is_admin'
+);
 select ok(
   coalesce((
     select c.relrowsecurity
