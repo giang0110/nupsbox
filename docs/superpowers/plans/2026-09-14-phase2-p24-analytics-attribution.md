@@ -4,7 +4,7 @@
 
 **Goal:** Standardize privacy-safe public conversion events, conditionally enable GA4/Meta, preserve Phase 1 tracking semantics during migration, and add an internal attribution dashboard derived from the existing leads table.
 
-**Architecture:** Keep `features/analytics/events.ts` as the single client analytics adapter. Replace the loose event/payload contract with a typed canonical event map, runtime PII-key guard, and narrow legacy aliases only where semantics match exactly. Load provider scripts only when environment IDs are configured. Admin attribution reads the existing CRM attribution fields; no second analytics database is introduced.
+**Architecture:** Keep `features/analytics/events.ts` as the single client analytics adapter. Replace the loose event/payload contract with a typed canonical event map, runtime PII-key guard, and narrow legacy aliases only where semantics match exactly. `trackEvent()` dispatches provider-independent domain events through initialized browser bridges: GA4 via `gtag('event', ...)`, Meta via `fbq('trackCustom', ...)`, with an optional dataLayer compatibility mirror for existing instrumentation. Provider scripts load only when environment IDs are configured. Admin attribution reads the existing CRM attribution fields; no second analytics database is introduced.
 
 **Tech Stack:** Next.js 16.3.3, React 19.3, TypeScript 5.9, next/script, Supabase/PostgreSQL, Vitest 5, Testing Library.
 
@@ -80,7 +80,7 @@ git commit -m "feat: add optional analytics configuration"
 
 ---
 
-### Task 2: Replace the loose analytics event contract with typed canonical events
+### Task 2: Replace the loose analytics event contract with typed canonical events and provider dispatch
 
 **Files:**
 - Modify: `features/analytics/events.ts`
@@ -108,13 +108,25 @@ export function trackEvent<K extends keyof AnalyticsEventPayloads>(
 ): void;
 ```
 
-- [ ] **Step 1: Write failing canonical-event tests**
+Declare narrow browser bridge types for optional provider globals rather than using `any` throughout components.
 
-Assert the adapter pushes `{event: canonicalName, ...payload}` to `window.dataLayer` and is a no-op server-side.
+- [ ] **Step 1: Write failing canonical dispatch tests**
+
+Cover:
+
+```text
+server-side/no window → no-op
+window.gtag present → gtag('event', canonicalName, payload)
+window.fbq present → fbq('trackCustom', canonicalName, payload)
+both present → each provider receives exactly one canonical event
+optional compatibility dataLayer → receives normalized event object only if deliberately retained
+```
+
+The domain component contract remains `trackEvent(...)`; components never call `gtag` or `fbq` directly.
 
 - [ ] **Step 2: Add failing PII guard tests**
 
-The runtime adapter must reject or strip forbidden keys recursively at least for:
+The runtime adapter must reject forbidden keys recursively at least for:
 
 ```text
 name
@@ -137,9 +149,19 @@ Preferred behavior: throw in test/development and omit the event in production r
 npm run test:run -- tests/unit/analytics-events.test.ts
 ```
 
-- [ ] **Step 4: Implement the typed canonical adapter and guard**
+- [ ] **Step 4: Implement the typed canonical adapter, PII guard and provider dispatch**
 
-Keep provider independence: `trackEvent()` writes to one normalized queue/dataLayer contract; provider components consume that contract.
+Provider-independent flow:
+
+```text
+trackEvent(canonicalName, safePayload)
+→ validate payload recursively for forbidden PII keys
+→ window.gtag?.('event', canonicalName, safePayload)
+→ window.fbq?.('trackCustom', canonicalName, safePayload)
+→ optional dataLayer compatibility mirror if retained
+```
+
+Do not rely on pushing a plain `{event: ...}` object to `dataLayer` as the mechanism that sends raw GA4 events; the GA4 bridge must be called explicitly.
 
 - [ ] **Step 5: Add exact semantic legacy aliases only**
 
@@ -152,6 +174,8 @@ lead_submit  → lead_submitted
 view_unit    → unit_viewed
 view_location→ location_viewed
 ```
+
+Implement aliases behind a clearly deprecated helper/overload so new call sites cannot accidentally choose legacy names.
 
 For `storage_finder_start` and `storage_finder_complete`, callers should migrate to `storage_finder_used` with `stage`. Do not preserve them as permanent public event names.
 
@@ -177,17 +201,17 @@ git commit -m "feat: standardize privacy safe analytics events"
 - Create: `tests/unit/analytics-providers.test.tsx`
 
 **Interfaces:**
-- Produces `<AnalyticsProviders ga4Id? metaPixelId? />` that renders no analytics scripts when IDs are absent.
+- Produces `<AnalyticsProviders ga4Id? metaPixelId? />` that renders no analytics scripts when IDs are absent and initializes the optional `window.gtag`/`window.fbq` bridges when configured.
 
 - [ ] **Step 1: Write failing render tests**
 
 Cover:
 
 ```text
-no IDs → no GA4 script and no Meta script
-GA4 only → GA4 scripts only
-Meta only → Meta script only
-both → both provider initializers
+no IDs → no GA4 script, no Meta script, no provider initializer
+GA4 only → GA4 scripts/gtag initializer only
+Meta only → Meta script/fbq initializer only
+both → both provider initializers exactly once
 ```
 
 - [ ] **Step 2: Verify RED**
@@ -198,11 +222,20 @@ npm run test:run -- tests/unit/analytics-providers.test.tsx
 
 - [ ] **Step 3: Implement GA4 loading**
 
-Use Next.js `Script` with the configured measurement ID. Initialize a dataLayer-compatible queue without embedding lead PII.
+Use Next.js `Script` with the configured measurement ID. Initialize the standard GA4 bridge:
+
+```text
+window.dataLayer = window.dataLayer || []
+window.gtag = function(){ window.dataLayer.push(arguments) }
+gtag('js', new Date())
+gtag('config', measurementId)
+```
+
+Do not embed lead PII in config or event calls.
 
 - [ ] **Step 4: Implement Meta Pixel loading**
 
-Use the configured public pixel ID. Do not enable advanced matching with user email/phone in Phase 2.
+Initialize `window.fbq` with the configured public pixel ID and standard page-view initialization. Do not enable advanced matching with user email/phone in Phase 2. Canonical NupsBox events use `trackCustom` through `trackEvent()`.
 
 - [ ] **Step 5: Mount once in locale layout**
 
@@ -211,7 +244,7 @@ Read the already-parsed public env once and render the provider near the root. D
 - [ ] **Step 6: Verify and commit**
 
 ```bash
-npm run test:run -- tests/unit/analytics-providers.test.tsx
+npm run test:run -- tests/unit/analytics-providers.test.tsx tests/unit/analytics-events.test.ts
 npm run lint
 npm run typecheck
 git add components/analytics/analytics-providers.tsx app/[locale]/layout.tsx tests/unit/analytics-providers.test.tsx
@@ -409,8 +442,8 @@ rg -n "trackEvent\(" app components features
 
 Build/test once with both analytics IDs unset. The public site and lead flow must still work.
 
-- [ ] **Step 4: Verify no semantic legacy alias abuse**
+- [ ] **Step 4: Verify provider dispatch and no semantic legacy alias abuse**
 
-Confirm `view_pricing` is not remapped to a contact conversion and old Storage Finder event names are removed from call sites.
+Confirm configured GA4 receives `gtag('event', canonicalName, payload)`, configured Meta receives `fbq('trackCustom', canonicalName, payload)`, `view_pricing` is not remapped to a contact conversion, and old Storage Finder event names are removed from call sites.
 
-**P2.4 exit criteria:** canonical event contract is typed and PII-guarded, provider scripts are optional, all public call sites use approved events, attribution dashboard reads existing lead data, and full build/tests are green.
+**P2.4 exit criteria:** canonical event contract is typed and PII-guarded, provider scripts are optional, GA4/Meta receive canonical events through the shared adapter, all public call sites use approved events, attribution dashboard reads existing lead data, and full build/tests are green.
