@@ -15,4 +15,4 @@ describe('admin permissions', () => {
     expect(can('viewer', 'leads:update')).toBe(false);
     expect(can('viewer', 'dashboard:read')).toBe(true);
   });
-}
+});
