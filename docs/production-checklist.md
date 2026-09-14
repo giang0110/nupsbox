@@ -6,26 +6,27 @@ Last reviewed: 2026-09-14
 
 - Code branch: `codex/phase-1-foundation`
 - PR: #1 (draft)
-- Canonical domain expected by application: `https://nupsbox.vn`
+- Canonical production domain: `https://nupsbox.vn`
 - Dedicated Supabase project: `nupsbox` (`veglohnmofzkgovedxkb`), region `ap-southeast-1`.
 - Supabase Phase 1 database preflight: **PASS**. Production migration history is aligned through `20260914000500_harden_role_helper_execute`.
-- Production-generated TypeScript database types have been synchronized into `types/database.ts` while preserving the application enum aliases.
+- Production-generated TypeScript database types are synchronized into `types/database.ts`.
+- Vercel project identity is verified as team `ntg2299` / `team_PMOgG7NuBqEalFpTAxXzeBtf`, project `nupsbox` / `prj_LPKSnGmLYdAGdNyoIUtiZ6CHCDsG`.
+- Vercel Preview build issue: **RESOLVED**. The repo now contains `vercel.json` with `framework: "nextjs"`, overriding the stale/incorrect project Framework Preset. Preview deployments now succeed.
+- Diagnostic builds proved `npm ci` + `next build` succeed on Node 24.11.0 and 24.21.0 with all application env variables unset. The previous Vercel failures were therefore not caused by source compilation, Node minor version, lockfile installation, or missing build-time application env.
 - Production seed/content has **not** been inserted. `auth.users` and active admin profiles are still empty.
-- GitHub's Vercel integration identifies the intended project as team `team_PMOgG7NuBqEalFpTAxXzeBtf` (`ntg2299`), project `prj_LPKSnGmLYdAGdNyoIUtiZ6CHCDsG` (`nupsbox`). The latest Preview status is **Error**.
-- Vercel preflight remains **BLOCKED** because the ChatGPT Vercel connector returns `403 Forbidden` when reading that verified project, so project settings, deployment logs, environment variables, and domain configuration cannot yet be inspected safely here.
-- Production merge/deployment remains blocked until Auth, approved seed/content, Vercel access/configuration, Preview deployment, and smoke tests are complete.
+- Go-live remains blocked by production Auth/admin bootstrap, approved business content, Vercel environment/domain configuration, and end-to-end Preview smoke tests.
 
 ## 1. Required environment variables
 
-Set these in the production hosting environment before enabling lead submission:
+Configure these in Vercel before enabling production lead submission:
 
 - `NEXT_PUBLIC_SUPABASE_URL` — NupsBox Supabase project URL.
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — active publishable key for the NupsBox project.
-- `SUPABASE_SERVICE_ROLE_KEY` — server-only; never expose it through `NEXT_PUBLIC_*` or client bundles.
-- `LEAD_RATE_LIMIT_SALT` — long random production-only secret used before hashing lead rate-limit fingerprints. Missing this value makes `/api/leads` fail closed with a server error.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — active publishable key.
+- `SUPABASE_SERVICE_ROLE_KEY` — server-only; never expose through `NEXT_PUBLIC_*`.
+- `LEAD_RATE_LIMIT_SALT` — long random production secret used before hashing lead rate-limit fingerprints.
 - `NEXT_PUBLIC_SITE_URL=https://nupsbox.vn`.
-- `NEXT_PUBLIC_GA4_ID` — optional until analytics scripts are intentionally enabled.
-- `NEXT_PUBLIC_META_PIXEL_ID` — optional until analytics scripts are intentionally enabled.
+- `NEXT_PUBLIC_GA4_ID` — optional until analytics is intentionally enabled.
+- `NEXT_PUBLIC_META_PIXEL_ID` — optional until analytics is intentionally enabled.
 
 Never commit production secrets to GitHub.
 
@@ -33,9 +34,9 @@ Never commit production secrets to GitHub.
 
 Completed on the dedicated NupsBox production project:
 
-1. Confirmed project name/ref and database reachability.
-2. Confirmed the initial remote migration history was empty and no Phase 1 object-name collisions existed.
-3. Applied and aligned production migration history in this order:
+1. Confirmed project identity and database reachability.
+2. Confirmed no Phase 1 object-name collisions existed before migration.
+3. Applied and aligned production migration history:
    - `20260914000100_phase1_core_schema.sql`
    - `20260914000200_phase1_indexes_and_triggers.sql`
    - `20260914000300_rls_and_roles.sql`
@@ -44,100 +45,88 @@ Completed on the dedicated NupsBox production project:
 4. Verified 15 application tables, 7 enums, expected functions/triggers/indexes, and 28 RLS policies.
 5. Confirmed all 15 application tables have RLS enabled.
 6. Confirmed `consume_lead_rate_limit` is executable by `service_role` and not by `anon`/`authenticated`.
-7. Confirmed `current_app_role()` and `is_admin()` are not executable by `anon`; authenticated execution is intentional because the RLS policies use these caller-scoped helpers.
-8. Ran a transactional production RLS smoke test: `anon` could read an active catalog fixture but could not read a CRM lead fixture; all fixtures were rolled back.
+7. Confirmed `current_app_role()` and `is_admin()` are not executable by `anon`; authenticated execution is intentional for caller-scoped RLS checks.
+8. Ran a transactional production RLS smoke test: anonymous access could read an active catalog fixture but could not read a CRM lead fixture; fixtures were rolled back.
 9. Generated fresh production TypeScript types and synchronized `types/database.ts`.
-10. Reviewed security/performance advisors after DDL.
+10. Reviewed security and performance advisors after DDL.
 
-### RLS invariants verified remotely
-
-- Anonymous users can read active/public catalog/content rows only through the intended public policies.
-- Anonymous users cannot read CRM/admin data or invoke the privileged lead rate-limit RPC.
-- `consume_lead_rate_limit` is service-role only.
-- `lead_rate_limits` intentionally has RLS enabled with no client policy because it is server-only state.
-
-### Advisor status
-
-Security:
+### Security status
 
 - Anonymous `SECURITY DEFINER` helper exposure: **resolved**.
-- `lead_rate_limits` RLS-with-no-policy notice is intentional server-only behavior.
-- Authenticated `SECURITY DEFINER` notices remain for `current_app_role()` and `is_admin()`; these helpers return only caller-scoped authorization state and are intentionally used by RLS.
+- `lead_rate_limits` intentionally has RLS with no client policy because it is server/service-role state.
+- Authenticated `SECURITY DEFINER` notices for `current_app_role()` and `is_admin()` are intentional caller-scoped authorization helpers.
 
-Performance notices are currently non-blocking for Phase 1:
-
-- foreign keys without covering indexes,
-- one `auth.uid()` init-plan recommendation,
-- multiple permissive SELECT policies,
-- expected unused-index notices on a new empty production database.
-
-Revisit these after real traffic/query plans are available or before Phase 1 scale-up.
+Performance notices are non-blocking for Phase 1 and should be revisited after real traffic/query plans are available.
 
 ## 3. Supabase Auth setup
 
 Still required before launch:
 
 - Production Site URL: `https://nupsbox.vn`.
-- Add the exact production callback URL: `https://nupsbox.vn/auth/callback` for redirect-based auth flows.
-- Password login is implemented directly with `signInWithPassword`; the callback route is not required for that specific login path.
-- Add preview/local callback URLs only when needed for redirect-based testing.
-- Create or verify staff users in Supabase Auth.
-- Ensure every staff user has a corresponding active row in `public.profiles`; authentication alone does not grant admin workspace access.
-- Bootstrap the first `admin` profile through an authorized server/database operation, then manage later role changes through the admin contract.
+- Redirect callback for redirect/PKCE flows: `https://nupsbox.vn/auth/callback`.
+- Password login already uses `signInWithPassword`; the callback route is not required for that direct password path.
+- Create the first authorized Supabase Auth staff user.
+- Create the corresponding active `public.profiles` row with the intended admin role through an authorized operation.
+- Verify viewer/staff/admin permission boundaries after bootstrap.
 
 Current production state: `auth.users = 0`, `public.profiles = 0`, active admins = 0.
 
 ## 4. Seed/content validation
 
-The repository development seed has **not** been applied to production.
+The development seed has **not** been applied to production.
 
 Before public launch:
 
-- Confirm the Tân Phú address and contact channels are current.
-- Confirm unit sizes, price fields and availability labels are accurate.
-- Keep price fields null if no verified public price is available; the UI will show a contact-for-pricing state.
-- Do not use `available_count` as a real-time stock guarantee unless the operational process is explicitly upgraded to maintain real-time inventory.
-- Fill VI and EN alt text for public media where possible.
-- Review FAQ answers in both languages.
-- Confirm no fabricated ratings, reviews or customer logos are present.
+- Confirm the Tân Phú address and contact channels.
+- Confirm unit sizes, pricing fields and availability labels.
+- Keep prices null when no verified public price is available; the UI intentionally falls back to contact-for-pricing.
+- Do not present `available_count` as real-time inventory unless operations maintain it as such.
+- Review VI/EN FAQ and media alt text.
+- Confirm there are no fabricated ratings, reviews or customer logos.
 
-The current development seed intentionally leaves phone, Zalo, public prices, and availability counts unset until approved production values are supplied.
+Current development seed intentionally leaves phone, Zalo, public prices and availability counts unset pending approved business values.
 
-## 5. Vercel/project preflight
+## 5. Vercel preflight
 
-Verified through GitHub's installed Vercel integration:
+Verified project:
 
 - Team slug: `ntg2299`
 - Team ID: `team_PMOgG7NuBqEalFpTAxXzeBtf`
 - Project slug: `nupsbox`
 - Project ID: `prj_LPKSnGmLYdAGdNyoIUtiZ6CHCDsG`
-- Git integration is active on PR #1 and produces Preview deployment statuses.
-- Latest Preview for the current Phase 1 branch is in **Error** state.
+- Git integration: active on PR #1.
 
-**BLOCKED:** the ChatGPT Vercel connector returns `403 Forbidden` even when called with the exact verified team/project IDs. Until access is restored, do not guess deployment settings or mutate the Vercel project through another project/account.
+### Resolved build failure
 
-Before deployment can proceed:
+The same source tree repeatedly passed GitHub production builds while Vercel returned `Error`. A parity diagnostic then confirmed clean builds on Node 24.11.0 and 24.21.0 with all application env variables absent. Adding only this repo-level configuration changed Vercel from Error to Success:
 
-1. Restore connector/account access to the verified Vercel project above.
-2. Inspect the failed Preview build/deployment logs and fix the actual failure.
-3. Configure the environment variables listed above for Production and appropriate Preview values.
-4. Confirm the framework is detected as Next.js and Node 24 is supported by the project settings.
-5. Deploy a successful Preview from the Phase 1 branch.
-6. Smoke-test VI and EN routes, `/sitemap.xml`, `/robots.txt`, lead submission, admin login and mobile navigation on Preview.
-7. Only then promote/merge for Production.
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs"
+}
+```
+
+The original Node engine range `>=24.21.0 <25` was restored afterward and Vercel continued to succeed, confirming Node was not the root cause.
+
+### Still required in Vercel
+
+1. Verify Production and Preview environment variables listed above.
+2. Add and verify `nupsbox.vn` as the primary production domain.
+3. Configure DNS and HTTPS only against this verified project.
+4. Run full Preview smoke tests before merge/promotion.
 
 ## 6. Domain and HTTPS
 
 - Add `nupsbox.vn` to the verified Vercel project.
-- Configure DNS only after the target project settings are accessible and confirmed.
-- Ensure `https://nupsbox.vn` is the primary canonical domain.
-- Redirect any `www` variant consistently to the chosen primary domain.
-- Verify HTTPS certificate issuance before announcing launch.
-- Re-check canonical/hreflang output on the live domain after DNS cutover.
+- Use `https://nupsbox.vn` as the canonical domain.
+- Redirect `www` consistently to the chosen primary domain.
+- Verify HTTPS certificate issuance before launch.
+- Re-check canonical/hreflang output after DNS cutover.
 
-## 7. Code quality gate
+## 7. Exact-head quality gate
 
-The exact commit being deployed must pass:
+The exact commit being promoted must pass:
 
 ```text
 npm ci
@@ -147,11 +136,11 @@ npm run test:run
 npm run build
 ```
 
-The database workflow must also apply the complete migration chain locally and pass the pgTAP schema/RLS contracts. Do not treat an older green run as evidence for a newer commit.
+The database workflow must also apply the full migration chain locally and pass pgTAP schema/RLS contracts. Vercel Preview for the same exact head must be successful.
 
 ## 8. Production smoke tests
 
-After deployment verify at minimum:
+Before go-live verify at minimum:
 
 - `/` and `/en`
 - `/kho-mini` and `/en/mini-storage`
@@ -170,18 +159,18 @@ After deployment verify at minimum:
 
 ## 9. Rollback points
 
-- Keep the previous Vercel production deployment available for instant rollback until smoke tests pass.
-- Before future database migrations, record current migration history and confirm the database recovery path.
-- Database rollback should be performed with an explicit forward/fix migration where possible; never edit already-applied migration files in production history.
-- If lead submission fails after launch, keep public content online but remove/disable the lead CTA only through a reviewed deployment; never expose service credentials as a workaround.
+- Keep the previous Vercel production deployment available until smoke tests pass.
+- Before future database migrations, record current migration history and confirm the recovery path.
+- Prefer explicit forward/fix migrations over editing already-applied production migrations.
+- Never expose service credentials as a workaround for a failed lead path.
 
 ## Go-live decision
 
 Production may proceed only when all are true:
 
-1. Exact-head CI and Database Tests are green.
-2. The dedicated NupsBox Supabase project continues to pass migration/RLS verification.
+1. Exact-head CI, Database Tests and Vercel Preview are green.
+2. Supabase migration/RLS verification remains clean.
 3. Production Auth Site URL/callbacks and the first authorized admin are configured.
 4. Approved production seed/content is loaded and reviewed.
-5. The verified Vercel project is accessible, its Preview deployment succeeds, and `nupsbox.vn` is configured correctly.
+5. `nupsbox.vn` is configured on the verified Vercel project with valid HTTPS.
 6. Preview smoke tests pass.
