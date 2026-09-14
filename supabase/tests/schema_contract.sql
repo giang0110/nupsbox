@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(30);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
@@ -50,6 +50,75 @@ select is(
     'lost'
   ]::text[],
   'lead_status contains Phase 2 labels in migration-safe order'
+);
+
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_constraint c
+    join pg_catalog.pg_class r on r.oid = c.conrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and c.conname = 'leads_phase2_status_check' and c.contype = 'c'
+  ),
+  'leads_phase2_status_check exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_constraint c
+    join pg_catalog.pg_class r on r.oid = c.conrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'lead_status_history'
+      and c.conname = 'lead_status_history_phase2_to_status_check' and c.contype = 'c'
+  ),
+  'lead_status_history_phase2_to_status_check exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and t.tgname = 'leads_validate_assignee' and not t.tgisinternal
+  ),
+  'leads_validate_assignee exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and t.tgname = 'leads_audit_status_change' and not t.tgisinternal
+  ),
+  'leads_audit_status_change exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and t.tgname = 'leads_audit_assignment_change' and not t.tgisinternal
+  ),
+  'leads_audit_assignment_change exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'lead_notes'
+      and t.tgname = 'lead_notes_audit_insert' and not t.tgisinternal
+  ),
+  'lead_notes_audit_insert exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_indexes
+    where schemaname = 'public' and tablename = 'leads'
+      and indexname = 'leads_assigned_to_idx'
+  ),
+  'leads_assigned_to_idx exists'
 );
 
 select * from finish();
