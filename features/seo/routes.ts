@@ -32,17 +32,25 @@ function uniqueSlugs(values: string[] | undefined): string[] {
   return [...new Set((values ?? []).map((value) => value.trim()).filter(Boolean))].sort();
 }
 
+export function unitSeoRoute(slug: string): SeoRoutePair {
+  const encoded = encodeURIComponent(slug);
+  return {key: `unit:${slug}`, vi: `/kho-mini/${encoded}`, en: `/en/mini-storage/${encoded}`};
+}
+
+export function locationSeoRoute(slug: string): SeoRoutePair {
+  const encoded = encodeURIComponent(slug);
+  return {key: `location:${slug}`, vi: `/dia-diem/${encoded}`, en: `/en/locations/${encoded}`};
+}
+
+export function getStaticSeoRoute(key: string): SeoRoutePair {
+  const route = staticRoutes.find((item) => item.key === key);
+  if (!route) throw new Error(`unknown_seo_route:${key}`);
+  return route;
+}
+
 export function buildSeoRoutePairs(input: DynamicRouteInput = {}): SeoRoutePair[] {
-  const unitRoutes = uniqueSlugs(input.unitSlugs).map((slug) => ({
-    key: `unit:${slug}`,
-    vi: `/kho-mini/${encodeURIComponent(slug)}`,
-    en: `/en/mini-storage/${encodeURIComponent(slug)}`
-  }));
-  const locationRoutes = uniqueSlugs(input.locationSlugs).map((slug) => ({
-    key: `location:${slug}`,
-    vi: `/dia-diem/${encodeURIComponent(slug)}`,
-    en: `/en/locations/${encodeURIComponent(slug)}`
-  }));
+  const unitRoutes = uniqueSlugs(input.unitSlugs).map(unitSeoRoute);
+  const locationRoutes = uniqueSlugs(input.locationSlugs).map(locationSeoRoute);
   return [...staticRoutes, ...unitRoutes, ...locationRoutes];
 }
 
