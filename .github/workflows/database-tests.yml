@@ -1,0 +1,29 @@
+name: Database Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: database-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Initialize local Supabase config
+        run: test -f supabase/config.toml || supabase init
+      - name: Start local Supabase database
+        run: supabase db start
+      - name: Run pgTAP schema and RLS contracts
+        run: supabase test db
+      - name: Stop local Supabase database
+        if: always()
+        run: supabase stop --no-backup
