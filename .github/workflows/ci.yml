@@ -29,10 +29,9 @@ jobs:
       - run: npm run test:run
       - run: npm run build
 
-  preview-smoke-diagnostic:
+  preview-smoke:
     if: github.event_name == 'pull_request'
     needs: quality
-    continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -95,3 +94,18 @@ jobs:
             fi
           done
           exit "$failed"
+
+      - name: Verify unauthenticated admin redirect
+        run: |
+          headers=$(mktemp)
+          code=$(curl -sS -o /dev/null -D "$headers" -w '%{http_code}' --max-time 30 "${PREVIEW_URL}/admin" || true)
+          location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/^location:[[:space:]]*/, ""); sub(/\r$/, ""); print}' "$headers" | tail -1)
+          echo "/admin ${code} -> ${location}"
+          case "$code" in
+            301|302|303|307|308) ;;
+            *) echo "Expected redirect status from /admin"; exit 1 ;;
+          esac
+          case "$location" in
+            /auth/login*|"${PREVIEW_URL}/auth/login"*) ;;
+            *) echo "Expected /admin to redirect to /auth/login"; exit 1 ;;
+          esac
