@@ -16,6 +16,10 @@ export const routing = defineRouting({
       vi: '/kho-mini',
       en: '/mini-storage'
     },
+    '/kho-mini/[slug]': {
+      vi: '/kho-mini/[slug]',
+      en: '/mini-storage/[slug]'
+    },
     '/bang-gia': {
       vi: '/bang-gia',
       en: '/pricing'

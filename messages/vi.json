@@ -22,5 +22,6 @@
     "phone": "Gọi",
     "zalo": "Zalo",
     "findStorage": "Tìm kho"
-  }
+  },
+  "storageFinder": {}
 }

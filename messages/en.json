@@ -22,5 +22,6 @@
     "phone": "Call",
     "zalo": "Zalo",
     "findStorage": "Find storage"
-  }
+  },
+  "storageFinder": {}
 }
