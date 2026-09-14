@@ -26,26 +26,15 @@ select has_type('public', 'need_type', 'need_type enum exists');
 select has_type('public', 'estimated_volume', 'estimated_volume enum exists');
 select has_type('public', 'media_category', 'media_category enum exists');
 
-select results_eq(
-  $$
-    select e.enumlabel::text
+select is(
+  (
+    select string_agg(e.enumlabel::text, ',' order by e.enumsortorder)
     from pg_catalog.pg_enum e
     join pg_catalog.pg_type t on t.oid = e.enumtypid
     join pg_catalog.pg_namespace n on n.oid = t.typnamespace
     where n.nspname = 'public' and t.typname = 'lead_status'
-    order by e.enumsortorder
-  $$,
-  $$ values
-    ('new'::text),
-    ('contacted'::text),
-    ('qualified'::text),
-    ('viewing'::text),
-    ('negotiating'::text),
-    ('visit_scheduled'::text),
-    ('visited'::text),
-    ('won'::text),
-    ('lost'::text)
-  $$,
+  ),
+  'new,contacted,qualified,viewing,negotiating,visit_scheduled,visited,won,lost',
   'lead_status labels support Phase 2 in expected order'
 );
 
