@@ -1,2 +1,54 @@
-import {notFound} from 'next/navigation';import {setRequestLocale} from 'next-intl/server';import {Container} from '@/components/ui/container';import {isSupportedLocale} from '@/i18n/routing';
-export default async function Page({params}: {params: Promise<{locale:string}>}){const{locale}=await params;if(!isSupportedLocale(locale))notFound();setRequestLocale(locale);const vi=locale==='vi';const items=vi?[["NupsBox hiện có những kích thước nào?","Dữ liệu đang hiển thị Kho S 1,64 m² và Kho M 5,43 m² tại Tân Phú. Tình trạng thực tế được xác nhận khi bạn liên hệ."],["Giá thuê kho là bao nhiêu?","Website chỉ công khai mức giá do NupsBox cập nhật. Khi chưa có giá xác thực, hệ thống hiển thị “Liên hệ báo giá”."],["Kho có CCTV và keypad không?","CCTV và keypad access là các tiện ích được ghi nhận tại cơ sở Tân Phú."],["Tôi chưa biết cần bao nhiêu m² thì sao?","Bạn có thể dùng Storage Finder để có gợi ý ban đầu hoặc gửi nhu cầu để NupsBox tư vấn trực tiếp."]]:[["Which unit sizes are currently listed?","The site currently lists 1.64 m² Storage S and 5.43 m² Storage M at Tan Phu. Current status is confirmed when you enquire."],["How much does storage cost?","The site only publishes pricing maintained by NupsBox. Until verified pricing is available, it displays “Contact for pricing”."],["Does the facility have CCTV and keypad access?","CCTV and keypad access are listed facility features for Tan Phu."],["What if I do not know how much space I need?","Use Storage Finder for a starting suggestion or send your needs to NupsBox for advice."]];return <main><section className="py-20"><Container><h1 className="text-5xl font-black tracking-[-0.055em] text-[var(--nupsbox-navy)] sm:text-6xl">{vi?'Câu hỏi thường gặp':'Frequently asked questions'}</h1><div className="mt-10 max-w-4xl divide-y divide-[var(--nupsbox-border)]">{items.map(([q,a])=><details key={q} className="group py-5"><summary className="cursor-pointer list-none text-lg font-black text-[var(--nupsbox-navy)]">{q}</summary><p className="mt-3 max-w-3xl leading-7 text-[var(--nupsbox-slate)]">{a}</p></details>)}</div></Container></section></main>;}
+import {notFound} from 'next/navigation';
+import {setRequestLocale} from 'next-intl/server';
+import {Container} from '@/components/ui/container';
+import {JsonLd} from '@/components/seo/json-ld';
+import {getMarketingFaqs} from '@/features/content/faqs';
+import {isSupportedLocale} from '@/i18n/routing';
+
+export default async function Page({params}: {params: Promise<{locale: string}>}) {
+  const {locale} = await params;
+  if (!isSupportedLocale(locale)) notFound();
+  setRequestLocale(locale);
+  const items = await getMarketingFaqs(locale);
+  const vi = locale === 'vi';
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer
+      }
+    }))
+  };
+
+  return (
+    <main>
+      <JsonLd data={schema} />
+      <section className="py-20">
+        <Container>
+          <h1 className="text-5xl font-black tracking-[-0.055em] text-[var(--nupsbox-navy)] sm:text-6xl">
+            {vi ? 'Câu hỏi thường gặp' : 'Frequently asked questions'}
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--nupsbox-slate)]">
+            {vi
+              ? 'Thông tin dưới đây được lấy từ cùng nguồn nội dung đang dùng trên website để tránh chênh lệch giữa trang FAQ và các khu vực tư vấn khác.'
+              : 'These answers use the same content source as the rest of the website so the FAQ stays consistent with other guidance.'}
+          </p>
+          <div className="mt-10 max-w-4xl divide-y divide-[var(--nupsbox-border)]">
+            {items.map((item) => (
+              <details key={item.id} className="group py-5">
+                <summary className="cursor-pointer list-none text-lg font-black text-[var(--nupsbox-navy)]">
+                  {item.question}
+                </summary>
+                <p className="mt-3 max-w-3xl leading-7 text-[var(--nupsbox-slate)]">{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        </Container>
+      </section>
+    </main>
+  );
+}
