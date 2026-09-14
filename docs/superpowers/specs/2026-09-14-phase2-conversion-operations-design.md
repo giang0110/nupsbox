@@ -181,35 +181,56 @@ leads:export
 
 Existing Phase 1 permission names should be reused where equivalent. The implementation plan must first inspect the current `can()` contract and extend it rather than creating a parallel authorization system.
 
-### 6.2 Intended role behavior
+### 6.2 Approved role matrix
 
-`admin`:
+`admin` receives all Phase 2 permissions.
 
-- all Phase 2 permissions,
-- including settings mutation and CSV export.
+`staff` receives:
 
-`staff`:
+```text
+catalog:read
+catalog:create
+catalog:update
+catalog:publish
+content:read
+content:create
+content:update
+content:publish
+media:read
+media:update
+settings:read
+leads:read
+leads:update
+leads:assign
+leads:note
+```
 
-- lead read/update/assign/note,
-- catalog/content/media operations that the existing permission contract explicitly grants,
-- no sensitive settings mutation unless the final permission matrix explicitly grants it,
-- CSV export only if `leads:export` is deliberately granted.
+`staff` does **not** receive:
 
-`viewer`:
+```text
+settings:update
+leads:export
+```
 
-- read-only access to permitted admin workspaces,
-- no mutations,
-- no assignment,
-- no notes,
-- no CSV export.
+`viewer` receives read-only access:
 
-The final permission matrix must be encoded once in the shared authorization module and covered by unit tests plus RLS tests.
+```text
+catalog:read
+content:read
+media:read
+settings:read
+leads:read
+```
+
+`viewer` receives no mutation, assignment, note or export permission.
+
+The matrix must be encoded once in the shared authorization module and covered by unit tests plus RLS tests. Any later expansion of staff permissions requires a separately approved behavior change.
 
 ## 7. CMS design
 
 ### 7.1 Locations
 
-Admin must be able to create and edit location records using the fields supported by the live schema, including where present:
+Admin and staff with the approved catalog permissions must be able to create and edit location records using the fields supported by the live schema, including where present:
 
 - VI/EN display names,
 - slug,
@@ -224,6 +245,7 @@ Rules:
 - Slugs must be unique within the entity type.
 - Locations referenced by historical data should be deactivated rather than hard-deleted.
 - No location may publish fabricated operating details.
+- A slug may be changed before first publication; once a public location has been published, Phase 2 treats that slug as immutable. Redirect-aware slug changes are deferred to a separately designed feature.
 
 ### 7.2 Unit types
 
@@ -242,13 +264,13 @@ Rules:
 
 - Numeric dimensions and prices cannot be negative.
 - Existing public URLs must remain stable when editing non-slug fields.
-- Slug changes require an explicit implementation decision for redirects before they are allowed.
+- A slug may be changed before first publication; once a public unit type has been published, Phase 2 treats that slug as immutable. Redirect-aware slug changes are deferred.
 
 ### 7.3 Location-specific pricing and availability labels
 
 Manage the existing location-unit relationship rather than duplicating price data into unit types.
 
-Admin may edit supported fields such as:
+Admin and authorized staff may edit supported fields such as:
 
 - public price amount,
 - price unit/period,
@@ -286,13 +308,13 @@ Required properties for publication:
 
 Optional fields may include excerpt, featured media and SEO metadata if supported by the live schema.
 
-Published posts should normally be archived rather than hard-deleted to preserve URL/history behavior.
+A blog slug may be changed while the post has never been published. Once published, the slug is immutable in Phase 2. Published posts should normally be archived rather than hard-deleted to preserve URL/history behavior.
 
 ### 7.6 Media metadata
 
 Phase 2 manages metadata for existing media records. It does not require building a new binary storage platform if Phase 1 already has a media/storage approach.
 
-Admin should be able to manage supported metadata such as:
+Admin and authorized staff should be able to manage supported metadata such as:
 
 - title/label,
 - VI alt text,
@@ -305,6 +327,9 @@ The content QA surface should continue to flag missing alt text.
 ### 7.7 Site settings
 
 Only settings explicitly classified as public business/site settings are editable through the CMS.
+
+- `admin` may read and update public site settings.
+- `staff` and `viewer` may read permitted public site settings but cannot update them.
 
 Secrets, API keys, service-role credentials, analytics secrets and rate-limit salts must never be stored in a public-editable site settings table.
 
@@ -347,6 +372,7 @@ Phase 2 server-side validation must enforce at least:
 - required publication fields are present before publishing,
 - VI and EN values map to the correct locale fields,
 - viewer mutations are rejected,
+- published public slugs are immutable in Phase 2,
 - deactivation is preferred to destructive deletion for referenced business entities.
 
 Database constraints should enforce invariants that remain true regardless of caller. UI/server validation should provide human-readable errors before those constraints are reached.
@@ -439,8 +465,8 @@ Phase 2 adds or formalizes a lead assignee reference.
 Rules:
 
 - assignee must reference an active profile,
-- assignment target must be an operational role allowed by the final permission/RLS design,
-- viewer profiles cannot be used as active lead assignees unless explicitly justified by a later approved change,
+- assignee role must be `admin` or `staff`,
+- `viewer` profiles cannot be assigned leads,
 - `leads:assign` is required to change assignment,
 - assignment changes are auditable.
 
@@ -456,7 +482,7 @@ Required logical fields:
 - content,
 - created timestamp.
 
-Phase 2 defaults to append-only notes. Corrections are made by adding a new note, not silently rewriting prior notes. Note editing/deletion is out of scope unless the implementation review finds an existing schema contract that must be preserved.
+Phase 2 notes are append-only. Corrections are made by adding a new note; editing or deleting an existing note is out of scope.
 
 ### 11.5 Lead list, search and filters
 
@@ -470,7 +496,7 @@ Admin lead list should support server-side filtering for the fields that can be 
 - name/phone/email search,
 - newest/oldest ordering.
 
-The default list must be bounded. Phase 2 should use server-side pagination rather than loading the full lead table. Exact page size is an implementation detail, with 50–100 rows/page as the intended range.
+The default list must be bounded. Phase 2 uses server-side pagination rather than loading the full lead table. The implementation plan may select a page size in the 50–100 row range based on the existing UI pattern.
 
 ### 11.6 CSV export
 
@@ -478,7 +504,7 @@ CSV export is permission-controlled server-side.
 
 Requirements:
 
-- `leads:export` required,
+- only `admin` has `leads:export` in Phase 2,
 - export respects active filters,
 - no browser-side fetch of the entire unrestricted CRM table,
 - exported fields are deliberately allow-listed,
@@ -604,8 +630,8 @@ For every mutation class, cover at least:
 - invalid input,
 - unauthenticated denial,
 - viewer denial,
-- allowed staff/admin behavior according to the permission matrix,
-- RLS enforcement when application checks are bypassed conceptually or through DB-level tests.
+- allowed staff/admin behavior according to the approved matrix,
+- RLS enforcement through DB-level tests.
 
 ### 14.3 Domain mutation tests
 
@@ -615,6 +641,7 @@ Cover:
 - invalid enum/status,
 - publication requirements,
 - duplicate slug handling,
+- immutable published slug handling,
 - audit/history creation,
 - assignment constraints,
 - note creation,
@@ -658,7 +685,7 @@ Admin E2E must verify:
 
 - unauthenticated access is denied/redirected,
 - admin can perform allowed operations,
-- staff permissions match the matrix,
+- staff permissions match the approved matrix,
 - viewer cannot mutate,
 - RLS remains authoritative.
 
@@ -709,7 +736,7 @@ Phase 2 cannot merge if any of these are true:
 
 Deliverables:
 
-- final Phase 2 permission matrix,
+- encode the approved Phase 2 permission matrix,
 - forward migrations for CRM data model changes,
 - RLS policies,
 - pgTAP regression tests,
@@ -741,7 +768,7 @@ Deliverables:
 - assignment,
 - append-only internal notes,
 - filters/search/pagination,
-- permission-controlled CSV export.
+- admin-only CSV export.
 
 Gate: unit/permission tests + DB/RLS tests + authorized admin verification.
 
@@ -782,7 +809,7 @@ Phase 2 is complete only when all of the following are true:
 5. Admin CMS mutations work only for authorized roles and are protected by RLS.
 6. Catalog/content changes render correctly on public pages without exposing drafts.
 7. Lead detail, status history, assignment and internal notes work as designed.
-8. CSV export is permission-controlled and field allow-listed.
+8. CSV export is admin-only, permission-controlled and field allow-listed.
 9. Analytics is optional, fails safely and sends no lead PII.
 10. Attribution summaries use the canonical lead attribution fields rather than a duplicate source of truth.
 11. Public Phase 1 routes and SEO behavior show no regression.
