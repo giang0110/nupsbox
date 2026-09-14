@@ -1,0 +1,39 @@
+name: Phase 1 Lead E2E
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lead-e2e:
+    if: github.head_ref == 'test/phase1-lead-e2e'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRODUCTION_URL: https://nupsbox.vercel.app
+    steps:
+      - name: Verify valid lead creation and rate limiting
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload='{"fullName":"Phase1 E2E Synthetic","phone":"0000000000","preferredLanguage":"vi","needType":"other","estimatedVolume":"unknown","message":"Synthetic Phase 1 production E2E - run ${{ github.run_id }}","source":"phase1_e2e","landingPage":"/phase1-e2e"}'
+
+          for i in 1 2 3 4 5; do
+            body=$(mktemp)
+            code=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
+              -X POST -H 'content-type: application/json' \
+              --data "$payload" \
+              "${PRODUCTION_URL}/api/leads")
+            echo "valid_request_${i}=${code}"
+            test "$code" = "201"
+            jq -e '.ok == true and (.leadId | type == "string")' "$body" >/dev/null
+          done
+
+          body=$(mktemp)
+          code=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
+            -X POST -H 'content-type: application/json' \
+            --data "$payload" \
+            "${PRODUCTION_URL}/api/leads")
+          echo "rate_limited_request=${code}"
+          test "$code" = "429"
+          jq -e '.ok == false and .error == "rate_limited"' "$body" >/dev/null
