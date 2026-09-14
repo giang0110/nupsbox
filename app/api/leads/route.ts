@@ -1,7 +1,6 @@
 import {NextResponse, type NextRequest} from 'next/server';
 import {ZodError} from 'zod';
 import {createLead} from '@/features/leads/create-lead';
-import {classifyLeadSubmitError} from '@/features/leads/error-classification';
 import {LeadRateLimitError} from '@/lib/rate-limit/leads';
 
 function clientKey(request: NextRequest) {
@@ -12,7 +11,6 @@ function clientKey(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const diagnosticRequested = request.headers.get('x-nupsbox-e2e-diagnostic') === 'phase1';
   let payload: unknown;
   try {
     payload = await request.json();
@@ -30,12 +28,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof LeadRateLimitError) {
       return NextResponse.json({ok: false, error: 'rate_limited'}, {status: 429});
     }
-
-    const diagnostic = classifyLeadSubmitError(error);
-    console.error('lead_submit_failed', diagnostic);
-    const response = diagnosticRequested
-      ? {ok: false, error: 'submit_failed', diagnostic}
-      : {ok: false, error: 'submit_failed'};
-    return NextResponse.json(response, {status: 500});
+    console.error('lead_submit_failed', error instanceof Error ? error.name : 'unknown_error');
+    return NextResponse.json({ok: false, error: 'submit_failed'}, {status: 500});
   }
 }
