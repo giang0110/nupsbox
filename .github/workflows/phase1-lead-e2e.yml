@@ -21,19 +21,29 @@ jobs:
           for i in 1 2 3 4 5; do
             body=$(mktemp)
             code=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
-              -X POST -H 'content-type: application/json' \
+              -X POST \
+              -H 'content-type: application/json' \
+              -H 'x-nupsbox-e2e-diagnostic: phase1' \
               --data "$payload" \
               "${PRODUCTION_URL}/api/leads")
             echo "valid_request_${i}=${code}"
-            test "$code" = "201"
+            if [ "$code" != "201" ]; then
+              echo "response_body=$(cat "$body")"
+              exit 1
+            fi
             jq -e '.ok == true and (.leadId | type == "string")' "$body" >/dev/null
           done
 
           body=$(mktemp)
           code=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
-            -X POST -H 'content-type: application/json' \
+            -X POST \
+            -H 'content-type: application/json' \
+            -H 'x-nupsbox-e2e-diagnostic: phase1' \
             --data "$payload" \
             "${PRODUCTION_URL}/api/leads")
           echo "rate_limited_request=${code}"
-          test "$code" = "429"
+          if [ "$code" != "429" ]; then
+            echo "response_body=$(cat "$body")"
+            exit 1
+          fi
           jq -e '.ok == false and .error == "rate_limited"' "$body" >/dev/null
