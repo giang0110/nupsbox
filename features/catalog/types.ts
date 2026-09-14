@@ -11,6 +11,7 @@ export type PublicUnitType = {
   promoPrice: number | null;
   availabilityStatus: AvailabilityStatus;
   availableCount: number | null;
+  featured: boolean;
   sortOrder: number;
 };
 
