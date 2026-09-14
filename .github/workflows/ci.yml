@@ -8,7 +8,7 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_only
@@ -18,7 +18,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: npm
+      - name: Bootstrap npm lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Upload generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-lockfile
+          path: package-lock.json
+          if-no-files-found: error
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
