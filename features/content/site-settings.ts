@@ -17,6 +17,10 @@ export type PublicSiteSettings = {
 };
 
 export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  if (!url || url.includes('example.supabase.co')) {
+    return {phone: null, zaloUrl: null, email: null, openingHours: {}};
+  }
   const supabase = await createSupabaseServerClient();
   const {data, error} = await supabase
     .from('site_settings')

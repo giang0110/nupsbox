@@ -1,10 +1,12 @@
 'use client';
 
 import {useState, type FormEvent} from 'react';
+import {useRouter} from 'next/navigation';
 import {createSupabaseBrowserClient} from '@/lib/supabase/browser';
 import {Button} from '@/components/ui/button';
 
 export function LoginForm() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +24,8 @@ export function LoginForm() {
       setLoading(false);
       return;
     }
-    window.location.assign('/admin');
+    router.push('/admin');
+    router.refresh();
   }
 
   return (

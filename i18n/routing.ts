@@ -12,33 +12,21 @@ export const routing = defineRouting({
   localePrefix: 'as-needed',
   pathnames: {
     '/': '/',
-    '/kho-mini': {
-      vi: '/kho-mini',
-      en: '/mini-storage'
-    },
-    '/kho-mini/[slug]': {
-      vi: '/kho-mini/[slug]',
-      en: '/mini-storage/[slug]'
-    },
-    '/bang-gia': {
-      vi: '/bang-gia',
-      en: '/pricing'
-    },
-    '/dia-diem': {
-      vi: '/dia-diem',
-      en: '/locations'
-    },
-    '/giai-phap': {
-      vi: '/giai-phap',
-      en: '/solutions'
-    },
-    '/ve-nupsbox': {
-      vi: '/ve-nupsbox',
-      en: '/about-nupsbox'
-    },
-    '/lien-he': {
-      vi: '/lien-he',
-      en: '/contact'
-    }
+    '/kho-mini': {vi: '/kho-mini', en: '/mini-storage'},
+    '/kho-mini/[slug]': {vi: '/kho-mini/[slug]', en: '/mini-storage/[slug]'},
+    '/bang-gia': {vi: '/bang-gia', en: '/pricing'},
+    '/dia-diem': {vi: '/dia-diem', en: '/locations'},
+    '/dia-diem/[slug]': {vi: '/dia-diem/[slug]', en: '/locations/[slug]'},
+    '/giai-phap': {vi: '/giai-phap', en: '/solutions'},
+    '/giai-phap/shop-online': {vi: '/giai-phap/shop-online', en: '/solutions/online-sellers'},
+    '/giai-phap/doanh-nghiep-nho': {vi: '/giai-phap/doanh-nghiep-nho', en: '/solutions/small-business'},
+    '/giai-phap/chua-hang': {vi: '/giai-phap/chua-hang', en: '/solutions/inventory-storage'},
+    '/giai-phap/ca-nhan': {vi: '/giai-phap/ca-nhan', en: '/solutions/personal-storage'},
+    '/cach-thue': {vi: '/cach-thue', en: '/how-it-works'},
+    '/ve-nupsbox': {vi: '/ve-nupsbox', en: '/about-nupsbox'},
+    '/cau-hoi-thuong-gap': {vi: '/cau-hoi-thuong-gap', en: '/faq'},
+    '/lien-he': {vi: '/lien-he', en: '/contact'},
+    '/dat-kho': {vi: '/dat-kho', en: '/book-storage'},
+    '/blog': '/blog'
   }
 });

@@ -52,7 +52,12 @@ export type Database = {
       lead_rate_limits: GenericTable;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      consume_lead_rate_limit: {
+        Args: {p_fingerprint: string; p_limit?: number; p_window_seconds?: number};
+        Returns: boolean;
+      };
+    };
     Enums: {
       app_role: AppRole;
       location_status: LocationStatus;

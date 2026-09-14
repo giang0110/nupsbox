@@ -1,45 +1,50 @@
-import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
-import {Link} from '@/i18n/navigation';
-import {isSupportedLocale} from '@/i18n/routing';
-import {Container} from '@/components/ui/container';
-import {buttonClassName} from '@/components/ui/button';
+import {setRequestLocale} from 'next-intl/server';
+import {Hero} from '@/components/marketing/hero';
+import {UseCases} from '@/components/marketing/use-cases';
+import {CostComparison} from '@/components/marketing/cost-comparison';
+import {Gallery} from '@/components/marketing/gallery';
+import {SecurityBenefits} from '@/components/marketing/security-benefits';
+import {HowItWorks} from '@/components/marketing/how-it-works';
+import {FinalCta} from '@/components/marketing/final-cta';
 import {StorageFinder} from '@/components/storage-finder/storage-finder';
+import {LocationCard} from '@/components/locations/location-card';
+import {Container} from '@/components/ui/container';
+import {isSupportedLocale} from '@/i18n/routing';
+import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
 
-const finderUnits = [
-  {id: 's', slug: 's', name: 'Kho S', areaM2: 1.64, sortOrder: 10},
-  {id: 'm', slug: 'm', name: 'Kho M', areaM2: 5.43, sortOrder: 20}
-];
-
-export default async function HomePage({
-  params
-}: {
-  params: Promise<{locale: string}>;
-}) {
-  const {locale} = await params;
-  if (!isSupportedLocale(locale)) notFound();
-
-  setRequestLocale(locale);
-  const t = await getTranslations('home');
+export default async function HomePage({params}: {params: Promise<{locale: string}>}) {
+  const {locale: rawLocale} = await params;
+  if (!isSupportedLocale(rawLocale)) notFound();
+  setRequestLocale(rawLocale);
+  const locale = rawLocale;
+  const [units, location] = await Promise.all([
+    getMarketingUnits(locale),
+    getMarketingFeaturedLocation(locale)
+  ]);
+  const finderUnits = units.map(({id, slug, name, areaM2, sortOrder}) => ({id, slug, name, areaM2, sortOrder}));
 
   return (
     <main>
-      <section className="overflow-hidden bg-[var(--nupsbox-navy)] py-16 text-white sm:py-24 lg:py-28">
-        <Container>
-          <div className="max-w-4xl">
-            <p className="text-xs font-black tracking-[0.18em] text-[var(--nupsbox-yellow)]">{t('eyebrow')}</p>
-            <h1 className="mt-5 max-w-4xl text-5xl font-black leading-[0.98] tracking-[-0.055em] sm:text-6xl lg:text-7xl">{t('title')}</h1>
-            <p className="mt-7 max-w-2xl text-base leading-7 text-white/72 sm:text-lg">{t('subtitle')}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/kho-mini" className={buttonClassName({size: 'lg'})}>{t('primaryCta')}</Link>
-              <Link href="/bang-gia" className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/20 hover:bg-white/10'})}>{t('secondaryCta')}</Link>
-            </div>
-          </div>
-        </Container>
-      </section>
-      <section className="bg-[var(--nupsbox-surface)] py-10 sm:py-14">
+      <Hero locale={locale} />
+      <section id="storage-finder" className="scroll-mt-24 bg-[var(--nupsbox-surface)] py-10 sm:py-14">
         <Container><StorageFinder units={finderUnits} /></Container>
       </section>
+      <UseCases locale={locale} />
+      <CostComparison locale={locale} />
+      <Gallery locale={locale} />
+      <SecurityBenefits locale={locale} />
+      <HowItWorks locale={locale} />
+      <section className="py-20 sm:py-24">
+        <Container>
+          <div className="mb-8 max-w-2xl">
+            <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-blue)]">{locale === 'vi' ? 'ĐỊA ĐIỂM' : 'LOCATION'}</p>
+            <h2 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">{locale === 'vi' ? 'Bắt đầu tại NupsBox Tân Phú.' : 'Start at NupsBox Tan Phu.'}</h2>
+          </div>
+          <div className="max-w-xl"><LocationCard location={location} locale={locale} /></div>
+        </Container>
+      </section>
+      <FinalCta locale={locale} />
     </main>
   );
 }

@@ -1,0 +1,7 @@
+import {Container} from '@/components/ui/container';
+import {FinalCta} from './final-cta';
+
+export function SolutionPage({locale, titleVi, titleEn, bodyVi, bodyEn}: {locale: 'vi' | 'en'; titleVi: string; titleEn: string; bodyVi: string; bodyEn: string}) {
+  const vi = locale === 'vi';
+  return <main><section className="bg-[var(--nupsbox-navy)] py-20 text-white"><Container><p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-yellow)]">NUPSBOX SOLUTIONS</p><h1 className="mt-4 max-w-4xl text-5xl font-black tracking-[-0.055em] sm:text-6xl">{vi ? titleVi : titleEn}</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-white/70">{vi ? bodyVi : bodyEn}</p></Container></section><section className="py-18"><Container><div className="max-w-3xl rounded-[2rem] bg-[var(--nupsbox-surface)] p-8 sm:p-10"><h2 className="text-3xl font-black tracking-[-0.04em] text-[var(--nupsbox-navy)]">{vi ? 'Không cần bắt đầu bằng một mặt bằng lớn.' : 'You do not need to start with a large commercial lease.'}</h2><p className="mt-4 leading-7 text-[var(--nupsbox-slate)]">{vi ? 'Chọn một kho nhỏ phù hợp với lượng hàng hiện tại, sau đó trao đổi với NupsBox khi nhu cầu thay đổi. Giá và tình trạng kho luôn được xác nhận trước khi thuê.' : 'Choose a unit that fits your current inventory, then speak with NupsBox when your needs change. Price and availability are confirmed before rental.'}</p></div></Container></section><FinalCta locale={locale} /></main>;
+}
