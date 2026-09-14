@@ -200,3 +200,37 @@ revoke all on function public.audit_lead_note_insert() from public, anon, authen
 create index if not exists leads_assigned_to_idx
 on public.leads(assigned_to, created_at desc)
 where assigned_to is not null;
+
+-- Phase 2 CRM reads include viewer, while mutation remains admin/staff only.
+drop policy if exists leads_staff_read on public.leads;
+create policy leads_authenticated_read
+on public.leads
+for select
+to authenticated
+using (public.current_app_role() in ('admin', 'staff', 'viewer'));
+
+drop policy if exists lead_notes_staff_read on public.lead_notes;
+create policy lead_notes_authenticated_read
+on public.lead_notes
+for select
+to authenticated
+using (public.current_app_role() in ('admin', 'staff', 'viewer'));
+
+drop policy if exists lead_status_history_staff_read on public.lead_status_history;
+drop policy if exists lead_status_history_staff_insert on public.lead_status_history;
+create policy lead_status_history_authenticated_read
+on public.lead_status_history
+for select
+to authenticated
+using (public.current_app_role() in ('admin', 'staff', 'viewer'));
+
+-- Assignment target lookup is deliberately narrower than admin profile access.
+create policy profiles_operational_read
+on public.profiles
+for select
+to authenticated
+using (
+  public.current_app_role() in ('admin', 'staff')
+  and active = true
+  and role in ('admin', 'staff')
+);
