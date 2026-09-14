@@ -4,8 +4,11 @@ import {buildSeoRoutePairs, SITE_ORIGIN} from '@/features/seo/routes';
 describe('SEO route manifest', () => {
   const routes = buildSeoRoutePairs({unitSlugs: ['s'], locationSlugs: ['tan-phu']});
 
-  it('uses nupsbox.vn as the canonical origin and pairs VI/EN URLs', () => {
-    expect(SITE_ORIGIN).toBe('https://nupsbox.vn');
+  it('uses NEXT_PUBLIC_SITE_URL as the canonical origin and pairs VI/EN URLs', () => {
+    const expectedOrigin = new URL(
+      process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nupsbox.vercel.app'
+    ).origin;
+    expect(SITE_ORIGIN).toBe(expectedOrigin);
     expect(routes.find((route) => route.key === 'home')).toMatchObject({vi: '/', en: '/en'});
     expect(routes.find((route) => route.key === 'pricing')).toMatchObject({vi: '/bang-gia', en: '/en/pricing'});
   });
