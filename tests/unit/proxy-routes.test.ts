@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {shouldUseI18nRouting} from '@/proxy';
+import {shouldUseI18nRouting} from '@/lib/routing/i18n-route';
 
 describe('proxy route classification', () => {
   it('bypasses locale routing for auth and admin routes', () => {
