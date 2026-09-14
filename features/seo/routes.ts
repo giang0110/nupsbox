@@ -1,4 +1,6 @@
-export const SITE_ORIGIN = 'https://nupsbox.vn';
+const configuredSiteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nupsbox.vercel.app';
+
+export const SITE_ORIGIN = new URL(configuredSiteOrigin).origin;
 
 export type SeoRoutePair = {
   key: string;
