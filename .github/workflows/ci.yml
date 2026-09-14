@@ -28,3 +28,70 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:run
       - run: npm run build
+
+  preview-smoke-diagnostic:
+    if: github.event_name == 'pull_request'
+    needs: quality
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      statuses: read
+    env:
+      PREVIEW_URL: https://nupsbox-git-codex-phase-1-foundation-ntg2299.vercel.app
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Wait for Vercel status on exact head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state="missing"
+          for _ in $(seq 1 60); do
+            payload=$(curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status")
+            state=$(printf '%s' "$payload" | jq -r '[.statuses[] | select(.context == "Vercel")][0].state // "missing"')
+            echo "Vercel status: ${state}"
+            if [ "$state" = "success" ]; then
+              break
+            fi
+            if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
+              exit 1
+            fi
+            sleep 5
+          done
+          test "$state" = "success"
+
+      - name: Probe public Preview routes
+        run: |
+          failed=0
+          routes=(
+            "/"
+            "/en"
+            "/kho-mini"
+            "/en/mini-storage"
+            "/kho-mini/s"
+            "/en/mini-storage/s"
+            "/bang-gia"
+            "/en/pricing"
+            "/dia-diem/tan-phu"
+            "/en/locations/tan-phu"
+            "/cau-hoi-thuong-gap"
+            "/en/faq"
+            "/lien-he"
+            "/en/contact"
+            "/dat-kho"
+            "/sitemap.xml"
+            "/robots.txt"
+            "/auth/login"
+          )
+          for path in "${routes[@]}"; do
+            code=$(curl -sS -L -o /dev/null -w '%{http_code}' --max-time 30 "${PREVIEW_URL}${path}" || true)
+            printf '%-36s %s\n' "$path" "$code"
+            if [ "$code" != "200" ]; then
+              failed=1
+            fi
+          done
+          exit "$failed"
