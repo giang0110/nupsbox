@@ -1,3 +1,4 @@
+import {Suspense} from 'react';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {MapPin} from 'lucide-react';
@@ -34,7 +35,9 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
     <section id="lead-request" className="bg-[var(--nupsbox-navy)] py-16 text-white">
       <Container className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
         <div><h2 className="text-3xl font-black tracking-[-0.04em]">{vi ? 'Nhận tư vấn loại kho phù hợp' : 'Get help choosing the right unit'}</h2><p className="mt-4 text-white/70">{vi ? 'Không cần biết chính xác bao nhiêu m². Hãy mô tả lượng hàng, NupsBox sẽ hỗ trợ xác nhận loại kho và báo giá hiện hành.' : 'You do not need to know the exact square metres. Describe what you store and NupsBox can help confirm a suitable unit and current quote.'}</p></div>
-        <LeadForm locale={locale} fallbackPhone={settings.phone} fallbackZalo={settings.zaloUrl} />
+        <Suspense fallback={<div className="min-h-[28rem] rounded-[2rem] bg-white/10" aria-hidden="true" />}>
+          <LeadForm locale={locale} fallbackPhone={settings.phone} fallbackZalo={settings.zaloUrl} />
+        </Suspense>
       </Container>
     </section>
   </main>;
