@@ -104,21 +104,21 @@ git commit -m "feat: extend phase2 permission matrix"
 
 - [ ] **Step 1: Make schema contract fail on missing Phase 2 enum labels**
 
-Add pgTAP assertions using `enum_has_labels` (or equivalent pgTAP enum assertion available in the local image) for the expected superset:
+Add pgTAP assertions using `enum_has_labels` (or equivalent pgTAP enum assertion available in the local image) for the exact enum order produced by the three `AFTER` additions:
 
 ```text
 new
 contacted
-visit_scheduled
-visited
 qualified
 viewing
 negotiating
+visit_scheduled
+visited
 won
 lost
 ```
 
-Do not require removal of legacy enum labels because PostgreSQL enum removal is not the migration strategy.
+Legacy labels remain in the enum for PostgreSQL migration compatibility but become invalid operational values after Task 3 constraints are applied.
 
 - [ ] **Step 2: Verify RED**
 
@@ -212,11 +212,19 @@ where from_status in ('visit_scheduled', 'visited')
    or to_status in ('visit_scheduled', 'visited');
 ```
 
-Then add checks based on `status::text` so direct writes cannot reintroduce the legacy operational statuses:
+Then add explicit enum-value checks so direct writes cannot reintroduce the legacy operational statuses:
 
 ```sql
 alter table public.leads add constraint leads_phase2_status_check
-check (status::text in ('new','contacted','qualified','viewing','negotiating','won','lost'));
+check (status in (
+  'new'::public.lead_status,
+  'contacted'::public.lead_status,
+  'qualified'::public.lead_status,
+  'viewing'::public.lead_status,
+  'negotiating'::public.lead_status,
+  'won'::public.lead_status,
+  'lost'::public.lead_status
+));
 ```
 
 Apply equivalent allowed-value checks to `lead_status_history.to_status` and nullable `from_status`.
@@ -283,14 +291,14 @@ git commit -m "feat: enforce phase2 crm integrity and audit"
 
 ---
 
-### Task 4: Align CRM RLS with the approved read/write matrix
+### Task 4: Align CRM/profile RLS with the approved read/write matrix
 
 **Files:**
 - Modify: `supabase/migrations/20260915000200_phase2_crm_integrity_and_audit.sql`
 - Modify: `supabase/tests/rls_contract.sql`
 
 **Interfaces:**
-- Produces: viewer read access to leads/notes/history; staff/admin mutation remains limited to the existing write surfaces; no authenticated client insert policy on `audit_log`.
+- Produces: viewer read access to leads/notes/history; staff/admin mutation remains limited to the existing write surfaces; staff/admin can read only active operational assignment targets; no authenticated client insert policy on `audit_log`.
 
 - [ ] **Step 1: Extend failing RLS contract expectations**
 
@@ -303,9 +311,10 @@ lead_notes_authenticated_read  → authenticated; app roles admin/staff/viewer
 lead_notes_staff_insert        → authenticated; app roles admin/staff
 lead_status_history_authenticated_read → authenticated; app roles admin/staff/viewer
 lead_status_history insert is trigger-owned, not direct client insert
+profiles_operational_read      → authenticated; caller admin/staff may read targets where active=true and target role in admin/staff
 ```
 
-`audit_log` keeps admin read and has no client insert policy.
+Existing `profiles_self_read` and `profiles_admin_read` remain. Viewer gets no new cross-profile read permission. `audit_log` keeps admin read and has no client insert policy.
 
 - [ ] **Step 2: Verify RED**
 
@@ -316,11 +325,29 @@ supabase test db
 
 - [ ] **Step 3: Replace the Phase 1 CRM read policies via forward DDL**
 
-Drop only the old named policies and recreate the Phase 2 named policies. `USING` expressions must call `current_app_role()` and include `viewer` only for SELECT. Do not broaden update/insert permissions.
+Drop only the old named CRM policies and recreate the Phase 2 named policies. `USING` expressions must call `current_app_role()` and include `viewer` only for CRM SELECT. Do not broaden update/insert permissions.
 
 Drop the old direct `lead_status_history_staff_insert` policy after the status trigger is active; history becomes append-only through the lead status mutation.
 
-- [ ] **Step 4: Verify RLS contract and commit**
+- [ ] **Step 4: Add the narrow assignment-target profile policy**
+
+Use a separate SELECT policy rather than broadening `profiles_self_read`:
+
+```sql
+create policy profiles_operational_read
+on public.profiles
+for select
+to authenticated
+using (
+  public.current_app_role() in ('admin', 'staff')
+  and active = true
+  and role in ('admin', 'staff')
+);
+```
+
+This exists only so `listAssignableProfiles()` in P2.3 can resolve active operational assignees through the authenticated client. Admin keeps its existing broader admin-read policy; staff does not gain access to inactive/viewer profiles; viewer still sees only self through `profiles_self_read`.
+
+- [ ] **Step 5: Verify RLS contract and commit**
 
 ```bash
 supabase db reset
@@ -453,4 +480,4 @@ Confirm no Phase 1 migration was edited, no service-role credential was introduc
 
 Use a narrowly scoped `fix:` commit describing the verified defect. Otherwise leave the previous task commit as the P2.1 head.
 
-**P2.1 exit criteria:** permission unit tests PASS; Phase 2 lead status values/types are present; legacy operational lead rows are normalized; assignment validation works; lead history/audit are atomic; viewer is read-only; full CI-equivalent and DB tests are green.
+**P2.1 exit criteria:** permission unit tests PASS; Phase 2 lead status values/types are present; legacy operational lead rows are normalized; assignment validation works; active admin/staff assignment targets are readable only to operational roles; lead history/audit are atomic; viewer is read-only; full CI-equivalent and DB tests are green.
