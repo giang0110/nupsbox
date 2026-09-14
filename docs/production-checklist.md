@@ -14,8 +14,9 @@ Last reviewed: 2026-09-14
 - Supabase Phase 1 database preflight: **PASS**. Production migration history is aligned through `20260914000500_harden_role_helper_execute`.
 - Production-generated TypeScript database types are synchronized into `types/database.ts`.
 - Vercel project identity is verified as team `ntg2299` / `team_PMOgG7NuBqEalFpTAxXzeBtf`, project `nupsbox` / `prj_LPKSnGmLYdAGdNyoIUtiZ6CHCDsG`.
-- Vercel Preview build issue: **RESOLVED**. The repo contains `vercel.json` with `framework: "nextjs"`, overriding the stale/incorrect project Framework Preset. Preview deployments succeed.
-- Exact-head public Preview smoke previously passed 18/18 routes. Anonymous `/admin` is blocked. Application-level lead/admin E2E on Preview is still blocked by Vercel Deployment Protection unless an authorized access path is available.
+- Vercel Preview build issue: **RESOLVED**. The repo contains `vercel.json` with `framework: "nextjs"`, overriding the stale/incorrect project Framework Preset. Preview deployments succeed for deployable heads.
+- The CI Preview smoke gate distinguishes deployable heads from commits that change only `docs/**` and/or `.github/**`. Deployable heads require exact-head Vercel success; non-deployable heads skip the absent Vercel status but still run the public route/admin smoke suite against the stable branch Preview alias.
+- Exact-head public Preview smoke passes 18/18 routes. Anonymous `/admin` is blocked. Application-level lead/admin E2E on Preview is still blocked by Vercel Deployment Protection unless an authorized access path is available.
 - Diagnostic builds proved `npm ci` + `next build` succeed on Node 24.11.0 and 24.21.0 with all application env variables unset. The previous Vercel failures were therefore not caused by source compilation, Node minor version, lockfile installation, or missing build-time application env.
 - Production seed/content has **not** been inserted. `auth.users`, `public.profiles`, active admins and production leads are still empty.
 - Go-live remains blocked by Vercel environment/domain verification, production Auth/admin bootstrap, approved business content, and application-level lead/admin smoke tests.
@@ -120,16 +121,24 @@ The same source tree repeatedly passed GitHub production builds while Vercel ret
 
 The original Node engine range `>=24.21.0 <25` was restored afterward and Vercel continued to succeed, confirming Node was not the root cause.
 
-### Preview smoke already verified
+### Preview smoke verified
 
-On exact head `788c9c200e7a1f403912ee30739437150bc6342c`:
+Deployable head `788c9c200e7a1f403912ee30739437150bc6342c` proved:
 
 - GitHub quality CI: PASS.
 - Database Tests: PASS.
-- Vercel commit status: success.
-- 18 public Preview routes returned HTTP 200.
-- Anonymous `/admin` redirected to Vercel SSO and was not exposed.
-- A synthetic `/api/leads` attempt was rejected by Vercel Deployment Protection before the request reached the application; follow-up database verification found zero synthetic rows.
+- exact-head Vercel commit status: success.
+- 18 public Preview routes: HTTP 200.
+- anonymous `/admin`: redirected to Vercel SSO and was not exposed.
+- a synthetic `/api/leads` attempt was rejected by Vercel Deployment Protection before reaching the application; follow-up database verification found zero synthetic rows.
+
+Non-deployable head `49a4a87c64ea2bf8f567bb7e7156c26acb9912b1` proved the CI synchronization fix:
+
+- CI #104: PASS.
+- Database Tests #27: PASS.
+- log: `No deployable files changed on exact head; Vercel status is not required.`
+- 18/18 public route probes: HTTP 200 against the stable branch Preview alias.
+- anonymous `/admin`: HTTP 302 to Vercel SSO.
 
 ### Still required in Vercel
 
@@ -153,7 +162,7 @@ External search/indexing and the current execution runtime did not provide autho
 
 ## 7. Exact-head quality gate
 
-The exact commit being promoted must pass:
+Every exact head being considered for merge must pass:
 
 ```text
 npm ci
@@ -163,9 +172,11 @@ npm run test:run
 npm run build
 ```
 
-The database workflow must also apply the full migration chain locally and pass pgTAP schema/RLS contracts. Vercel Preview for the same exact head must be successful.
+The database workflow must also apply the full migration chain locally and pass pgTAP schema/RLS contracts.
 
-Any documentation-only commit added after the previously verified head must receive a fresh exact-head CI/Database/Vercel status before merge.
+For an exact head with any deployable file change, Vercel must publish a `success` status for that same SHA before Preview smoke proceeds.
+
+For an exact head whose changes are exclusively under `docs/**` and/or `.github/**`, Vercel may intentionally publish no deployment/status. In that case CI must explicitly classify the head as non-deployable, then the stable branch Preview alias must still pass the full public route and anonymous-admin smoke suite.
 
 ## 8. Production smoke tests
 
@@ -186,7 +197,7 @@ Before go-live verify at minimum:
 - unauthenticated `/admin` redirects to login/protection
 - viewer/staff/admin permission boundaries behave as expected
 
-Public route smoke is already proven on the PR Preview. Lead submission/rate-limit and authenticated role behavior remain pending because the protected Preview request path and production Auth bootstrap are not yet available.
+Public route smoke is proven on the PR Preview. Lead submission/rate-limit and authenticated role behavior remain pending because the protected Preview request path and production Auth bootstrap are not yet available.
 
 ## 9. Rollback points
 
@@ -199,7 +210,7 @@ Public route smoke is already proven on the PR Preview. Lead submission/rate-lim
 
 Production may proceed only when all are true:
 
-1. Exact-head CI, Database Tests and Vercel Preview are green.
+1. Exact-head quality CI and Database Tests are green; any deployable exact head also has Vercel success, while an explicitly non-deployable docs/.github-only head has fresh Preview route/admin smoke success.
 2. Supabase migration/RLS verification remains clean.
 3. Production Vercel environment variables are verified without exposing secret values.
 4. Production Auth Site URL/callbacks and the first authorized admin are configured.
