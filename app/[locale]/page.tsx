@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Hero} from '@/components/marketing/hero';
@@ -17,6 +18,21 @@ import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
 import {getMarketingFaqs} from '@/features/content/faqs';
 import {selectHomepageUnits} from '@/features/home/content';
+import {createLocalizedMetadata} from '@/features/seo/metadata';
+import {getStaticSeoRoute} from '@/features/seo/routes';
+
+export async function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  const {locale: rawLocale} = await params;
+  const locale = rawLocale === 'en' ? 'en' : 'vi';
+  return createLocalizedMetadata({
+    route: getStaticSeoRoute('home'),
+    locale,
+    title: locale === 'vi' ? 'Kho mini cho kinh doanh tại TP.HCM' : 'Mini storage for business in Ho Chi Minh City',
+    description: locale === 'vi'
+      ? 'Kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và cá nhân tại TP.HCM. Tìm loại kho phù hợp và gửi yêu cầu báo giá cho NupsBox.'
+      : 'Flexible mini storage for online sellers, small businesses and individuals in Ho Chi Minh City. Find a suitable unit and request a quote from NupsBox.'
+  });
+}
 
 export default async function HomePage({params}: {params: Promise<{locale: string}>}) {
   const {locale: rawLocale} = await params;
