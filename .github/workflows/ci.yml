@@ -38,10 +38,10 @@ jobs:
       contents: read
       statuses: read
     env:
-      PREVIEW_URL: https://nupsbox-git-codex-phase-1-foundation-ntg2299.vercel.app
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.head_ref }}
     steps:
-      - name: Wait for Vercel status on exact head
+      - name: Determine whether exact head is deployable
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -51,10 +51,17 @@ jobs:
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}")
           deployable_count=$(printf '%s' "$commit_payload" | jq '[.files[].filename | select((startswith("docs/") or startswith(".github/")) | not)] | length')
           if [ "$deployable_count" -eq 0 ]; then
-            echo "No deployable files changed on exact head; Vercel status is not required."
-            exit 0
+            echo "DEPLOYABLE=false" >> "$GITHUB_ENV"
+            echo "No deployable files changed on exact head; Preview deployment smoke is not applicable."
+          else
+            echo "DEPLOYABLE=true" >> "$GITHUB_ENV"
           fi
 
+      - name: Wait for Vercel status on exact head
+        if: env.DEPLOYABLE == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
           state="missing"
           for _ in $(seq 1 60); do
             payload=$(curl -fsSL \
@@ -73,7 +80,16 @@ jobs:
           done
           test "$state" = "success"
 
+      - name: Resolve Preview alias
+        if: env.DEPLOYABLE == 'true'
+        run: |
+          branch_slug=$(printf '%s' "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s/^-+//; s/-+$//')
+          preview_url="https://nupsbox-git-${branch_slug}-ntg2299.vercel.app"
+          echo "PREVIEW_URL=${preview_url}" >> "$GITHUB_ENV"
+          echo "Preview URL: ${preview_url}"
+
       - name: Probe public Preview routes
+        if: env.DEPLOYABLE == 'true'
         run: |
           failed=0
           routes=(
@@ -105,7 +121,8 @@ jobs:
           done
           exit "$failed"
 
-      - name: Verify unauthenticated admin is not exposed
+      - name: Verify unauthenticated admin is not exposed on Preview
+        if: env.DEPLOYABLE == 'true'
         run: |
           headers=$(mktemp)
           code=$(curl -sS -o /dev/null -D "$headers" -w '%{http_code}' --max-time 30 "${PREVIEW_URL}/admin" || true)
@@ -119,3 +136,110 @@ jobs:
             /auth/login*|"${PREVIEW_URL}/auth/login"*|https://vercel.com/sso-api*) ;;
             *) echo "Unexpected anonymous /admin redirect target"; exit 1 ;;
           esac
+
+  production-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      statuses: read
+    env:
+      PRODUCTION_URL: https://nupsbox.vercel.app
+      HEAD_SHA: ${{ github.sha }}
+    steps:
+      - name: Wait for Vercel production status when exact head is deployable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          commit_payload=$(curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}")
+          deployable_count=$(printf '%s' "$commit_payload" | jq '[.files[].filename | select((startswith("docs/") or startswith(".github/")) | not)] | length')
+          if [ "$deployable_count" -eq 0 ]; then
+            echo "No deployable files changed on exact head; smoke the current production alias without waiting for a new deployment."
+            exit 0
+          fi
+
+          state="missing"
+          for _ in $(seq 1 60); do
+            payload=$(curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status")
+            state=$(printf '%s' "$payload" | jq -r '[.statuses[] | select(.context == "Vercel")][0].state // "missing"')
+            echo "Vercel status: ${state}"
+            if [ "$state" = "success" ]; then
+              break
+            fi
+            if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
+              exit 1
+            fi
+            sleep 5
+          done
+          test "$state" = "success"
+
+      - name: Probe public Production routes
+        run: |
+          failed=0
+          routes=(
+            "/"
+            "/en"
+            "/kho-mini"
+            "/en/mini-storage"
+            "/bang-gia"
+            "/en/pricing"
+            "/dia-diem"
+            "/en/locations"
+            "/cau-hoi-thuong-gap"
+            "/en/faq"
+            "/lien-he"
+            "/en/contact"
+            "/dat-kho"
+            "/sitemap.xml"
+            "/robots.txt"
+            "/auth/login"
+          )
+          for path in "${routes[@]}"; do
+            code=$(curl -sS -L -o /dev/null -w '%{http_code}' --max-time 30 "${PRODUCTION_URL}${path}" || true)
+            printf '%-36s %s\n' "$path" "$code"
+            if [ "$code" != "200" ]; then
+              failed=1
+            fi
+          done
+          exit "$failed"
+
+      - name: Verify Production canonical origin
+        run: |
+          html=$(curl -fsSL --max-time 30 "${PRODUCTION_URL}/")
+          printf '%s' "$html" | grep -F 'rel="canonical"' >/dev/null
+          printf '%s' "$html" | grep -F 'https://nupsbox.vercel.app/' >/dev/null
+
+      - name: Verify unauthenticated admin is not exposed on Production
+        run: |
+          headers=$(mktemp)
+          code=$(curl -sS -o /dev/null -D "$headers" -w '%{http_code}' --max-time 30 "${PRODUCTION_URL}/admin" || true)
+          location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/^location:[[:space:]]*/, ""); sub(/\r$/, ""); print}' "$headers" | tail -1)
+          echo "/admin ${code} -> ${location}"
+          case "$code" in
+            301|302|303|307|308) ;;
+            *) echo "Expected /admin to reject anonymous access with a redirect"; exit 1 ;;
+          esac
+          case "$location" in
+            /auth/login*|"${PRODUCTION_URL}/auth/login"*) ;;
+            *) echo "Unexpected anonymous /admin redirect target"; exit 1 ;;
+          esac
+
+      - name: Verify lead API rejects invalid input without creating a lead
+        run: |
+          invalid_json_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+            -X POST -H 'content-type: application/json' --data '{' \
+            "${PRODUCTION_URL}/api/leads" || true)
+          invalid_lead_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+            -X POST -H 'content-type: application/json' --data '{}' \
+            "${PRODUCTION_URL}/api/leads" || true)
+          echo "invalid_json=${invalid_json_code} invalid_lead=${invalid_lead_code}"
+          test "$invalid_json_code" = "400"
+          test "$invalid_lead_code" = "400"
