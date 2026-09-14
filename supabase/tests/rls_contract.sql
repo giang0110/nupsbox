@@ -14,8 +14,24 @@ select policy_roles_are('public', 'site_settings', 'site_settings_admin_write', 
 
 select has_function('public', 'current_app_role', array[]::text[], 'role helper exists');
 select has_function('public', 'is_admin', array[]::text[], 'admin helper exists');
-select row_security_active('public', 'leads', 'RLS enabled on leads');
-select row_security_active('public', 'site_settings', 'RLS enabled on site settings');
+select ok(
+  coalesce((
+    select c.relrowsecurity
+    from pg_catalog.pg_class c
+    join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'leads'
+  ), false),
+  'RLS enabled on leads'
+);
+select ok(
+  coalesce((
+    select c.relrowsecurity
+    from pg_catalog.pg_class c
+    join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'site_settings'
+  ), false),
+  'RLS enabled on site settings'
+);
 
 select * from finish();
 rollback;
