@@ -1,10 +1,36 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Container} from '@/components/ui/container';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {formatMonthlyPrice} from '@/features/catalog/price';
 import {getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
+import {createLocalizedMetadata} from '@/features/seo/metadata';
+import {unitSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{locale: string; slug: string}>;
+}): Promise<Metadata> {
+  const {locale: rawLocale, slug} = await params;
+  if (!isSupportedLocale(rawLocale)) notFound();
+  const unit = await getMarketingUnitBySlug(slug, rawLocale);
+  if (!unit) notFound();
+  const vi = rawLocale === 'vi';
+  const area = unit.areaM2.toLocaleString(vi ? 'vi-VN' : 'en-US', {maximumFractionDigits: 2});
+  const description = unit.recommendedFor || (vi
+    ? `Kho mini ${unit.name} diện tích ${area} m² tại NupsBox TP.HCM. Liên hệ để xác nhận giá và tình trạng phù hợp.`
+    : `${unit.name} mini storage with ${area} m² at NupsBox Ho Chi Minh City. Enquire to confirm current pricing and suitability.`);
+
+  return createLocalizedMetadata({
+    route: unitSeoRoute(slug),
+    locale: rawLocale,
+    title: vi ? `${unit.name} · ${area} m²` : `${unit.name} · ${area} m²`,
+    description
+  });
+}
 
 export default async function StorageDetailPage({params}: {params: Promise<{locale: string; slug: string}>}) {
   const {locale: rawLocale, slug} = await params;
