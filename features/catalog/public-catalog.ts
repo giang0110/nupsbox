@@ -1,6 +1,7 @@
 import 'server-only';
 
 import type {AppLocale} from '@/i18n/routing';
+import {selectHomepageUnits} from '@/features/home/content';
 import type {PublicLocation, PublicUnitType} from './types';
 import {getActiveUnitTypes, getFeaturedLocation, getLocationBySlug, getUnitTypeBySlug} from './queries';
 
@@ -16,6 +17,7 @@ const fallbackUnits: PublicUnitType[] = [
     promoPrice: null,
     availabilityStatus: 'contact',
     availableCount: null,
+    featured: true,
     sortOrder: 10
   },
   {
@@ -29,6 +31,7 @@ const fallbackUnits: PublicUnitType[] = [
     promoPrice: null,
     availabilityStatus: 'contact',
     availableCount: null,
+    featured: true,
     sortOrder: 20
   }
 ];
@@ -75,6 +78,11 @@ export async function getMarketingUnits(locale: AppLocale): Promise<PublicUnitTy
   } catch {
     return localizedUnits(locale);
   }
+}
+
+export async function getMarketingFeaturedUnits(locale: AppLocale): Promise<PublicUnitType[]> {
+  const units = await getMarketingUnits(locale);
+  return selectHomepageUnits(units).slice(0, 3);
 }
 
 export async function getMarketingUnitBySlug(slug: string, locale: AppLocale): Promise<PublicUnitType | null> {
