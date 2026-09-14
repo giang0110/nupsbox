@@ -1,7 +1,7 @@
 # NupsBox Phase 2 — Conversion & Operations Design Specification
 
 **Approved direction:** 2026-09-14  
-**Status:** Design approved in chat; implementation plan not yet approved  
+**Status:** Awaiting written-spec review  
 **Project:** NupsBox (`nupsbox.vn`)  
 **Prerequisite:** Phase 1 must be production-ready and merged before Phase 2 implementation starts.
 
@@ -379,7 +379,7 @@ Database constraints should enforce invariants that remain true regardless of ca
 
 ## 10. Audit design
 
-Every important Phase 2 mutation must produce an audit/history record where the schema supports a generic audit model or where a domain-specific history table is required.
+Every important Phase 2 mutation must produce an audit/history record, using the existing generic audit model if suitable or a domain-specific history table when that better preserves meaning.
 
 Audit records should capture:
 
@@ -400,6 +400,8 @@ Audit metadata must never contain:
 
 Audit writes should be coupled with the domain mutation strongly enough that a successful mutation cannot silently omit its required history record. The implementation plan must choose transaction/RPC or another atomic pattern after inspecting the live schema and current Supabase access pattern.
 
+Sensitive non-mutation operations such as CSV lead export must also create an audit event recording actor, filter scope and timestamp without copying the exported PII into the audit metadata.
+
 ## 11. CRM design
 
 ### 11.1 Lead status pipeline
@@ -413,15 +415,22 @@ new
 → viewing
 → negotiating
 → won
-or
-→ lost
 ```
+
+`lost` is a terminal outcome reachable from any non-terminal status.
+
+Transition rules:
+
+- `staff` may move a lead forward through the pipeline or mark a non-terminal lead `lost`.
+- `admin` has the same forward transitions and may also correct a status backward when operationally necessary.
+- moving `won` or `lost` back to a non-terminal status is an admin-only reopen action and must be captured in status history.
+- every transition, including correction/reopen, is recorded rather than rewriting history.
 
 Before implementation, the plan must inspect the existing `lead_status` enum. If Phase 1 values differ, Phase 2 uses a forward migration to extend/normalize safely; it must not rewrite already-applied Phase 1 migrations.
 
 Every status transition must:
 
-- validate the target value,
+- validate the target value and transition rule,
 - update the current lead status,
 - record a status-history row,
 - record the acting user,
@@ -496,7 +505,7 @@ Admin lead list should support server-side filtering for the fields that can be 
 - name/phone/email search,
 - newest/oldest ordering.
 
-The default list must be bounded. Phase 2 uses server-side pagination rather than loading the full lead table. The implementation plan may select a page size in the 50–100 row range based on the existing UI pattern.
+The default page size is **50 rows**. Pagination is server-side; the browser must not load the full lead table to paginate locally.
 
 ### 11.6 CSV export
 
@@ -509,7 +518,7 @@ Requirements:
 - no browser-side fetch of the entire unrestricted CRM table,
 - exported fields are deliberately allow-listed,
 - internal secrets/system metadata are excluded,
-- export activity is auditable if the existing audit design supports it.
+- every export creates an audit event without duplicating the exported PII into audit metadata.
 
 ## 12. Attribution and analytics
 
@@ -586,7 +595,7 @@ Likely schema work includes:
 - lead notes table,
 - any required lead status enum extension,
 - permission/RLS policy extensions,
-- audit support required by new mutations,
+- audit support required by new mutations and sensitive exports,
 - indexes for verified Phase 2 query patterns.
 
 The exact migration filenames and SQL are implementation-plan details and must be based on an inspection of the then-current `main` plus production migration history.
@@ -639,13 +648,15 @@ Cover:
 
 - invalid UUID/entity,
 - invalid enum/status,
+- invalid status transition,
+- admin reopen/correction behavior,
 - publication requirements,
 - duplicate slug handling,
 - immutable published slug handling,
 - audit/history creation,
 - assignment constraints,
 - note creation,
-- CSV allow-list behavior.
+- CSV allow-list and export-audit behavior.
 
 ### 14.4 Analytics tests
 
@@ -768,7 +779,7 @@ Deliverables:
 - assignment,
 - append-only internal notes,
 - filters/search/pagination,
-- admin-only CSV export.
+- admin-only CSV export with audit event.
 
 Gate: unit/permission tests + DB/RLS tests + authorized admin verification.
 
@@ -809,15 +820,16 @@ Phase 2 is complete only when all of the following are true:
 5. Admin CMS mutations work only for authorized roles and are protected by RLS.
 6. Catalog/content changes render correctly on public pages without exposing drafts.
 7. Lead detail, status history, assignment and internal notes work as designed.
-8. CSV export is admin-only, permission-controlled and field allow-listed.
-9. Analytics is optional, fails safely and sends no lead PII.
-10. Attribution summaries use the canonical lead attribution fields rather than a duplicate source of truth.
-11. Public Phase 1 routes and SEO behavior show no regression.
-12. Lead submission E2E succeeds through an authorized deployment path, including validation and rate-limit checks.
-13. Admin E2E verifies admin/staff/viewer boundaries through an authorized deployment path.
-14. Security review finds no browser service-role exposure or missing deliberate RLS on new client-accessible data.
-15. Production migration history and exact-head Vercel deployment are verified before release.
-16. Production smoke tests pass before Phase 2 is declared complete.
+8. Lead status transitions enforce staff forward-only/terminal-loss behavior and admin correction/reopen behavior.
+9. CSV export is admin-only, permission-controlled, field allow-listed and audited.
+10. Analytics is optional, fails safely and sends no lead PII.
+11. Attribution summaries use the canonical lead attribution fields rather than a duplicate source of truth.
+12. Public Phase 1 routes and SEO behavior show no regression.
+13. Lead submission E2E succeeds through an authorized deployment path, including validation and rate-limit checks.
+14. Admin E2E verifies admin/staff/viewer boundaries through an authorized deployment path.
+15. Security review finds no browser service-role exposure or missing deliberate RLS on new client-accessible data.
+16. Production migration history and exact-head Vercel deployment are verified before release.
+17. Production smoke tests pass before Phase 2 is declared complete.
 
 ## 21. Deferred Phase 3 candidates
 
