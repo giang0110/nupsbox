@@ -1,0 +1,26 @@
+{
+  "brand": {
+    "tagline": "Save Space. Live Large."
+  },
+  "nav": {
+    "storage": "Kho mini",
+    "pricing": "Bảng giá",
+    "solutions": "Giải pháp",
+    "locations": "Địa điểm",
+    "about": "Về NupsBox",
+    "contact": "Liên hệ",
+    "quote": "Nhận báo giá"
+  },
+  "home": {
+    "eyebrow": "MINI STORAGE • TP.HCM",
+    "title": "Có kho tại TP.HCM. Không cần thuê cả mặt bằng.",
+    "subtitle": "Không gian kho riêng linh hoạt dành cho shop online và doanh nghiệp nhỏ — tiết kiệm chi phí, gần khách hàng và mở rộng khi bạn cần.",
+    "primaryCta": "Tìm kho phù hợp",
+    "secondaryCta": "Xem bảng giá"
+  },
+  "actions": {
+    "phone": "Gọi",
+    "zalo": "Zalo",
+    "findStorage": "Tìm kho"
+  }
+}
