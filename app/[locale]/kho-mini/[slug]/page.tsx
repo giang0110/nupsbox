@@ -3,10 +3,11 @@ import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Container} from '@/components/ui/container';
 import {FinalCta} from '@/components/marketing/final-cta';
+import {JsonLd} from '@/components/seo/json-ld';
 import {formatMonthlyPrice} from '@/features/catalog/price';
 import {getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
-import {unitSeoRoute} from '@/features/seo/routes';
+import {absoluteUrl, getStaticSeoRoute, unitSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
 
 export async function generateMetadata({
@@ -27,7 +28,7 @@ export async function generateMetadata({
   return createLocalizedMetadata({
     route: unitSeoRoute(slug),
     locale: rawLocale,
-    title: vi ? `${unit.name} · ${area} m²` : `${unit.name} · ${area} m²`,
+    title: `${unit.name} · ${area} m²`,
     description
   });
 }
@@ -40,5 +41,18 @@ export default async function StorageDetailPage({params}: {params: Promise<{loca
   if (!unit) notFound();
   const vi = rawLocale === 'vi';
   const price = formatMonthlyPrice(unit.promoPrice ?? unit.monthlyPrice, rawLocale);
-  return <main><section className="bg-[var(--nupsbox-navy)] py-20 text-white"><Container><p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-yellow)]">MINI STORAGE</p><h1 className="mt-4 text-6xl font-black tracking-[-0.06em]">{unit.name}</h1><p className="mt-3 text-2xl text-white/70">{unit.areaM2.toFixed(2)} m²</p></Container></section><section className="py-20"><Container className="grid gap-8 lg:grid-cols-[1fr_.7fr]"><div><h2 className="text-3xl font-black tracking-[-0.04em] text-[var(--nupsbox-navy)]">{vi ? 'Phù hợp với nhu cầu gọn và linh hoạt.' : 'Built for compact, flexible storage needs.'}</h2><p className="mt-5 max-w-2xl leading-7 text-[var(--nupsbox-slate)]">{unit.recommendedFor}</p></div><aside className="rounded-3xl bg-[var(--nupsbox-surface)] p-7"><p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--nupsbox-slate)]">{vi ? 'Giá hiện tại' : 'Current price'}</p><p className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">{price ?? (vi ? 'Liên hệ báo giá' : 'Contact for pricing')}</p><p className="mt-4 text-sm leading-6 text-[var(--nupsbox-slate)]">{vi ? 'NupsBox sẽ xác nhận giá và tình trạng kho trước khi bạn đặt lịch.' : 'NupsBox will confirm price and current status before you schedule a visit.'}</p></aside></Container></section><FinalCta locale={rawLocale} /></main>;
+  const homeRoute = getStaticSeoRoute('home');
+  const unitsRoute = getStaticSeoRoute('units');
+  const detailRoute = unitSeoRoute(slug);
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {'@type': 'ListItem', position: 1, name: vi ? 'Trang chủ' : 'Home', item: absoluteUrl(homeRoute[rawLocale])},
+      {'@type': 'ListItem', position: 2, name: vi ? 'Kho mini' : 'Mini storage', item: absoluteUrl(unitsRoute[rawLocale])},
+      {'@type': 'ListItem', position: 3, name: unit.name, item: absoluteUrl(detailRoute[rawLocale])}
+    ]
+  };
+
+  return <main><JsonLd data={breadcrumb} /><section className="bg-[var(--nupsbox-navy)] py-20 text-white"><Container><p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-yellow)]">MINI STORAGE</p><h1 className="mt-4 text-6xl font-black tracking-[-0.06em]">{unit.name}</h1><p className="mt-3 text-2xl text-white/70">{unit.areaM2.toFixed(2)} m²</p></Container></section><section className="py-20"><Container className="grid gap-8 lg:grid-cols-[1fr_.7fr]"><div><h2 className="text-3xl font-black tracking-[-0.04em] text-[var(--nupsbox-navy)]">{vi ? 'Phù hợp với nhu cầu gọn và linh hoạt.' : 'Built for compact, flexible storage needs.'}</h2><p className="mt-5 max-w-2xl leading-7 text-[var(--nupsbox-slate)]">{unit.recommendedFor}</p></div><aside className="rounded-3xl bg-[var(--nupsbox-surface)] p-7"><p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--nupsbox-slate)]">{vi ? 'Giá hiện tại' : 'Current price'}</p><p className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">{price ?? (vi ? 'Liên hệ báo giá' : 'Contact for pricing')}</p><p className="mt-4 text-sm leading-6 text-[var(--nupsbox-slate)]">{vi ? 'NupsBox sẽ xác nhận giá và tình trạng kho trước khi bạn đặt lịch.' : 'NupsBox will confirm price and current status before you schedule a visit.'}</p></aside></Container></section><FinalCta locale={rawLocale} /></main>;
 }
