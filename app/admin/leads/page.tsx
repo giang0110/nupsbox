@@ -4,14 +4,19 @@ import {Container} from '@/components/ui/container';
 import {LeadStatusForm} from '@/components/admin/lead-status-form';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
-import {isLeadStatus, leadStatuses, listAdminLeads} from '@/features/admin/leads';
-import type {LeadStatus} from '@/types/database';
+import {
+  isOperationalLeadStatus,
+  leadStatuses,
+  listAdminLeads,
+  type OperationalLeadStatus
+} from '@/features/admin/leads';
 
-const statusLabels: Record<LeadStatus, string> = {
+const statusLabels: Record<OperationalLeadStatus, string> = {
   new: 'Mới',
   contacted: 'Đã liên hệ',
-  visit_scheduled: 'Đã hẹn xem kho',
-  visited: 'Đã xem kho',
+  qualified: 'Đã xác nhận nhu cầu',
+  viewing: 'Đang xem kho',
+  negotiating: 'Đang thương lượng',
   won: 'Đã thuê',
   lost: 'Không chuyển đổi'
 };
@@ -31,7 +36,7 @@ export default async function AdminLeadsPage({
   if (!can(session.role, 'leads:read')) redirect('/admin');
 
   const query = await searchParams;
-  const status = isLeadStatus(query.status) ? query.status : undefined;
+  const status = isOperationalLeadStatus(query.status) ? query.status : undefined;
   const leads = await listAdminLeads({status, limit: 100});
   const canUpdate = can(session.role, 'leads:update');
 
