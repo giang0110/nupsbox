@@ -7,9 +7,12 @@ Last reviewed: 2026-09-14
 - Code branch: `codex/phase-1-foundation`
 - PR: #1 (draft)
 - Canonical domain expected by application: `https://nupsbox.vn`
-- Production deployment: **BLOCKED** until the correct NupsBox Supabase and Vercel connections are available.
-- Supabase connector currently exposes only projects named `Bepnha` and `nuoidaycon`; do not apply NupsBox migrations to either project.
-- Vercel connector currently exposes no team/project context; do not deploy by guessing a project ID.
+- Dedicated Supabase project: `nupsbox` (`veglohnmofzkgovedxkb`), region `ap-southeast-1`.
+- Supabase Phase 1 database preflight: **PASS**. Production migration history is aligned through `20260914000500_harden_role_helper_execute`.
+- Production-generated TypeScript database types have been synchronized into `types/database.ts` while preserving the application enum aliases.
+- Production seed/content has **not** been inserted. `auth.users` and active admin profiles are still empty.
+- Vercel preflight remains **BLOCKED** because the connected Vercel context currently returns zero teams/projects. Do not deploy by guessing a project or team ID.
+- Production merge/deployment remains blocked until Auth, approved seed/content, Vercel project/environment, Preview deployment, and smoke tests are complete.
 
 ## 1. Required environment variables
 
@@ -27,29 +30,51 @@ Never commit production secrets to GitHub.
 
 ## 2. Supabase database preflight
 
-Before any migration push:
+Completed on the dedicated NupsBox production project:
 
-1. Confirm the connected project name/ref is the dedicated NupsBox project.
-2. Confirm the database is reachable and record the current migration history.
-3. Confirm none of the four local migration versions already exist remotely under a different definition.
-4. Apply migrations only in this order:
+1. Confirmed project name/ref and database reachability.
+2. Confirmed the initial remote migration history was empty and no Phase 1 object-name collisions existed.
+3. Applied and aligned production migration history in this order:
    - `20260914000100_phase1_core_schema.sql`
    - `20260914000200_phase1_indexes_and_triggers.sql`
    - `20260914000300_rls_and_roles.sql`
    - `20260914000400_lead_rate_limit_rpc.sql`
-5. Run schema/RLS verification after migration and review Supabase security advisors.
-6. Generate fresh TypeScript database types from the linked project and compare them with `types/database.ts` before replacing the bootstrap mirror.
+   - `20260914000500_harden_role_helper_execute.sql`
+4. Verified 15 application tables, 7 enums, expected functions/triggers/indexes, and 28 RLS policies.
+5. Confirmed all 15 application tables have RLS enabled.
+6. Confirmed `consume_lead_rate_limit` is executable by `service_role` and not by `anon`/`authenticated`.
+7. Confirmed `current_app_role()` and `is_admin()` are not executable by `anon`; authenticated execution is intentional because the RLS policies use these caller-scoped helpers.
+8. Ran a transactional production RLS smoke test: `anon` could read an active catalog fixture but could not read a CRM lead fixture; all fixtures were rolled back.
+9. Generated fresh production TypeScript types and synchronized `types/database.ts`.
+10. Reviewed security/performance advisors after DDL.
 
-### RLS invariants to verify remotely
+### RLS invariants verified remotely
 
-- Anonymous users can read only active/public catalog and content rows.
-- Anonymous users cannot read or mutate `leads`, `lead_notes`, `lead_status_history`, `profiles`, `audit_log`, or `lead_rate_limits`.
-- `viewer` cannot access CRM leads.
-- `staff` can read/update leads and catalog/content according to the permission contract.
-- Only `admin` can mutate site settings or staff role assignments.
-- `consume_lead_rate_limit` is executable by `service_role` only.
+- Anonymous users can read active/public catalog/content rows only through the intended public policies.
+- Anonymous users cannot read CRM/admin data or invoke the privileged lead rate-limit RPC.
+- `consume_lead_rate_limit` is service-role only.
+- `lead_rate_limits` intentionally has RLS enabled with no client policy because it is server-only state.
+
+### Advisor status
+
+Security:
+
+- Anonymous `SECURITY DEFINER` helper exposure: **resolved**.
+- `lead_rate_limits` RLS-with-no-policy notice is intentional server-only behavior.
+- Authenticated `SECURITY DEFINER` notices remain for `current_app_role()` and `is_admin()`; these helpers return only caller-scoped authorization state and are intentionally used by RLS.
+
+Performance notices are currently non-blocking for Phase 1:
+
+- foreign keys without covering indexes,
+- one `auth.uid()` init-plan recommendation,
+- multiple permissive SELECT policies,
+- expected unused-index notices on a new empty production database.
+
+Revisit these after real traffic/query plans are available or before Phase 1 scale-up.
 
 ## 3. Supabase Auth setup
+
+Still required before launch:
 
 - Production Site URL: `https://nupsbox.vn`.
 - Add the exact production callback URL: `https://nupsbox.vn/auth/callback`.
@@ -58,7 +83,11 @@ Before any migration push:
 - Ensure every staff user has a corresponding active row in `public.profiles`; authentication alone does not grant admin workspace access.
 - Bootstrap the first `admin` profile through an authorized server/database operation, then manage later role changes through the admin contract.
 
+Current production state: `auth.users = 0`, `public.profiles = 0`, active admins = 0.
+
 ## 4. Seed/content validation
+
+The repository development seed has **not** been applied to production.
 
 Before public launch:
 
@@ -70,7 +99,11 @@ Before public launch:
 - Review FAQ answers in both languages.
 - Confirm no fabricated ratings, reviews or customer logos are present.
 
+The current development seed intentionally leaves phone, Zalo, public prices, and availability counts unset until approved production values are supplied.
+
 ## 5. Vercel/project preflight
+
+**BLOCKED:** the current Vercel connector returns zero teams, so the intended NupsBox project cannot yet be verified or configured safely.
 
 Before deployment:
 
@@ -103,7 +136,7 @@ npm run test:run
 npm run build
 ```
 
-Do not treat an older green CI run as evidence for a newer commit.
+The database workflow must also apply the complete migration chain locally and pass the pgTAP schema/RLS contracts. Do not treat an older green run as evidence for a newer commit.
 
 ## 8. Production smoke tests
 
@@ -127,14 +160,17 @@ After deployment verify at minimum:
 ## 9. Rollback points
 
 - Keep the previous Vercel production deployment available for instant rollback until smoke tests pass.
-- Before database migration, capture the current migration history and ensure a database backup/recovery path is available.
+- Before future database migrations, record current migration history and confirm the database recovery path.
 - Database rollback should be performed with an explicit forward/fix migration where possible; never edit already-applied migration files in production history.
 - If lead submission fails after launch, keep public content online but remove/disable the lead CTA only through a reviewed deployment; never expose service credentials as a workaround.
 
 ## Go-live decision
 
-Production may proceed only when all three are true:
+Production may proceed only when all are true:
 
-1. Exact-head CI is green.
-2. The dedicated NupsBox Supabase project passes migration/RLS preflight.
-3. The intended Vercel project and `nupsbox.vn` domain are verified.
+1. Exact-head CI and Database Tests are green.
+2. The dedicated NupsBox Supabase project continues to pass migration/RLS verification.
+3. Production Auth Site URL/callbacks and the first authorized admin are configured.
+4. Approved production seed/content is loaded and reviewed.
+5. The intended Vercel project and `nupsbox.vn` domain are verified.
+6. Preview smoke tests pass.
