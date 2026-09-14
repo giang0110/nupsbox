@@ -11,8 +11,9 @@ Last reviewed: 2026-09-14
 - Supabase Phase 1 database preflight: **PASS**. Production migration history is aligned through `20260914000500_harden_role_helper_execute`.
 - Production-generated TypeScript database types have been synchronized into `types/database.ts` while preserving the application enum aliases.
 - Production seed/content has **not** been inserted. `auth.users` and active admin profiles are still empty.
-- Vercel preflight remains **BLOCKED** because the connected Vercel context currently returns zero teams/projects. Do not deploy by guessing a project or team ID.
-- Production merge/deployment remains blocked until Auth, approved seed/content, Vercel project/environment, Preview deployment, and smoke tests are complete.
+- GitHub's Vercel integration identifies the intended project as team `team_PMOgG7NuBqEalFpTAxXzeBtf` (`ntg2299`), project `prj_LPKSnGmLYdAGdNyoIUtiZ6CHCDsG` (`nupsbox`). The latest Preview status is **Error**.
+- Vercel preflight remains **BLOCKED** because the ChatGPT Vercel connector returns `403 Forbidden` when reading that verified project, so project settings, deployment logs, environment variables, and domain configuration cannot yet be inspected safely here.
+- Production merge/deployment remains blocked until Auth, approved seed/content, Vercel access/configuration, Preview deployment, and smoke tests are complete.
 
 ## 1. Required environment variables
 
@@ -77,8 +78,9 @@ Revisit these after real traffic/query plans are available or before Phase 1 sca
 Still required before launch:
 
 - Production Site URL: `https://nupsbox.vn`.
-- Add the exact production callback URL: `https://nupsbox.vn/auth/callback`.
-- Add preview/local callback URLs only when needed for testing.
+- Add the exact production callback URL: `https://nupsbox.vn/auth/callback` for redirect-based auth flows.
+- Password login is implemented directly with `signInWithPassword`; the callback route is not required for that specific login path.
+- Add preview/local callback URLs only when needed for redirect-based testing.
 - Create or verify staff users in Supabase Auth.
 - Ensure every staff user has a corresponding active row in `public.profiles`; authentication alone does not grant admin workspace access.
 - Bootstrap the first `admin` profile through an authorized server/database operation, then manage later role changes through the admin contract.
@@ -103,22 +105,31 @@ The current development seed intentionally leaves phone, Zalo, public prices, an
 
 ## 5. Vercel/project preflight
 
-**BLOCKED:** the current Vercel connector returns zero teams, so the intended NupsBox project cannot yet be verified or configured safely.
+Verified through GitHub's installed Vercel integration:
 
-Before deployment:
+- Team slug: `ntg2299`
+- Team ID: `team_PMOgG7NuBqEalFpTAxXzeBtf`
+- Project slug: `nupsbox`
+- Project ID: `prj_LPKSnGmLYdAGdNyoIUtiZ6CHCDsG`
+- Git integration is active on PR #1 and produces Preview deployment statuses.
+- Latest Preview for the current Phase 1 branch is in **Error** state.
 
-1. Confirm the connected Vercel project is the project intended for NupsBox.
-2. Confirm Git integration points to `giang0110/nupsbox`.
+**BLOCKED:** the ChatGPT Vercel connector returns `403 Forbidden` even when called with the exact verified team/project IDs. Until access is restored, do not guess deployment settings or mutate the Vercel project through another project/account.
+
+Before deployment can proceed:
+
+1. Restore connector/account access to the verified Vercel project above.
+2. Inspect the failed Preview build/deployment logs and fix the actual failure.
 3. Configure the environment variables listed above for Production and appropriate Preview values.
 4. Confirm the framework is detected as Next.js and Node 24 is supported by the project settings.
-5. Deploy a Preview from the Phase 1 branch first.
+5. Deploy a successful Preview from the Phase 1 branch.
 6. Smoke-test VI and EN routes, `/sitemap.xml`, `/robots.txt`, lead submission, admin login and mobile navigation on Preview.
 7. Only then promote/merge for Production.
 
 ## 6. Domain and HTTPS
 
 - Add `nupsbox.vn` to the verified Vercel project.
-- Configure DNS only after the target project has been confirmed.
+- Configure DNS only after the target project settings are accessible and confirmed.
 - Ensure `https://nupsbox.vn` is the primary canonical domain.
 - Redirect any `www` variant consistently to the chosen primary domain.
 - Verify HTTPS certificate issuance before announcing launch.
@@ -172,5 +183,5 @@ Production may proceed only when all are true:
 2. The dedicated NupsBox Supabase project continues to pass migration/RLS verification.
 3. Production Auth Site URL/callbacks and the first authorized admin are configured.
 4. Approved production seed/content is loaded and reviewed.
-5. The intended Vercel project and `nupsbox.vn` domain are verified.
+5. The verified Vercel project is accessible, its Preview deployment succeeds, and `nupsbox.vn` is configured correctly.
 6. Preview smoke tests pass.
