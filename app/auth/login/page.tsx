@@ -1,4 +1,7 @@
+import {PRIVATE_AREA_METADATA} from '@/features/seo/private-metadata';
 import {LoginForm} from './login-form';
+
+export const metadata = PRIVATE_AREA_METADATA;
 
 export default function AdminLoginPage() {
   return (
