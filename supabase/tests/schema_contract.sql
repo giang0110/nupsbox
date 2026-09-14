@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(23);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
@@ -25,6 +25,29 @@ select has_type('public', 'lead_status', 'lead_status enum exists');
 select has_type('public', 'need_type', 'need_type enum exists');
 select has_type('public', 'estimated_volume', 'estimated_volume enum exists');
 select has_type('public', 'media_category', 'media_category enum exists');
+
+select results_eq(
+  $$
+    select e.enumlabel::text
+    from pg_catalog.pg_enum e
+    join pg_catalog.pg_type t on t.oid = e.enumtypid
+    join pg_catalog.pg_namespace n on n.oid = t.typnamespace
+    where n.nspname = 'public' and t.typname = 'lead_status'
+    order by e.enumsortorder
+  $$,
+  $$ values
+    ('new'::text),
+    ('contacted'::text),
+    ('qualified'::text),
+    ('viewing'::text),
+    ('negotiating'::text),
+    ('visit_scheduled'::text),
+    ('visited'::text),
+    ('won'::text),
+    ('lost'::text)
+  $$,
+  'lead_status labels support Phase 2 in expected order'
+);
 
 select * from finish();
 rollback;
