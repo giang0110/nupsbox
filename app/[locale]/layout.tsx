@@ -4,6 +4,9 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {isSupportedLocale, locales} from '@/i18n/routing';
+import {SiteHeader} from '@/components/marketing/site-header';
+import {SiteFooter} from '@/components/marketing/site-footer';
+import {MobileActionBar} from '@/components/marketing/mobile-action-bar';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -28,17 +31,21 @@ export default async function LocaleLayout({
 }>) {
   const {locale} = await params;
 
-  if (!isSupportedLocale(locale)) {
-    notFound();
-  }
+  if (!isSupportedLocale(locale)) notFound();
 
   setRequestLocale(locale);
   const messages = await getMessages();
+  const contactFallback = locale === 'vi' ? '/lien-he' : '/en/contact';
 
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+          <MobileActionBar phoneUrl={contactFallback} zaloUrl={contactFallback} />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
