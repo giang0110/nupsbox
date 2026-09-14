@@ -1,10 +1,34 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {MapPin} from 'lucide-react';
 import {Container} from '@/components/ui/container';
 import {UnitCard} from '@/components/units/unit-card';
 import {getMarketingLocationBySlug} from '@/features/catalog/public-catalog';
+import {createLocalizedMetadata} from '@/features/seo/metadata';
+import {locationSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{locale: string; slug: string}>;
+}): Promise<Metadata> {
+  const {locale: rawLocale, slug} = await params;
+  if (!isSupportedLocale(rawLocale)) notFound();
+  const location = await getMarketingLocationBySlug(slug, rawLocale);
+  if (!location) notFound();
+  const vi = rawLocale === 'vi';
+
+  return createLocalizedMetadata({
+    route: locationSeoRoute(slug),
+    locale: rawLocale,
+    title: location.name,
+    description: vi
+      ? `${location.name} tại ${location.address}. Xem các loại kho mini đang được giới thiệu và liên hệ NupsBox để xác nhận giá, tình trạng phù hợp.`
+      : `${location.name} at ${location.address}. Explore listed mini storage sizes and contact NupsBox to confirm current pricing and suitability.`
+  });
+}
 
 export default async function LocationDetailPage({params}: {params: Promise<{locale: string; slug: string}>}) {
   const {locale: rawLocale, slug} = await params;
