@@ -26,6 +26,7 @@ function localizeUnit(row: UnitRow, pricing: PricingRow | undefined, locale: App
     promoPrice: pricing?.promo_price === null || pricing?.promo_price === undefined ? null : Number(pricing.promo_price),
     availabilityStatus: pricing?.availability_status ?? 'contact',
     availableCount: pricing?.available_count ?? null,
+    featured: pricing?.featured ?? false,
     sortOrder: row.sort_order
   };
 }
