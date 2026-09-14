@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.117.0
       - name: Initialize local Supabase config
         run: test -f supabase/config.toml || supabase init
       - name: Start local Supabase database
