@@ -2,7 +2,18 @@ import {can} from '@/features/auth/permissions';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 import type {AppRole, LeadStatus} from '@/types/database';
 
-export const leadStatuses = ['new', 'contacted', 'visit_scheduled', 'visited', 'won', 'lost'] as const satisfies readonly LeadStatus[];
+export const operationalLeadStatuses = [
+  'new',
+  'contacted',
+  'qualified',
+  'viewing',
+  'negotiating',
+  'won',
+  'lost'
+] as const satisfies readonly LeadStatus[];
+
+export const leadStatuses = operationalLeadStatuses;
+export type OperationalLeadStatus = (typeof operationalLeadStatuses)[number];
 
 export type AdminLeadRow = {
   id: string;
@@ -11,7 +22,7 @@ export type AdminLeadRow = {
   email: string | null;
   message: string | null;
   needType: string;
-  status: LeadStatus;
+  status: OperationalLeadStatus;
   preferredLanguage: 'vi' | 'en';
   utmSource: string | null;
   utmCampaign: string | null;
@@ -20,14 +31,14 @@ export type AdminLeadRow = {
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export function isLeadStatus(value: unknown): value is LeadStatus {
-  return typeof value === 'string' && (leadStatuses as readonly string[]).includes(value);
+export function isOperationalLeadStatus(value: unknown): value is OperationalLeadStatus {
+  return typeof value === 'string' && (operationalLeadStatuses as readonly string[]).includes(value);
 }
 
 export function prepareLeadStatusUpdate(role: AppRole, leadId: string, status: unknown) {
   if (!can(role, 'leads:update')) throw new Error('forbidden');
   if (!uuidPattern.test(leadId)) throw new Error('invalid_lead_id');
-  if (!isLeadStatus(status)) throw new Error('invalid_status');
+  if (!isOperationalLeadStatus(status)) throw new Error('invalid_status');
   return {leadId, status};
 }
 
@@ -36,7 +47,7 @@ function nullableString(value: unknown): string | null {
 }
 
 function mapLeadRow(row: Record<string, unknown>): AdminLeadRow {
-  const status = isLeadStatus(row.status) ? row.status : 'new';
+  const status = isOperationalLeadStatus(row.status) ? row.status : 'new';
   return {
     id: String(row.id ?? ''),
     fullName: String(row.full_name ?? ''),
@@ -52,7 +63,9 @@ function mapLeadRow(row: Record<string, unknown>): AdminLeadRow {
   };
 }
 
-export async function listAdminLeads(options: {status?: LeadStatus; limit?: number} = {}): Promise<AdminLeadRow[]> {
+export async function listAdminLeads(
+  options: {status?: OperationalLeadStatus; limit?: number} = {}
+): Promise<AdminLeadRow[]> {
   const supabase = await createSupabaseServerClient();
   const limit = Math.min(Math.max(options.limit ?? 50, 1), 100);
   let query = supabase
