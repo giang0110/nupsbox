@@ -1,4 +1,4 @@
-// Synced from the linked NupsBox production schema via Supabase type generation.
+// Synced from the NupsBox Supabase schema.
 // Enum aliases are intentionally kept because application modules import them directly.
 export type Json =
   | string
@@ -11,7 +11,16 @@ export type Json =
 export type AppRole = 'admin' | 'staff' | 'viewer';
 export type LocationStatus = 'active' | 'inactive' | 'coming_soon';
 export type AvailabilityStatus = 'available' | 'limited' | 'sold_out' | 'contact';
-export type LeadStatus = 'new' | 'contacted' | 'visit_scheduled' | 'visited' | 'won' | 'lost';
+export type LeadStatus =
+  | 'new'
+  | 'contacted'
+  | 'qualified'
+  | 'viewing'
+  | 'negotiating'
+  | 'visit_scheduled'
+  | 'visited'
+  | 'won'
+  | 'lost';
 export type NeedType = 'shop_online' | 'sme' | 'inventory' | 'personal' | 'documents' | 'other';
 export type EstimatedVolume = 'under_20_boxes' | 'boxes_20_50' | 'over_50_boxes' | 'unknown';
 export type MediaCategory = 'hero' | 'location' | 'unit' | 'security' | 'exterior' | 'lifestyle' | 'blog';

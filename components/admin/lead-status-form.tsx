@@ -1,17 +1,17 @@
-import {leadStatuses} from '@/features/admin/leads';
-import type {LeadStatus} from '@/types/database';
+import {leadStatuses, type OperationalLeadStatus} from '@/features/admin/leads';
 import {updateLeadStatus} from '@/app/admin/leads/actions';
 
-const labels: Record<LeadStatus, string> = {
+const labels: Record<OperationalLeadStatus, string> = {
   new: 'Mới',
   contacted: 'Đã liên hệ',
-  visit_scheduled: 'Đã hẹn xem kho',
-  visited: 'Đã xem kho',
+  qualified: 'Đã xác nhận nhu cầu',
+  viewing: 'Đang xem kho',
+  negotiating: 'Đang thương lượng',
   won: 'Đã thuê',
   lost: 'Không chuyển đổi'
 };
 
-export function LeadStatusForm({leadId, status}: {leadId: string; status: LeadStatus}) {
+export function LeadStatusForm({leadId, status}: {leadId: string; status: OperationalLeadStatus}) {
   return (
     <form action={updateLeadStatus} className="flex min-w-[15rem] items-center gap-2">
       <input type="hidden" name="leadId" value={leadId} />

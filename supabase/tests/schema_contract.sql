@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(30);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
@@ -25,6 +25,101 @@ select has_type('public', 'lead_status', 'lead_status enum exists');
 select has_type('public', 'need_type', 'need_type enum exists');
 select has_type('public', 'estimated_volume', 'estimated_volume enum exists');
 select has_type('public', 'media_category', 'media_category enum exists');
+
+select is(
+  (
+    select array_agg(enum_value order by sort_order)::text[]
+    from (
+      select e.enumlabel::text as enum_value, e.enumsortorder as sort_order
+      from pg_catalog.pg_enum e
+      join pg_catalog.pg_type t on t.oid = e.enumtypid
+      join pg_catalog.pg_namespace n on n.oid = t.typnamespace
+      where n.nspname = 'public'
+        and t.typname = 'lead_status'
+    ) labels
+  ),
+  array[
+    'new',
+    'contacted',
+    'qualified',
+    'viewing',
+    'negotiating',
+    'visit_scheduled',
+    'visited',
+    'won',
+    'lost'
+  ]::text[],
+  'lead_status contains Phase 2 labels in migration-safe order'
+);
+
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_constraint c
+    join pg_catalog.pg_class r on r.oid = c.conrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and c.conname = 'leads_phase2_status_check' and c.contype = 'c'
+  ),
+  'leads_phase2_status_check exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_constraint c
+    join pg_catalog.pg_class r on r.oid = c.conrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'lead_status_history'
+      and c.conname = 'lead_status_history_phase2_to_status_check' and c.contype = 'c'
+  ),
+  'lead_status_history_phase2_to_status_check exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and t.tgname = 'leads_validate_assignee' and not t.tgisinternal
+  ),
+  'leads_validate_assignee exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and t.tgname = 'leads_audit_status_change' and not t.tgisinternal
+  ),
+  'leads_audit_status_change exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'leads'
+      and t.tgname = 'leads_audit_assignment_change' and not t.tgisinternal
+  ),
+  'leads_audit_assignment_change exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'lead_notes'
+      and t.tgname = 'lead_notes_audit_insert' and not t.tgisinternal
+  ),
+  'lead_notes_audit_insert exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_indexes
+    where schemaname = 'public' and tablename = 'leads'
+      and indexname = 'leads_assigned_to_idx'
+  ),
+  'leads_assigned_to_idx exists'
+);
 
 select * from finish();
 rollback;
