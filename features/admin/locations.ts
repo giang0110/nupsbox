@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import {LocationInputSchema, type LocationInput} from '@/features/admin/catalog-schemas';
 import {requirePermission} from '@/features/admin/mutation-guard';
-import type {AppRole, LocationStatus} from '@/types/database';
+import type {AppRole, Json, LocationStatus} from '@/types/database';
 
 const idSchema = z.string().uuid();
 
@@ -92,7 +92,7 @@ function toLocationMutation(input: LocationInput) {
     longitude: input.longitude ?? null,
     phone: input.phone ?? null,
     zalo_url: input.zaloUrl ?? null,
-    opening_hours: input.openingHours,
+    opening_hours: input.openingHours as Json,
     is_featured: input.isFeatured,
     sort_order: input.sortOrder
   };
