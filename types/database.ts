@@ -504,6 +504,7 @@ export type Database = {
           name_vi: string;
           opening_hours: Json;
           phone: string | null;
+          published_at: string | null;
           slug: string;
           sort_order: number;
           status: LocationStatus;
@@ -524,6 +525,7 @@ export type Database = {
           name_vi: string;
           opening_hours?: Json;
           phone?: string | null;
+          published_at?: string | null;
           slug: string;
           sort_order?: number;
           status?: LocationStatus;
@@ -544,6 +546,7 @@ export type Database = {
           name_vi?: string;
           opening_hours?: Json;
           phone?: string | null;
+          published_at?: string | null;
           slug?: string;
           sort_order?: number;
           status?: LocationStatus;
@@ -681,6 +684,7 @@ export type Database = {
           id: string;
           name_en: string;
           name_vi: string;
+          published_at: string | null;
           recommended_for_en: string | null;
           recommended_for_vi: string | null;
           slug: string;
@@ -696,6 +700,7 @@ export type Database = {
           id?: string;
           name_en: string;
           name_vi: string;
+          published_at?: string | null;
           recommended_for_en?: string | null;
           recommended_for_vi?: string | null;
           slug: string;
@@ -711,6 +716,7 @@ export type Database = {
           id?: string;
           name_en?: string;
           name_vi?: string;
+          published_at?: string | null;
           recommended_for_en?: string | null;
           recommended_for_vi?: string | null;
           slug?: string;
