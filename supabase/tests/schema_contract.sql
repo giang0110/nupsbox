@@ -1,10 +1,10 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(30);
+select plan(43);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
-select has_table('public', 'unit_types', 'unit_types exists');
+select has_table('public', 'unit_types', 'unit types exists');
 select has_table('public', 'location_unit_types', 'location pricing exists');
 select has_table('public', 'media_assets', 'media assets exists');
 select has_table('public', 'faqs', 'faqs exists');
@@ -120,6 +120,20 @@ select ok(
   ),
   'leads_assigned_to_idx exists'
 );
+
+select has_column('public', 'locations', 'published_at', 'locations tracks first publication');
+select has_column('public', 'unit_types', 'published_at', 'unit types track first publication');
+select has_trigger('public', 'locations', 'locations_lock_published_slug', 'published location slug is locked');
+select has_trigger('public', 'unit_types', 'unit_types_lock_published_slug', 'published unit slug is locked');
+select has_trigger('public', 'blog_posts', 'blog_posts_lock_published_slug', 'published blog slug is locked');
+select has_trigger('public', 'locations', 'locations_cms_audit', 'locations mutations are audited');
+select has_trigger('public', 'unit_types', 'unit_types_cms_audit', 'unit type mutations are audited');
+select has_trigger('public', 'location_unit_types', 'location_unit_types_cms_audit', 'pricing mutations are audited');
+select has_trigger('public', 'media_assets', 'media_assets_cms_audit', 'media metadata mutations are audited');
+select has_trigger('public', 'faqs', 'faqs_cms_audit', 'faq mutations are audited');
+select has_trigger('public', 'blog_posts', 'blog_posts_cms_audit', 'blog post mutations are audited');
+select has_trigger('public', 'blog_translations', 'blog_translations_cms_audit', 'blog translation mutations are audited');
+select has_trigger('public', 'site_settings', 'site_settings_cms_audit', 'site setting mutations are audited');
 
 select * from finish();
 rollback;
