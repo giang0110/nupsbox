@@ -10,9 +10,7 @@ import {
   prepareFaqPublication,
   prepareFaqUpdate
 } from '@/features/admin/faqs';
-import {
-  prepareMediaMetadataUpdate
-} from '@/features/admin/media';
+import {prepareMediaMetadataUpdate} from '@/features/admin/media';
 import {requirePermission} from '@/features/admin/mutation-guard';
 
 const faqId = 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0';
@@ -66,9 +64,19 @@ describe('content CMS mutation contracts', () => {
     });
   });
 
-  it('requires content publish permission for FAQ publication', () => {
-    expect(() => prepareFaqPublication('viewer', faqId, true)).toThrow('forbidden');
-    expect(prepareFaqPublication('staff', faqId, true)).toEqual({id: faqId, active: true});
+  it('requires content publish permission and complete bilingual content for FAQ publication', () => {
+    expect(() => prepareFaqPublication('viewer', faqId, true, validFaqInput)).toThrow('forbidden');
+    expect(() =>
+      prepareFaqPublication('staff', faqId, true, {
+        ...validFaqInput,
+        answerEn: ''
+      })
+    ).toThrow();
+    expect(prepareFaqPublication('staff', faqId, true, validFaqInput)).toEqual({
+      id: faqId,
+      active: true
+    });
+    expect(prepareFaqPublication('staff', faqId, false)).toEqual({id: faqId, active: false});
   });
 
   it('keeps publication state out of ordinary blog edits', () => {
