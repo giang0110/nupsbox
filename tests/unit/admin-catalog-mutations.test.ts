@@ -11,6 +11,17 @@ import {
   prepareLocationUpdate
 } from '@/features/admin/locations';
 import {requirePermission} from '@/features/admin/mutation-guard';
+import {preparePricingCreate, preparePricingUpdate} from '@/features/admin/pricing';
+import {
+  mapAdminUnitType,
+  prepareUnitTypeCreate,
+  prepareUnitTypePublication,
+  prepareUnitTypeUpdate
+} from '@/features/admin/unit-types';
+
+const locationId = 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0';
+const unitTypeId = 'b8ba1e58-ece7-4a8a-844c-3b5edcbf8ab1';
+const pricingId = 'c8ba1e58-ece7-4a8a-844c-3b5edcbf8ab2';
 
 const validLocationInput = {
   slug: 'tan-phu-2',
@@ -27,6 +38,29 @@ const validLocationInput = {
   openingHours: {},
   isFeatured: false,
   sortOrder: 20
+};
+
+const validUnitInput = {
+  slug: 'xl',
+  nameVi: 'Kho XL',
+  nameEn: 'Storage XL',
+  areaM2: 8.5,
+  recommendedForVi: null,
+  recommendedForEn: null,
+  capacityNoteVi: null,
+  capacityNoteEn: null,
+  sortOrder: 30
+};
+
+const validPricingInput = {
+  locationId,
+  unitTypeId,
+  monthlyPrice: null,
+  promoPrice: null,
+  depositAmount: null,
+  availabilityStatus: 'contact' as const,
+  availableCount: null,
+  featured: false
 };
 
 describe('catalog CMS mutation contracts', () => {
@@ -58,8 +92,8 @@ describe('catalog CMS mutation contracts', () => {
   it('rejects invalid pricing and normalizes blank verified prices to null', () => {
     expect(() =>
       PricingInputSchema.parse({
-        locationId: 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0',
-        unitTypeId: 'b8ba1e58-ece7-4a8a-844c-3b5edcbf8ab1',
+        locationId,
+        unitTypeId,
         monthlyPrice: '-1',
         promoPrice: '',
         depositAmount: '',
@@ -69,8 +103,8 @@ describe('catalog CMS mutation contracts', () => {
 
     expect(
       PricingInputSchema.parse({
-        locationId: 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0',
-        unitTypeId: 'b8ba1e58-ece7-4a8a-844c-3b5edcbf8ab1',
+        locationId,
+        unitTypeId,
         monthlyPrice: '',
         promoPrice: '',
         depositAmount: '',
@@ -82,7 +116,7 @@ describe('catalog CMS mutation contracts', () => {
   it('maps inactive locations and preserves nullable contacts', () => {
     expect(
       mapAdminLocation({
-        id: 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0',
+        id: locationId,
         slug: 'tan-phu',
         name_vi: 'NupsBox Tân Phú',
         name_en: 'NupsBox Tan Phu',
@@ -113,22 +147,52 @@ describe('catalog CMS mutation contracts', () => {
   });
 
   it('rejects viewer location updates', () => {
-    expect(() =>
-      prepareLocationUpdate(
-        'viewer',
-        'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0',
-        validLocationInput
-      )
-    ).toThrow('forbidden');
+    expect(() => prepareLocationUpdate('viewer', locationId, validLocationInput)).toThrow('forbidden');
   });
 
-  it('requires catalog publish permission for publication changes', () => {
-    expect(() =>
-      prepareLocationPublication('viewer', 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0', true)
-    ).toThrow('forbidden');
+  it('requires catalog publish permission for location publication changes', () => {
+    expect(() => prepareLocationPublication('viewer', locationId, true)).toThrow('forbidden');
+    expect(prepareLocationPublication('staff', locationId, true)).toEqual({id: locationId, status: 'active'});
+  });
+
+  it('maps unit publication state and forces new units inactive', () => {
     expect(
-      prepareLocationPublication('staff', 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0', true)
-    ).toEqual({id: 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0', status: 'active'});
+      mapAdminUnitType({
+        id: unitTypeId,
+        slug: 'm',
+        name_vi: 'Kho M',
+        name_en: 'Storage M',
+        area_m2: 5.43,
+        recommended_for_vi: null,
+        recommended_for_en: null,
+        capacity_note_vi: null,
+        capacity_note_en: null,
+        sort_order: 20,
+        active: false,
+        published_at: null,
+        created_at: '2026-09-15T00:00:00Z',
+        updated_at: '2026-09-15T00:00:00Z'
+      })
+    ).toMatchObject({active: false, publishedAt: null});
+    expect(prepareUnitTypeCreate('staff', validUnitInput)).toMatchObject({slug: 'xl', active: false});
+  });
+
+  it('separates unit updates from publication permission', () => {
+    expect(() => prepareUnitTypeUpdate('viewer', unitTypeId, validUnitInput)).toThrow('forbidden');
+    expect(() => prepareUnitTypePublication('viewer', unitTypeId, true)).toThrow('forbidden');
+    expect(prepareUnitTypePublication('staff', unitTypeId, true)).toEqual({id: unitTypeId, active: true});
+  });
+
+  it('preserves nullable verified prices and separates create/update permissions', () => {
+    expect(preparePricingCreate('staff', validPricingInput)).toMatchObject({
+      monthly_price: null,
+      promo_price: null,
+      deposit_amount: null,
+      availability_status: 'contact'
+    });
+    expect(() => preparePricingCreate('viewer', validPricingInput)).toThrow('forbidden');
+    expect(() => preparePricingUpdate('viewer', pricingId, validPricingInput)).toThrow('forbidden');
+    expect(preparePricingUpdate('staff', pricingId, validPricingInput)).toMatchObject({id: pricingId});
   });
 
   it('enforces shared catalog permissions', () => {
