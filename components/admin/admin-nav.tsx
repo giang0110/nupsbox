@@ -9,6 +9,8 @@ const items = [
   {href: '/admin/leads', label: 'Khách hàng', action: 'leads:read' as const},
   {href: '/admin/catalog', label: 'Kho & bảng giá', action: 'catalog:read' as const},
   {href: '/admin/catalog/locations', label: 'Địa điểm', action: 'catalog:read' as const},
+  {href: '/admin/catalog/unit-types', label: 'Loại kho', action: 'catalog:read' as const},
+  {href: '/admin/catalog/pricing', label: 'Bảng giá', action: 'catalog:read' as const},
   {href: '/admin/content', label: 'Nội dung', action: 'content:read' as const}
 ];
 
