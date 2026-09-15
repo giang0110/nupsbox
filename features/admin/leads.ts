@@ -30,6 +30,7 @@ export type AdminLeadRow = {
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const maxLeadNoteLength = 2000;
 
 export function isOperationalLeadStatus(value: unknown): value is OperationalLeadStatus {
   return typeof value === 'string' && (operationalLeadStatuses as readonly string[]).includes(value);
@@ -40,6 +41,23 @@ export function prepareLeadStatusUpdate(role: AppRole, leadId: string, status: u
   if (!uuidPattern.test(leadId)) throw new Error('invalid_lead_id');
   if (!isOperationalLeadStatus(status)) throw new Error('invalid_status');
   return {leadId, status};
+}
+
+export function prepareLeadAssignment(role: AppRole, leadId: string, assigneeId: string | null) {
+  if (!can(role, 'leads:assign')) throw new Error('forbidden');
+  if (!uuidPattern.test(leadId)) throw new Error('invalid_lead_id');
+  if (assigneeId !== null && !uuidPattern.test(assigneeId)) throw new Error('invalid_assignee_id');
+  return {leadId, assigneeId};
+}
+
+export function prepareLeadNote(role: AppRole, leadId: string, note: unknown) {
+  if (!can(role, 'leads:note')) throw new Error('forbidden');
+  if (!uuidPattern.test(leadId)) throw new Error('invalid_lead_id');
+  if (typeof note !== 'string') throw new Error('invalid_note');
+
+  const normalizedNote = note.trim();
+  if (!normalizedNote || normalizedNote.length > maxLeadNoteLength) throw new Error('invalid_note');
+  return {leadId, note: normalizedNote};
 }
 
 function nullableString(value: unknown): string | null {
