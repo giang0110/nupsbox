@@ -66,8 +66,14 @@ export function prepareFaqUpdate(role: AppRole, id: string, input: unknown) {
   return {id: faqId, changes: toFaqMutation(parsed)};
 }
 
-export function prepareFaqPublication(role: AppRole, id: string, publish: boolean) {
+export function prepareFaqPublication(
+  role: AppRole,
+  id: string,
+  publish: boolean,
+  currentInput?: unknown
+) {
   requirePermission(role, 'content:publish');
+  if (publish) FaqInputSchema.parse(currentInput);
   return {id: idSchema.parse(id), active: publish};
 }
 
