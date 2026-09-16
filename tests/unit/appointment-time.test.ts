@@ -11,4 +11,14 @@ describe('hoChiMinhLocalToIso', () => {
     expect(() => hoChiMinhLocalToIso('20/09/2026 09:30'))
       .toThrow('invalid_local_datetime');
   });
+
+  it('rejects invalid calendar dates that Date would normalize', () => {
+    expect(() => hoChiMinhLocalToIso('2026-02-30T09:30'))
+      .toThrow('invalid_local_datetime');
+  });
+
+  it('rejects invalid local clock values that Date would normalize', () => {
+    expect(() => hoChiMinhLocalToIso('2026-09-20T24:00'))
+      .toThrow('invalid_local_datetime');
+  });
 });
