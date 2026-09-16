@@ -78,9 +78,10 @@ export default async function AdminLeadsPage({
                 <tr key={lead.id} className="border-t border-[var(--nupsbox-border)] align-top">
                   <td className="whitespace-nowrap px-5 py-5 text-[var(--nupsbox-slate)]">{dateFormatter.format(new Date(lead.createdAt))}</td>
                   <td className="px-5 py-5">
-                    <p className="font-black text-[var(--nupsbox-navy)]">{lead.fullName}</p>
+                    <Link href={`/admin/leads/${lead.id}`} className="font-black text-[var(--nupsbox-navy)] underline decoration-[var(--nupsbox-border)] underline-offset-4 hover:text-[var(--nupsbox-blue)]">{lead.fullName}</Link>
                     <a className="mt-1 block font-bold text-[var(--nupsbox-blue)]" href={`tel:${lead.phone}`}>{lead.phone}</a>
                     {lead.email ? <a className="mt-1 block text-[var(--nupsbox-slate)] underline" href={`mailto:${lead.email}`}>{lead.email}</a> : null}
+                    <Link href={`/admin/leads/${lead.id}`} className="mt-3 inline-block text-xs font-bold text-[var(--nupsbox-blue)]">Mở hồ sơ CRM →</Link>
                   </td>
                   <td className="max-w-md px-5 py-5 text-[var(--nupsbox-slate)]">
                     <p className="font-bold text-[var(--nupsbox-navy)]">{lead.needType}</p>
