@@ -61,7 +61,7 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
   if (!can(session.role, 'leads:read')) redirect('/admin');
 
   const {leadId} = await params;
-  const lead = await getAdminLeadDetail(leadId);
+  const lead = await getAdminLeadDetail(leadId, session.role);
   if (!lead) notFound();
 
   const canUpdate = can(session.role, 'leads:update');
