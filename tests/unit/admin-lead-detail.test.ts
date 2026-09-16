@@ -1,4 +1,5 @@
 import {describe, expect, it} from 'vitest';
+import {selectNextAppointment} from '@/features/admin/leads';
 import * as leadModule from '@/features/admin/leads';
 
 type LeadDetailModule = typeof leadModule & {
@@ -12,6 +13,19 @@ type LeadDetailModule = typeof leadModule & {
 const detailModule = leadModule as LeadDetailModule;
 
 describe('Phase 2 CRM lead detail projection', () => {
+  it('selects the earliest future actionable appointment or marks an overdue confirmation', () => {
+    const now = new Date('2026-09-15T03:00:00Z');
+
+    expect(selectNextAppointment([
+      {id: 'done', status: 'completed', scheduledAt: '2026-09-16T03:00:00Z'},
+      {id: 'later', status: 'pending', scheduledAt: '2026-09-17T03:00:00Z'},
+      {id: 'next', status: 'confirmed', scheduledAt: '2026-09-16T04:00:00Z'}
+    ], now)?.id).toBe('next');
+    expect(selectNextAppointment([
+      {id: 'overdue', status: 'confirmed', scheduledAt: '2026-09-14T03:00:00Z'}
+    ], now)).toMatchObject({id: 'overdue', overdue: true});
+  });
+
   it('projects lead metadata, notes and status history into the admin detail model', () => {
     expect(detailModule.projectAdminLeadDetail).toBeTypeOf('function');
     const project = detailModule.projectAdminLeadDetail!;
