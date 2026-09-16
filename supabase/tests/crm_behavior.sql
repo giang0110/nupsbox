@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(23);
 
 insert into public.leads (
   id,
@@ -96,6 +96,17 @@ insert into public.leads (
 ) values (
   '10000000-0000-4000-8000-000000000002'::uuid,
   'P2.3 Lead', '0900000002', 'other', 'unknown', 'new', 'p23_pgtap'
+);
+
+select throws_ok(
+  $$insert into public.lead_appointments (
+      lead_id, scheduled_at, duration_minutes, status, source
+    ) values (
+      '10000000-0000-4000-8000-000000000002'::uuid,
+      now() + interval '2 days', 30, 'confirmed', 'staff'
+    )$$,
+  '23514', 'new appointments must start as pending',
+  'direct insert rejects a non-pending initial status'
 );
 
 select lives_ok(

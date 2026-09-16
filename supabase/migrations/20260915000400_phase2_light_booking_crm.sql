@@ -56,6 +56,11 @@ security definer
 set search_path = public
 as $$
 begin
+  if tg_op = 'INSERT' and new.status <> 'pending' then
+    raise exception 'new appointments must start as pending'
+      using errcode = '23514';
+  end if;
+
   if new.assigned_to is not null and not exists (
     select 1
     from public.profiles p
