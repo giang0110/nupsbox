@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(38);
+select plan(44);
 
 select policies_are('public', 'leads', array['leads_authenticated_read', 'leads_staff_update'], 'leads exposes Phase 2 read/update policies');
 select policies_are('public', 'audit_log', array['audit_log_admin_read'], 'audit log is admin-only');
@@ -8,6 +8,20 @@ select policies_are('public', 'profiles', array['profiles_admin_read', 'profiles
 select policies_are('public', 'site_settings', array['site_settings_admin_insert', 'site_settings_admin_update', 'site_settings_authenticated_read_all', 'site_settings_public_read'], 'settings have explicit read/admin mutation policies');
 select policies_are('public', 'lead_notes', array['lead_notes_authenticated_read', 'lead_notes_staff_insert'], 'lead notes are read-only for viewer and writable by staff/admin');
 select policies_are('public', 'lead_status_history', array['lead_status_history_authenticated_read'], 'lead history is trigger-owned and read-only to authenticated clients');
+select policies_are(
+  'public', 'lead_appointments',
+  array[
+    'lead_appointments_authenticated_read',
+    'lead_appointments_staff_insert',
+    'lead_appointments_staff_update'
+  ],
+  'appointment policies are explicit'
+);
+select policies_are(
+  'public', 'lead_appointment_history',
+  array['lead_appointment_history_authenticated_read'],
+  'appointment history has read-only normal RLS access'
+);
 select policies_are('public', 'locations', array['locations_authenticated_read_all', 'locations_public_read', 'locations_staff_insert', 'locations_staff_update'], 'locations use explicit Phase 2 CMS policies');
 select policies_are('public', 'unit_types', array['unit_types_authenticated_read_all', 'unit_types_public_read', 'unit_types_staff_insert', 'unit_types_staff_update'], 'unit types use explicit Phase 2 CMS policies');
 select policies_are('public', 'location_unit_types', array['location_unit_types_authenticated_read_all', 'location_unit_types_public_read', 'location_unit_types_staff_insert', 'location_unit_types_staff_update'], 'pricing uses explicit Phase 2 CMS policies');
@@ -25,6 +39,7 @@ select policy_roles_are('public', 'leads', 'leads_staff_update', array['authenti
 select policy_roles_are('public', 'lead_notes', 'lead_notes_authenticated_read', array['authenticated'], 'lead note read is authenticated only');
 select policy_roles_are('public', 'lead_notes', 'lead_notes_staff_insert', array['authenticated'], 'lead note insert is authenticated only');
 select policy_roles_are('public', 'lead_status_history', 'lead_status_history_authenticated_read', array['authenticated'], 'lead history read is authenticated only');
+select policy_roles_are('public', 'lead_appointments', 'lead_appointments_authenticated_read', array['authenticated'], 'appointment read is authenticated only');
 select policy_roles_are('public', 'profiles', 'profiles_operational_read', array['authenticated'], 'assignment-target profile read is authenticated only');
 select policy_roles_are('public', 'site_settings', 'site_settings_authenticated_read_all', array['authenticated'], 'settings internal read is authenticated only');
 select policy_roles_are('public', 'site_settings', 'site_settings_admin_insert', array['authenticated'], 'settings insert is authenticated only');
@@ -57,6 +72,17 @@ select is(
   0,
   'content blocks expose no authenticated mutation policy'
 );
+select is(
+  (
+    select count(*)::integer
+    from pg_catalog.pg_policies
+    where schemaname = 'public'
+      and tablename in ('lead_appointments', 'lead_appointment_history')
+      and cmd = 'DELETE'
+  ),
+  0,
+  'appointment tables expose no DELETE policy'
+);
 
 select ok(
   coalesce((
@@ -81,6 +107,26 @@ select ok(
     where schemaname = 'public' and tablename = 'lead_status_history' and policyname = 'lead_status_history_authenticated_read'
   ), false),
   'viewer is included in lead history read policy'
+);
+select ok(
+  coalesce((
+    select qual like '%viewer%'
+    from pg_catalog.pg_policies
+    where schemaname = 'public' and tablename = 'lead_appointments'
+      and policyname = 'lead_appointments_authenticated_read'
+  ), false),
+  'viewer is included in appointment read policy'
+);
+select ok(
+  coalesce((
+    select with_check like '%admin%'
+       and with_check like '%staff%'
+       and with_check not like '%viewer%'
+    from pg_catalog.pg_policies
+    where schemaname = 'public' and tablename = 'lead_appointments'
+      and policyname = 'lead_appointments_staff_insert'
+  ), false),
+  'appointment insert is admin/staff only'
 );
 select ok(
   coalesce((

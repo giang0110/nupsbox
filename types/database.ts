@@ -24,6 +24,8 @@ export type LeadStatus =
 export type NeedType = 'shop_online' | 'sme' | 'inventory' | 'personal' | 'documents' | 'other';
 export type EstimatedVolume = 'under_20_boxes' | 'boxes_20_50' | 'over_50_boxes' | 'unknown';
 export type MediaCategory = 'hero' | 'location' | 'unit' | 'security' | 'exterior' | 'lifestyle' | 'blog';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+export type AppointmentSource = 'customer' | 'staff';
 
 export type Database = {
   __InternalSupabase: {
@@ -271,6 +273,148 @@ export type Database = {
             columns: ['lead_id'];
             isOneToOne: false;
             referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      lead_appointment_history: {
+        Row: {
+          after_state: Json;
+          appointment_id: string;
+          before_state: Json | null;
+          changed_by: string | null;
+          created_at: string;
+          event_type: string;
+          id: string;
+          lead_id: string;
+        };
+        Insert: {
+          after_state: Json;
+          appointment_id: string;
+          before_state?: Json | null;
+          changed_by?: string | null;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          lead_id: string;
+        };
+        Update: {
+          after_state?: Json;
+          appointment_id?: string;
+          before_state?: Json | null;
+          changed_by?: string | null;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          lead_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'lead_appointment_history_appointment_id_fkey';
+            columns: ['appointment_id'];
+            isOneToOne: false;
+            referencedRelation: 'lead_appointments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lead_appointment_history_changed_by_fkey';
+            columns: ['changed_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lead_appointment_history_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      lead_appointments: {
+        Row: {
+          assigned_to: string | null;
+          created_at: string;
+          created_by: string | null;
+          customer_note: string | null;
+          duration_minutes: number;
+          id: string;
+          internal_note: string | null;
+          lead_id: string;
+          location_id: string | null;
+          scheduled_at: string;
+          source: AppointmentSource;
+          status: AppointmentStatus;
+          unit_type_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          assigned_to?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          customer_note?: string | null;
+          duration_minutes?: number;
+          id?: string;
+          internal_note?: string | null;
+          lead_id: string;
+          location_id?: string | null;
+          scheduled_at: string;
+          source: AppointmentSource;
+          status?: AppointmentStatus;
+          unit_type_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          assigned_to?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          customer_note?: string | null;
+          duration_minutes?: number;
+          id?: string;
+          internal_note?: string | null;
+          lead_id?: string;
+          location_id?: string | null;
+          scheduled_at?: string;
+          source?: AppointmentSource;
+          status?: AppointmentStatus;
+          unit_type_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'lead_appointments_assigned_to_fkey';
+            columns: ['assigned_to'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lead_appointments_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lead_appointments_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lead_appointments_location_id_fkey';
+            columns: ['location_id'];
+            isOneToOne: false;
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lead_appointments_unit_type_id_fkey';
+            columns: ['unit_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'unit_types';
             referencedColumns: ['id'];
           }
         ];
@@ -738,6 +882,13 @@ export type Database = {
         };
         Returns: boolean;
       };
+      submit_public_lead_request: {
+        Args: {
+          p_appointment?: Json | null;
+          p_lead: Json;
+        };
+        Returns: Json;
+      };
       current_app_role: {
         Args: never;
         Returns: AppRole;
@@ -749,6 +900,8 @@ export type Database = {
     };
     Enums: {
       app_role: AppRole;
+      appointment_source: AppointmentSource;
+      appointment_status: AppointmentStatus;
       availability_status: AvailabilityStatus;
       estimated_volume: EstimatedVolume;
       lead_status: LeadStatus;

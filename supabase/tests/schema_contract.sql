@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(43);
+select plan(50);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
@@ -17,6 +17,8 @@ select has_table('public', 'lead_status_history', 'lead status history exists');
 select has_table('public', 'audit_log', 'audit log exists');
 select has_table('public', 'site_settings', 'site settings exists');
 select has_table('public', 'lead_rate_limits', 'lead rate limits exists');
+select has_table('public', 'lead_appointments', 'lead appointments exists');
+select has_table('public', 'lead_appointment_history', 'lead appointment history exists');
 
 select has_type('public', 'app_role', 'app_role enum exists');
 select has_type('public', 'location_status', 'location_status enum exists');
@@ -25,6 +27,13 @@ select has_type('public', 'lead_status', 'lead_status enum exists');
 select has_type('public', 'need_type', 'need_type enum exists');
 select has_type('public', 'estimated_volume', 'estimated_volume enum exists');
 select has_type('public', 'media_category', 'media_category enum exists');
+select has_type('public', 'appointment_status', 'appointment status enum exists');
+select has_type('public', 'appointment_source', 'appointment source enum exists');
+
+select has_function(
+  'public', 'submit_public_lead_request', array['jsonb', 'jsonb'],
+  'atomic public lead request RPC exists'
+);
 
 select is(
   (
@@ -111,6 +120,26 @@ select ok(
       and t.tgname = 'lead_notes_audit_insert' and not t.tgisinternal
   ),
   'lead_notes_audit_insert exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'lead_appointments'
+      and t.tgname = 'lead_appointments_validate_change' and not t.tgisinternal
+  ),
+  'appointment validation trigger exists'
+);
+select ok(
+  exists (
+    select 1 from pg_catalog.pg_trigger t
+    join pg_catalog.pg_class r on r.oid = t.tgrelid
+    join pg_catalog.pg_namespace n on n.oid = r.relnamespace
+    where n.nspname = 'public' and r.relname = 'lead_appointments'
+      and t.tgname = 'lead_appointments_audit' and not t.tgisinternal
+  ),
+  'appointment audit trigger exists'
 );
 select ok(
   exists (
