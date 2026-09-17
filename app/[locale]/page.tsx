@@ -53,7 +53,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
     <main>
       <Hero locale={locale} />
 
-      <Section id={undefined} tone="soft" size="compact" className="scroll-mt-24" >
+      <Section tone="soft" size="compact">
         <div id="storage-finder" className="scroll-mt-24">
           <StorageFinder units={finderUnits} />
         </div>
