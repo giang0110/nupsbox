@@ -49,6 +49,39 @@ function isFuture(value: string, now: Date) {
   return Number.isFinite(timestamp) && timestamp > now.getTime();
 }
 
+function formText(formData: FormData, key: string) {
+  return String(formData.get(key) ?? '');
+}
+
+export function appointmentCreatePayloadFromFormData(formData: FormData) {
+  return {
+    leadId: formText(formData, 'leadId'),
+    locationId: formText(formData, 'locationId'),
+    unitTypeId: formText(formData, 'unitTypeId'),
+    assignedTo: formText(formData, 'assignedTo'),
+    scheduledAtLocal: formText(formData, 'scheduledAt'),
+    durationMinutes: formText(formData, 'durationMinutes'),
+    customerNote: formText(formData, 'customerNote'),
+    internalNote: formText(formData, 'internalNote')
+  };
+}
+
+export function appointmentUpdatePayloadFromFormData(formData: FormData) {
+  return {
+    appointmentId: formText(formData, 'appointmentId'),
+    leadId: formText(formData, 'leadId'),
+    expectedUpdatedAt: formText(formData, 'expectedUpdatedAt'),
+    status: formText(formData, 'status'),
+    locationId: formText(formData, 'locationId'),
+    unitTypeId: formText(formData, 'unitTypeId'),
+    assignedTo: formText(formData, 'assignedTo'),
+    scheduledAtLocal: formText(formData, 'scheduledAt'),
+    durationMinutes: formText(formData, 'durationMinutes'),
+    customerNote: formText(formData, 'customerNote'),
+    internalNote: formText(formData, 'internalNote')
+  };
+}
+
 export function prepareAppointmentCreate(
   role: AppRole,
   input: unknown,
