@@ -21,9 +21,8 @@ type LeadRequestRpcClient = {
 
 export async function insertLeadRequest(input: PublicLeadRequest) {
   const supabase = createSupabaseAdminClient();
-  // `types/database.ts` reflects the currently deployed production schema (00300).
-  // Migration 00400 stays feature-branch-only until the explicit production gate,
-  // so type this new RPC locally rather than pretending production already exposes it.
+  // Keep the RPC result typed locally until the generated base database types are
+  // intentionally regenerated; production already exposes this P2.3 RPC.
   const rpcClient = supabase as unknown as LeadRequestRpcClient;
   const {data, error} = await rpcClient.rpc('submit_public_lead_request', {
     p_lead: {
