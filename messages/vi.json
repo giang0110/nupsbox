@@ -9,7 +9,8 @@
     "locations": "Địa điểm",
     "about": "Về NupsBox",
     "contact": "Liên hệ",
-    "quote": "Nhận báo giá"
+    "quote": "Nhận báo giá",
+    "findStorage": "Tìm kho phù hợp"
   },
   "home": {
     "eyebrow": "MINI STORAGE • TP.HCM",
@@ -21,7 +22,9 @@
   "actions": {
     "phone": "Gọi",
     "zalo": "Zalo",
-    "findStorage": "Tìm kho"
+    "findStorage": "Tìm kho",
+    "quote": "Báo giá",
+    "viewing": "Xem kho"
   },
   "storageFinder": {}
 }
