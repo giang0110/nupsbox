@@ -66,6 +66,10 @@ test.describe.serial('P2.4 production lead and booking smoke', () => {
       appointmentId?: string | null;
     };
 
+    if (typeof body.leadId === 'string') {
+      createdLeadIds.push({id: body.leadId, marker});
+    }
+
     expect(body.ok).toBe(true);
     expect(body.leadId).toBeTruthy();
     expect(body.appointmentId).toBeNull();
@@ -83,8 +87,6 @@ test.describe.serial('P2.4 production lead and booking smoke', () => {
       utm_campaign: marker,
       source: 'p24_production_smoke'
     });
-
-    createdLeadIds.push({id: leadId, marker});
   });
 
   test('valid lead plus appointment creates pending customer appointment and created history', async ({request}) => {
@@ -104,6 +106,17 @@ test.describe.serial('P2.4 production lead and booking smoke', () => {
       leadId?: string;
       appointmentId?: string | null;
     };
+
+    if (typeof body.leadId === 'string') {
+      createdLeadIds.push({id: body.leadId, marker: bookingMarker});
+    }
+    if (typeof body.leadId === 'string' && typeof body.appointmentId === 'string') {
+      createdAppointments.push({
+        id: body.appointmentId,
+        leadId: body.leadId,
+        marker: bookingMarker
+      });
+    }
 
     expect(body.ok).toBe(true);
     expect(body.leadId).toBeTruthy();
@@ -150,9 +163,6 @@ test.describe.serial('P2.4 production lead and booking smoke', () => {
       lead_id: leadId,
       event_type: 'created'
     });
-
-    createdLeadIds.push({id: leadId, marker: bookingMarker});
-    createdAppointments.push({id: appointmentId, leadId, marker: bookingMarker});
   });
 
   test('invalid appointment aborts the atomic RPC without leaving an orphan lead', async () => {
@@ -175,13 +185,17 @@ test.describe.serial('P2.4 production lead and booking smoke', () => {
 
     expect(error).not.toBeNull();
 
-    const {count, error: countError} = await supabase
+    const {data: orphanLeads, error: orphanReadError} = await supabase
       .from('leads')
-      .select('id', {count: 'exact', head: true})
+      .select('id, utm_campaign')
       .eq('utm_campaign', atomicMarker);
 
-    expect(countError).toBeNull();
-    expect(count).toBe(0);
+    expect(orphanReadError).toBeNull();
+    for (const orphanLead of orphanLeads ?? []) {
+      assertLeadCleanupTarget(orphanLead, orphanLead.id, atomicMarker);
+      createdLeadIds.push({id: orphanLead.id, marker: atomicMarker});
+    }
+    expect(orphanLeads).toHaveLength(0);
   });
 
   test.afterAll(async () => {
