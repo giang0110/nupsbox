@@ -5,7 +5,9 @@ import {
 } from '@/features/appointments/domain';
 import {
   AppointmentCreateInputSchema,
-  AppointmentUpdateInputSchema
+  AppointmentUpdateInputSchema,
+  type AppointmentCreateInput,
+  type AppointmentUpdateInput
 } from '@/features/appointments/schema';
 import {can} from '@/features/auth/permissions';
 import type {AppRole} from '@/types/database';
@@ -31,6 +33,17 @@ export type CurrentAppointment = {
   updatedAt: string;
 };
 
+export type PreparedAppointmentUpdate = AppointmentUpdateInput & {
+  status: AppointmentStatus;
+  locationId: string | null;
+  unitTypeId: string | null;
+  assignedTo: string | null;
+  scheduledAt: string;
+  durationMinutes: number;
+  customerNote: string | null;
+  internalNote: string | null;
+};
+
 function isFuture(value: string, now: Date) {
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) && timestamp > now.getTime();
@@ -52,7 +65,7 @@ export function prepareAppointmentUpdate(
   current: CurrentAppointment,
   input: unknown,
   now = new Date()
-) {
+): PreparedAppointmentUpdate {
   if (!can(role, 'leads:update')) throw new Error('forbidden');
   const parsed = AppointmentUpdateInputSchema.parse(input);
 
@@ -100,4 +113,38 @@ export function prepareAppointmentUpdate(
     customerNote,
     internalNote
   };
+}
+
+export function toAppointmentInsertRow(input: AppointmentCreateInput, createdBy: string) {
+  return {
+    lead_id: input.leadId,
+    location_id: input.locationId ?? null,
+    unit_type_id: input.unitTypeId ?? null,
+    assigned_to: input.assignedTo ?? null,
+    scheduled_at: input.scheduledAt,
+    duration_minutes: input.durationMinutes,
+    status: 'pending' as const,
+    source: 'staff' as const,
+    customer_note: input.customerNote ?? null,
+    internal_note: input.internalNote ?? null,
+    created_by: createdBy
+  };
+}
+
+export function toAppointmentUpdatePatch(input: PreparedAppointmentUpdate) {
+  return {
+    status: input.status,
+    location_id: input.locationId,
+    unit_type_id: input.unitTypeId,
+    assigned_to: input.assignedTo,
+    scheduled_at: input.scheduledAt,
+    duration_minutes: input.durationMinutes,
+    customer_note: input.customerNote,
+    internal_note: input.internalNote
+  };
+}
+
+export function assertAppointmentWriteResult<T extends {id: string; updated_at: string}>(row: T | null) {
+  if (!row) throw new AppointmentConflictError();
+  return row;
 }
