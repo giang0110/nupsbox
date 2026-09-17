@@ -1,4 +1,4 @@
-import {getTranslations} from 'next-intl/server';
+import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {Container} from '@/components/ui/container';
 
@@ -11,7 +11,12 @@ export async function SiteFooter({
   email?: string | null;
   zaloUrl?: string | null;
 }) {
-  const [nav, brand] = await Promise.all([getTranslations('nav'), getTranslations('brand')]);
+  const [nav, brand, rawLocale] = await Promise.all([
+    getTranslations('nav'),
+    getTranslations('brand'),
+    getLocale()
+  ]);
+  const vi = rawLocale !== 'en';
 
   return (
     <footer className="bg-[var(--nupsbox-navy)] pb-28 pt-16 text-white sm:pb-12">
@@ -21,7 +26,9 @@ export async function SiteFooter({
             <p className="text-2xl font-black tracking-[-0.04em]">NUPSBOX</p>
             <p className="mt-4 max-w-md text-sm leading-6 text-white/65">{brand('tagline')}</p>
             <p className="mt-6 max-w-sm text-sm leading-6 text-white/55">
-              Mini storage linh hoạt cho nhu cầu kinh doanh và cá nhân tại TP.HCM.
+              {vi
+                ? 'Kho mini linh hoạt cho nhu cầu kinh doanh và cá nhân tại TP.HCM.'
+                : 'Flexible mini storage for business and personal needs in Ho Chi Minh City.'}
             </p>
           </div>
 
