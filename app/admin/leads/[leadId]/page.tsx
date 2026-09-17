@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import {notFound, redirect} from 'next/navigation';
 import {addLeadNote, assignLead} from '@/app/admin/leads/actions';
+import {AppointmentWorkspace} from '@/components/admin/appointment-workspace';
 import {LeadStatusForm} from '@/components/admin/lead-status-form';
 import {Container} from '@/components/ui/container';
+import {getAdminAppointmentWorkspace} from '@/features/admin/appointment-workspace';
+import {buildLeadTimeline} from '@/features/admin/lead-timeline';
 import {
   getAdminLeadDetail,
   listLeadAssignees,
@@ -67,8 +70,33 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
   const canUpdate = can(session.role, 'leads:update');
   const canAssign = can(session.role, 'leads:assign');
   const canNote = can(session.role, 'leads:note');
-  const assignees = canAssign ? await listLeadAssignees() : [];
+  const [assignees, appointmentWorkspace] = await Promise.all([
+    listLeadAssignees(),
+    getAdminAppointmentWorkspace(leadId)
+  ]);
   const currentAssignee = assignees.find((item) => item.id === lead.assignedTo);
+  const actorNames = new Map(appointmentWorkspace.assigneeOptions.map((item) => [item.id, item.label]));
+  const timeline = buildLeadTimeline({
+    notes: lead.notes.map((note) => ({
+      id: note.id,
+      note: note.note,
+      authorName: note.authorId ? actorNames.get(note.authorId) ?? null : null,
+      createdAt: note.createdAt
+    })),
+    statusHistory: lead.history.map((entry) => ({
+      id: entry.id,
+      fromStatus: entry.fromStatus ? statusLabels[entry.fromStatus] : null,
+      toStatus: statusLabels[entry.toStatus],
+      changedByName: entry.changedBy ? actorNames.get(entry.changedBy) ?? null : null,
+      createdAt: entry.createdAt
+    })),
+    appointmentHistory: appointmentWorkspace.history.map((entry) => ({
+      id: entry.id,
+      eventType: entry.eventType,
+      changedByName: entry.changedByName,
+      createdAt: entry.createdAt
+    }))
+  });
 
   return (
     <main className="py-10 sm:py-14">
@@ -107,9 +135,9 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
                   <button type="submit" className="min-h-11 rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white">Lưu phân công</button>
                 </form>
               ) : (
-                <p className="mt-2 text-sm font-bold text-[var(--nupsbox-navy)]">{lead.assignedTo ? 'Đã phân công' : 'Chưa phân công'}</p>
+                <p className="mt-2 text-sm font-bold text-[var(--nupsbox-navy)]">{currentAssignee?.fullName ?? (lead.assignedTo ? 'Đã phân công' : 'Chưa phân công')}</p>
               )}
-              {canAssign && lead.assignedTo ? <p className="mt-2 break-all text-xs text-[var(--nupsbox-slate)]">Hiện tại: {currentAssignee?.fullName ?? lead.assignedTo}</p> : null}
+              {lead.assignedTo ? <p className="mt-2 break-all text-xs text-[var(--nupsbox-slate)]">ID: {lead.assignedTo}</p> : null}
             </div>
           </aside>
         </div>
@@ -137,6 +165,8 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
           ) : null}
         </section>
 
+        <AppointmentWorkspace leadId={lead.id} workspace={appointmentWorkspace} canMutate={canUpdate} />
+
         <div className="mt-10 grid gap-8 xl:grid-cols-2">
           <section className="rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-4">
@@ -159,7 +189,7 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
               {lead.notes.map((note) => (
                 <article key={note.id} className="rounded-2xl bg-[var(--nupsbox-surface)] p-4">
                   <p className="whitespace-pre-wrap leading-6 text-[var(--nupsbox-navy)]">{note.note}</p>
-                  <p className="mt-3 text-xs text-[var(--nupsbox-slate)]">{formatDate(note.createdAt)}{note.authorId ? ` · ${note.authorId}` : ''}</p>
+                  <p className="mt-3 text-xs text-[var(--nupsbox-slate)]">{formatDate(note.createdAt)}{note.authorId ? ` · ${actorNames.get(note.authorId) ?? note.authorId}` : ''}</p>
                 </article>
               ))}
               {!lead.notes.length ? <p className="py-6 text-center text-sm text-[var(--nupsbox-slate)]">Chưa có ghi chú nội bộ.</p> : null}
@@ -168,19 +198,18 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
 
           <section className="rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-black text-[var(--nupsbox-navy)]">Timeline trạng thái</h2>
-              <span className="text-xs font-bold text-[var(--nupsbox-slate)]">Audit từ database</span>
+              <h2 className="text-2xl font-black text-[var(--nupsbox-navy)]">Timeline CRM</h2>
+              <span className="text-xs font-bold text-[var(--nupsbox-slate)]">Lead + lịch hẹn</span>
             </div>
             <div className="mt-6 grid gap-3">
-              {lead.history.map((entry) => (
-                <article key={entry.id} className="rounded-2xl border border-[var(--nupsbox-border)] p-4">
-                  <p className="font-black text-[var(--nupsbox-navy)]">
-                    {entry.fromStatus ? statusLabels[entry.fromStatus] : 'Khởi tạo'} → {statusLabels[entry.toStatus]}
-                  </p>
-                  <p className="mt-2 text-xs text-[var(--nupsbox-slate)]">{formatDate(entry.createdAt)}{entry.changedBy ? ` · ${entry.changedBy}` : ''}</p>
+              {timeline.map((entry) => (
+                <article key={`${entry.kind}-${entry.id}`} className="rounded-2xl border border-[var(--nupsbox-border)] p-4">
+                  <p className="font-black text-[var(--nupsbox-navy)]">{entry.title}</p>
+                  {entry.detail ? <p className="mt-1 text-sm text-[var(--nupsbox-navy)]">{entry.detail}</p> : null}
+                  <p className="mt-2 text-xs text-[var(--nupsbox-slate)]">{formatDate(entry.createdAt)}{entry.actorName ? ` · ${entry.actorName}` : ''}</p>
                 </article>
               ))}
-              {!lead.history.length ? <p className="py-6 text-center text-sm text-[var(--nupsbox-slate)]">Chưa có thay đổi trạng thái được ghi nhận.</p> : null}
+              {!timeline.length ? <p className="py-6 text-center text-sm text-[var(--nupsbox-slate)]">Chưa có hoạt động CRM được ghi nhận.</p> : null}
             </div>
           </section>
         </div>
