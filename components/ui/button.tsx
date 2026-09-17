@@ -1,7 +1,7 @@
 import type {ButtonHTMLAttributes} from 'react';
 import clsx from 'clsx';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'dark';
 type ButtonSize = 'md' | 'lg';
 
 export function buttonClassName({
@@ -17,13 +17,15 @@ export function buttonClassName({
     'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition duration-200',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2',
     'disabled:pointer-events-none disabled:opacity-50',
-    size === 'lg' ? 'min-h-12 px-6 text-base' : 'min-h-10 px-5 text-sm',
+    size === 'lg' ? 'min-h-12 px-6 text-base' : 'min-h-11 px-5 text-sm',
     variant === 'primary' &&
       'bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)] hover:bg-[var(--nupsbox-yellow-warm)]',
     variant === 'secondary' &&
       'border border-[var(--nupsbox-border)] bg-white text-[var(--nupsbox-navy)] hover:border-[var(--nupsbox-blue)] hover:text-[var(--nupsbox-blue)]',
     variant === 'ghost' &&
       'bg-transparent text-current hover:bg-black/5',
+    variant === 'dark' &&
+      'bg-[var(--nupsbox-navy)] text-white hover:bg-[color-mix(in_srgb,var(--nupsbox-navy)_88%,white)]',
     className
   );
 }
