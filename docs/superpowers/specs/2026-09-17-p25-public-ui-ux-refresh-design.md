@@ -262,7 +262,7 @@ Each card should expose only useful factual fields available in the data model, 
 - pricing only when present and approved;
 - availability label only when source data supports it.
 
-Provide a lightweight compare affordance for up to a small number of units. Do not create a complex comparison subsystem in this phase.
+Provide a lightweight compare affordance for **up to 3 units at a time**. Comparison is an in-page decision aid only; P2.5 must not create saved comparisons, comparison accounts, or a standalone comparison subsystem.
 
 ### 9.4 Use-case segmentation
 
@@ -320,7 +320,7 @@ Enhancements:
 
 - clear filters using existing factual attributes;
 - recommended/default sorting where logic is transparent;
-- compact unit comparison;
+- comparison limited to 3 units;
 - sticky summary/action region on desktop where appropriate;
 - bottom-sheet or sticky CTA on mobile where appropriate;
 - direct handoff to quote/viewing with selected unit context.
@@ -413,7 +413,7 @@ It must receive explicit context rather than infer business-critical values from
 
 This layer may power:
 
-- desktop sticky CTA after meaningful scroll;
+- desktop sticky CTA only after the page's primary above-the-fold action is no longer visible;
 - mobile action bar;
 - section-end CTA bands;
 - unit/location card actions.
@@ -567,7 +567,7 @@ Cover at minimum:
 - finder step/progress behavior;
 - recommendation result state;
 - CTA context/URL generation;
-- comparison selection limits;
+- comparison selection limit of 3;
 - missing-data fallbacks;
 - quote/viewing distinction;
 - locale rendering for critical conversion labels where logic exists.
