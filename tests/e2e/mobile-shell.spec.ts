@@ -1,9 +1,13 @@
 import {expect, test} from '@playwright/test';
 
-test('mobile visitor sees persistent conversion actions', async ({page}) => {
+test('mobile visitor gets an honest persistent conversion bar', async ({page}) => {
   await page.setViewportSize({width: 390, height: 844});
   await page.goto('/');
-  await expect(page.getByRole('navigation', {name: /quick actions/i})).toBeVisible();
-  await expect(page.getByRole('link', {name: /zalo/i})).toBeVisible();
-  await expect(page.getByRole('link', {name: /tìm kho/i})).toBeVisible();
+
+  const actions = page.getByRole('navigation', {name: /quick actions/i});
+  await expect(actions).toBeVisible();
+  await expect(actions.getByRole('link', {name: /tìm kho/i})).toBeVisible();
+  await expect(actions.getByRole('link', {name: /báo giá|liên hệ/i})).toBeVisible();
+  await expect(actions.getByRole('link', {name: /zalo/i})).toHaveCount(0);
+  await expect(actions.getByRole('link', {name: /gọi/i})).toHaveCount(0);
 });
