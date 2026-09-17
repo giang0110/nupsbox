@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {recommendStorage} from '@/features/storage-finder/recommend';
+import {buildFinderConversionContext} from '@/features/storage-finder/handoff';
 
 const catalog = [
   {id: 's', slug: 's', areaM2: 1.64, sortOrder: 10},
@@ -17,5 +18,18 @@ describe('recommendStorage', () => {
 
   it('flags unknown volume for consultation instead of inventing capacity', () => {
     expect(recommendStorage({need: 'business', volume: 'unknown'}, catalog).needsConsultation).toBe(true);
+  });
+
+  it('builds a non-sensitive handoff from finder selection', () => {
+    const recommendation = recommendStorage({need: 'shop_online', volume: 'under_20'}, catalog);
+    expect(buildFinderConversionContext(
+      {need: 'shop_online', volume: 'under_20'},
+      recommendation
+    )).toEqual({
+      need: 'shop_online',
+      volume: 'under_20',
+      unitSlug: 's',
+      unitId: 's'
+    });
   });
 });
