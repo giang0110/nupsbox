@@ -30,6 +30,18 @@ Before P2.4 content work, production counts were verified as:
 - `blog_posts = 0`
 - `site_settings = 0`
 
+P2.4 production smoke did not seed any business-content row. After synthetic CRM cleanup, `leads`, `lead_appointments`, and `lead_appointment_history` also returned to zero.
+
+## Existing static factual content requiring approval
+
+The current production HTML/JSON-LD already contains the static address:
+
+`1/1 Nguyễn Hữu Tiến, Tây Thạnh, Tân Phú, TP.HCM`
+
+This value predates P2.4 and is not sourced from the currently empty production `locations` table. Before final go-live/domain cutover, explicitly confirm this address as authoritative or remove/replace the static claim. Do not treat its presence in existing source code as business approval.
+
+The live booking page also currently has no approved phone or Zalo value from `site_settings`; those values remain null/fallback-only until explicitly approved.
+
 ## Write safety
 
 Any approved production content write must:
