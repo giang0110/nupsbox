@@ -156,7 +156,12 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
       >
         <div className="flex min-h-full flex-col">
           <div className="flex min-h-16 items-center justify-between gap-3 border-b border-[var(--nupsbox-border)] px-4">
-            <h2 id="admin-drawer-title" className="font-black tracking-[-0.03em] text-[var(--nupsbox-navy)]">\n              NUPSBOX ADMIN\n            </h2>
+            <h2
+              id="admin-drawer-title"
+              className="font-black tracking-[-0.03em] text-[var(--nupsbox-navy)]"
+            >
+              NUPSBOX ADMIN
+            </h2>
             <button
               type="button"
               onClick={closeDrawer}
