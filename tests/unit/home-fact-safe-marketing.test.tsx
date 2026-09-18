@@ -62,7 +62,7 @@ describe('fact-safe adaptive homepage marketing', () => {
     render(<Hero locale="vi" location={location} units={[unit]} />);
 
     expect(screen.getByText('NupsBox Central')).toBeInTheDocument();
-    expect(screen.getByText('Loại kho đang công bố từ 2.50 m²')).toBeInTheDocument();
+    expect(screen.getByText(/Đang công bố loại kho từ 2.50 m²/)).toBeInTheDocument();
   });
 
   it('does not invent facility security claims in the proof bento', () => {
