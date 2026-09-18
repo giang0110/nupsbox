@@ -1,24 +1,36 @@
-import {Container} from '@/components/ui/container';
+import {Section} from '@/components/ui/section';
+import {SectionHeading} from '@/components/ui/section-heading';
 
 export function HowItWorks({locale}: {locale: 'vi' | 'en'}) {
   const vi = locale === 'vi';
   const steps = vi ? [
-    ['01', 'Chọn nhu cầu', 'Dùng Storage Finder hoặc xem trực tiếp các kích thước kho.'],
-    ['02', 'Nhận tư vấn & báo giá', 'Gửi số điện thoại để NupsBox xác nhận loại kho, giá và tình trạng thực tế.'],
-    ['03', 'Xem kho và bắt đầu', 'Đặt lịch tham quan cơ sở trước khi quyết định thuê.']
+    ['01', 'Tìm loại kho phù hợp', 'Dùng Storage Finder hoặc xem các loại kho đang được NupsBox hiển thị.'],
+    ['02', 'Nhận báo giá hoặc đề xuất lịch xem', 'Chọn bước tiếp theo theo mức độ sẵn sàng của bạn; không cần điền nhiều hơn mức cần thiết.'],
+    ['03', 'NupsBox xác nhận bước tiếp theo', 'Giá, tình trạng và lịch xem được xác nhận trước khi bạn quyết định thuê.']
   ] : [
-    ['01', 'Choose your need', 'Use Storage Finder or browse the available unit sizes.'],
-    ['02', 'Get advice and a quote', 'Share your contact details so NupsBox can confirm size, price and current status.'],
-    ['03', 'Visit and get started', 'Schedule a facility visit before you decide to rent.']
+    ['01', 'Find a suitable storage option', 'Use Storage Finder or browse the unit types currently listed by NupsBox.'],
+    ['02', 'Request a quote or viewing', 'Choose the next step that matches your intent without extra form friction.'],
+    ['03', 'NupsBox confirms what comes next', 'Pricing, status and viewing time are confirmed before you decide to rent.']
   ];
+
   return (
-    <section className="bg-[var(--nupsbox-surface)] py-20 sm:py-24">
-      <Container>
-        <h2 className="text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">{vi ? 'Thuê kho theo 3 bước.' : 'Get storage in three steps.'}</h2>
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
-          {steps.map(([number, title, text]) => <article key={number} className="rounded-3xl border border-[var(--nupsbox-border)] bg-white p-7"><p className="text-4xl font-black text-[var(--nupsbox-yellow-warm)]">{number}</p><h3 className="mt-6 text-xl font-black text-[var(--nupsbox-navy)]">{title}</h3><p className="mt-3 text-sm leading-6 text-[var(--nupsbox-slate)]">{text}</p></article>)}
-        </div>
-      </Container>
-    </section>
+    <Section tone="soft">
+      <SectionHeading
+        eyebrow={vi ? '3 BƯỚC RÕ RÀNG' : 'THREE CLEAR STEPS'}
+        title={vi ? 'Từ nhu cầu đến bước tiếp theo, không tạo cảm giác “đặt chỗ tức thời”.' : 'From need to next step without pretending it is an instant reservation.'}
+        description={vi
+          ? 'Luồng được thiết kế để giúp bạn hiểu loại kho trước, rồi mới chuyển sang báo giá hoặc xem kho.'
+          : 'The journey helps you understand the unit first, then move into quote or viewing intent.'}
+      />
+      <ol className="mt-10 grid gap-4 lg:grid-cols-3">
+        {steps.map(([number, title, text]) => (
+          <li key={number} className="border-t-2 border-[var(--nupsbox-blue)] pt-5">
+            <p className="text-sm font-black text-[var(--nupsbox-blue)]">{number}</p>
+            <h3 className="mt-4 text-xl font-black text-[var(--nupsbox-navy)]">{title}</h3>
+            <p className="mt-3 text-sm leading-6 text-[var(--nupsbox-slate)]">{text}</p>
+          </li>
+        ))}
+      </ol>
+    </Section>
   );
 }

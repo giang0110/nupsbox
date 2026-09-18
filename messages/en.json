@@ -9,7 +9,8 @@
     "locations": "Locations",
     "about": "About NupsBox",
     "contact": "Contact",
-    "quote": "Get a quote"
+    "quote": "Get a quote",
+    "findStorage": "Find storage"
   },
   "home": {
     "eyebrow": "MINI STORAGE • HO CHI MINH CITY",
@@ -21,7 +22,9 @@
   "actions": {
     "phone": "Call",
     "zalo": "Zalo",
-    "findStorage": "Find storage"
+    "findStorage": "Find storage",
+    "quote": "Get quote",
+    "viewing": "View storage"
   },
   "storageFinder": {}
 }

@@ -13,7 +13,8 @@ import {HomeFaq} from '@/components/marketing/home-faq';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {StorageFinder} from '@/components/storage-finder/storage-finder';
 import {LocationCard} from '@/components/locations/location-card';
-import {Container} from '@/components/ui/container';
+import {Section} from '@/components/ui/section';
+import {SectionHeading} from '@/components/ui/section-heading';
 import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
 import {getMarketingFaqs} from '@/features/content/faqs';
@@ -46,27 +47,37 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
   ]);
   const finderUnits = units.map(({id, slug, name, areaM2, sortOrder}) => ({id, slug, name, areaM2, sortOrder}));
   const featuredUnits = selectHomepageUnits(units).slice(0, 3);
+  const vi = locale === 'vi';
 
   return (
     <main>
       <Hero locale={locale} />
-      <section id="storage-finder" className="scroll-mt-24 bg-[var(--nupsbox-surface)] py-10 sm:py-14">
-        <Container><StorageFinder units={finderUnits} /></Container>
-      </section>
+
+      <Section tone="soft" size="compact">
+        <div id="storage-finder" className="scroll-mt-24">
+          <StorageFinder units={finderUnits} />
+        </div>
+      </Section>
+
       <FeaturedUnits units={featuredUnits} locale={locale} />
       <UseCases locale={locale} />
-      <CostComparison locale={locale} />
       <Gallery locale={locale} />
       <SecurityBenefits locale={locale} />
-      <section className="py-20 sm:py-24">
-        <Container>
-          <div className="mb-8 max-w-2xl">
-            <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-blue)]">{locale === 'vi' ? 'ĐỊA ĐIỂM' : 'LOCATION'}</p>
-            <h2 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">{locale === 'vi' ? 'Bắt đầu tại NupsBox Tân Phú.' : 'Start at NupsBox Tan Phu.'}</h2>
-          </div>
-          <div className="max-w-xl"><LocationCard location={location} locale={locale} /></div>
-        </Container>
-      </section>
+      <CostComparison locale={locale} />
+
+      <Section>
+        <div className="grid items-start gap-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-14">
+          <SectionHeading
+            eyebrow={vi ? 'ĐỊA ĐIỂM' : 'LOCATION'}
+            title={vi ? 'Xem không gian trước khi quyết định.' : 'See the space before you decide.'}
+            description={vi
+              ? 'Tìm hiểu cơ sở đang hiển thị, các loại kho tại đó và gửi yêu cầu xem kho khi bạn sẵn sàng.'
+              : 'Explore the listed facility, its unit options, and request a viewing when you are ready.'}
+          />
+          <LocationCard location={location} locale={locale} />
+        </div>
+      </Section>
+
       <HowItWorks locale={locale} />
       <SocialProof locale={locale} />
       <HomeFaq items={faqs} locale={locale} />

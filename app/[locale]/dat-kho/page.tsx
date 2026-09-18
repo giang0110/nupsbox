@@ -4,22 +4,29 @@ import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {LeadForm} from '@/components/forms/lead-form';
 import {Container} from '@/components/ui/container';
+import {getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {isSupportedLocale} from '@/i18n/routing';
 
 export const metadata: Metadata = {robots: {index: false, follow: true}};
 
-export default async function Page({params}: {params: Promise<{locale: string}>}) {
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Promise<{locale: string}>;
+  searchParams: Promise<{unit?: string; location?: string}>;
+}) {
   const {locale} = await params;
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
+  const query = await searchParams;
 
-  const settings = await getPublicSiteSettings().catch(() => ({
-    phone: null,
-    zaloUrl: null,
-    email: null,
-    openingHours: {}
-  }));
+  const [requestedLocation, requestedUnit, settings] = await Promise.all([
+    query.location ? getMarketingLocationBySlug(query.location, locale) : Promise.resolve(null),
+    query.unit ? getMarketingUnitBySlug(query.unit, locale) : Promise.resolve(null),
+    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, openingHours: {}}))
+  ]);
   const vi = locale === 'vi';
 
   return (
@@ -28,13 +35,13 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
         <Container className="grid gap-10 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--nupsbox-blue)]">LIGHT BOOKING</p>
-            <h1 className="mt-3 max-w-3xl text-5xl font-black tracking-[-0.055em] text-[var(--nupsbox-navy)] sm:text-6xl">
+            <h1 className="mt-3 max-w-3xl text-5xl font-black tracking-[-0.05em] text-[var(--nupsbox-navy)] sm:text-6xl">
               {vi ? 'Đề xuất lịch xem kho' : 'Request a storage viewing'}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--nupsbox-slate)]">
               {vi
-                ? 'Gửi nhu cầu thuê kho và, nếu muốn, đề xuất một thời gian xem kho. NupsBox sẽ liên hệ để xác nhận lịch phù hợp.'
-                : 'Send your storage requirements and optionally propose a viewing time. NupsBox will contact you to confirm a suitable appointment.'}
+                ? 'Gửi nhu cầu thuê kho và, nếu muốn, đề xuất một thời gian xem kho. Lựa chọn loại kho/địa điểm từ bước trước sẽ được giữ làm ngữ cảnh.'
+                : 'Send your storage requirements and optionally propose a viewing time. Any unit/location selected earlier stays attached as context.'}
             </p>
             <div className="mt-8 rounded-2xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-5 text-sm leading-6 text-[var(--nupsbox-slate)]">
               <p className="font-black text-[var(--nupsbox-navy)]">{vi ? 'Lưu ý' : 'Important'}</p>
@@ -51,6 +58,10 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
               locale={locale}
               fallbackPhone={settings.phone}
               fallbackZalo={settings.zaloUrl}
+              unitTypeId={requestedUnit?.id}
+              unitName={requestedUnit?.name}
+              locationId={requestedLocation?.id}
+              locationName={requestedLocation?.name}
               appointmentMode
             />
           </Suspense>

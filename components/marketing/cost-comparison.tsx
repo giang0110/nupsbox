@@ -1,32 +1,53 @@
-import {Container} from '@/components/ui/container';
-import {Link} from '@/i18n/navigation';
+import {Section} from '@/components/ui/section';
+import {SectionHeading} from '@/components/ui/section-heading';
+import {ConversionCta} from './conversion-cta';
 
 export function CostComparison({locale}: {locale: 'vi' | 'en'}) {
   const vi = locale === 'vi';
+  const rows = vi
+    ? [
+        ['Diện tích phải thuê', 'Có thể lớn hơn nhu cầu lưu trữ thực tế', 'Chọn theo loại kho đang được NupsBox niêm yết'],
+        ['Chi phí vận hành', 'Có thể gồm nhiều hạng mục ngoài lưu trữ', 'Tập trung vào nhu cầu kho và dịch vụ liên quan'],
+        ['Khả năng thay đổi', 'Phụ thuộc điều kiện mặt bằng/hợp đồng', 'Trao đổi lại khi nhu cầu lưu trữ thay đổi']
+      ]
+    : [
+        ['Space commitment', 'May exceed the actual storage need', 'Choose from storage units currently listed by NupsBox'],
+        ['Operating overhead', 'May include costs unrelated to storage', 'Focus on storage needs and related service'],
+        ['Changing needs', 'Depends on lease/property conditions', 'Discuss a different unit when storage needs change']
+      ];
+
   return (
-    <section className="bg-[var(--nupsbox-navy)] py-20 text-white sm:py-24">
-      <Container className="grid gap-10 lg:grid-cols-2 lg:items-center">
+    <Section tone="navy">
+      <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
         <div>
-          <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-yellow)]">{vi ? 'TỐI ƯU MẶT BẰNG' : 'RIGHT-SIZE YOUR SPACE'}</p>
-          <h2 className="mt-4 max-w-xl text-4xl font-black leading-tight tracking-[-0.05em] sm:text-5xl">
-            {vi ? 'Đừng thuê 30m² khi bạn chỉ cần 5m².' : 'Do not lease 30m² when you only need 5m².'}
-          </h2>
-          <p className="mt-5 max-w-xl leading-7 text-white/65">
-            {vi ? 'NupsBox giúp bạn tách nhu cầu lưu trữ khỏi chi phí của một mặt bằng lớn. Giá cụ thể được cập nhật theo từng loại kho và chi nhánh.' : 'NupsBox separates storage needs from the cost of a large commercial lease. Pricing is maintained per unit type and location.'}
-          </p>
+          <SectionHeading
+            eyebrow={vi ? 'TỐI ƯU KHÔNG GIAN' : 'RIGHT-SIZE YOUR SPACE'}
+            title={vi ? 'So sánh cách sử dụng không gian, không hứa một con số tiết kiệm.' : 'Compare how space is used, not a promised savings percentage.'}
+            description={vi
+              ? 'Chi phí thực tế phụ thuộc loại kho và mức giá được xác nhận tại thời điểm liên hệ. NupsBox không dùng giả định phần trăm tiết kiệm hoặc con số không có nguồn.'
+              : 'Actual cost depends on the unit and confirmed pricing at enquiry time. NupsBox does not use unsupported savings percentages or invented numbers.'}
+            tone="dark"
+          />
+          <ConversionCta locale={locale} intent="finder" placement="cost-comparison" size="lg" className="mt-8">
+            {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
+          </ConversionCta>
         </div>
-        <div className="rounded-[2rem] border border-white/10 bg-white/6 p-7 sm:p-9">
-          <p className="text-sm font-bold text-white/65">{vi ? 'Mặt bằng truyền thống' : 'Traditional commercial space'}</p>
-          <div className="mt-4 space-y-3 text-lg font-semibold">
-            <p>30m² + {vi ? 'đặt cọc' : 'deposit'}</p>
-            <p>+ {vi ? 'điện nước & vận hành' : 'utilities & operations'}</p>
+
+        <div className="overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/5">
+          <div className="grid grid-cols-[1fr_1.1fr_1.1fr] border-b border-white/10 text-sm font-bold">
+            <div className="p-4 text-white/60">{vi ? 'Tiêu chí' : 'Criteria'}</div>
+            <div className="p-4 text-white/70">{vi ? 'Mặt bằng lớn' : 'Larger premises'}</div>
+            <div className="p-4 text-[var(--nupsbox-yellow)]">NUPSBOX</div>
           </div>
-          <div className="my-7 h-px bg-white/10" />
-          <p className="text-sm font-bold text-[var(--nupsbox-yellow)]">NUPSBOX</p>
-          <p className="mt-3 text-2xl font-black">{vi ? 'Chỉ thuê diện tích bạn thực sự cần.' : 'Rent the amount of space you actually need.'}</p>
-          <Link href="/bang-gia" className="mt-6 inline-flex font-bold text-[var(--nupsbox-yellow)] hover:underline">{vi ? 'Xem các loại kho →' : 'Explore storage sizes →'}</Link>
+          {rows.map(([criterion, traditional, nupsbox]) => (
+            <div key={criterion} className="grid grid-cols-[1fr_1.1fr_1.1fr] border-b border-white/10 text-sm last:border-b-0">
+              <div className="p-4 font-bold text-white/80">{criterion}</div>
+              <div className="p-4 leading-6 text-white/60">{traditional}</div>
+              <div className="p-4 leading-6 text-white/80">{nupsbox}</div>
+            </div>
+          ))}
         </div>
-      </Container>
-    </section>
+      </div>
+    </Section>
   );
 }

@@ -6,7 +6,12 @@ export type AnalyticsEventName =
   | 'storage_finder_complete'
   | 'view_unit'
   | 'view_location'
-  | 'view_pricing';
+  | 'view_pricing'
+  | 'public_primary_cta_click'
+  | 'storage_recommendation_cta_click'
+  | 'unit_compare_open'
+  | 'quote_flow_start'
+  | 'viewing_flow_start';
 
 export type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
 

@@ -49,7 +49,6 @@ export default async function LocaleLayout({
     getMarketingFeaturedLocation(locale),
     getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, openingHours: {}}))
   ]);
-  const contactFallback = locale === 'vi' ? '/lien-he' : '/en/contact';
   const localBusiness = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -74,8 +73,11 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <SiteHeader />
           {children}
-          <SiteFooter />
-          <MobileActionBar phoneUrl={settings.phone ? `tel:${settings.phone}` : contactFallback} zaloUrl={settings.zaloUrl ?? contactFallback} />
+          <SiteFooter phone={settings.phone} email={settings.email} zaloUrl={settings.zaloUrl} />
+          <MobileActionBar
+            phoneUrl={settings.phone ? `tel:${settings.phone}` : null}
+            zaloUrl={settings.zaloUrl ?? null}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

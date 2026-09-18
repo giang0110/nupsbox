@@ -2,25 +2,22 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {MapPin} from 'lucide-react';
-import {Container} from '@/components/ui/container';
+import {Section} from '@/components/ui/section';
+import {SectionHeading} from '@/components/ui/section-heading';
 import {JsonLd} from '@/components/seo/json-ld';
 import {UnitCard} from '@/components/units/unit-card';
+import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {getMarketingLocationBySlug} from '@/features/catalog/public-catalog';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
 import {absoluteUrl, getStaticSeoRoute, locationSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
 
-export async function generateMetadata({
-  params
-}: {
-  params: Promise<{locale: string; slug: string}>;
-}): Promise<Metadata> {
+export async function generateMetadata({params}: {params: Promise<{locale: string; slug: string}>}): Promise<Metadata> {
   const {locale: rawLocale, slug} = await params;
   if (!isSupportedLocale(rawLocale)) notFound();
   const location = await getMarketingLocationBySlug(slug, rawLocale);
   if (!location) notFound();
   const vi = rawLocale === 'vi';
-
   return createLocalizedMetadata({
     route: locationSeoRoute(slug),
     locale: rawLocale,
@@ -51,5 +48,42 @@ export default async function LocationDetailPage({params}: {params: Promise<{loc
     ]
   };
 
-  return <main><JsonLd data={breadcrumb} /><section className="bg-[var(--nupsbox-navy)] py-20 text-white"><Container><p className="flex items-center gap-2 text-sm text-white/60"><MapPin size={17} aria-hidden="true" />{location.address}</p><h1 className="mt-4 text-5xl font-black tracking-[-0.055em] sm:text-6xl">{location.name}</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-white/70">{vi ? 'Kho mini dành cho shop online, doanh nghiệp nhỏ và nhu cầu lưu trữ linh hoạt tại Tân Phú.' : 'Flexible mini storage for online sellers, small businesses and personal storage in Tan Phu.'}</p></Container></section><section className="py-20"><Container><h2 className="text-3xl font-black tracking-[-0.04em] text-[var(--nupsbox-navy)]">{vi ? 'Các loại kho tại cơ sở' : 'Storage sizes at this location'}</h2><div className="mt-8 grid gap-5 md:grid-cols-2">{location.unitTypes.map((unit) => <UnitCard key={unit.id} unit={unit} locale={rawLocale} />)}</div></Container></section></main>;
+  return (
+    <main>
+      <JsonLd data={breadcrumb} />
+      <Section tone="navy" size="compact">
+        <div className="max-w-3xl py-4 sm:py-6">
+          <p className="flex items-center gap-2 text-sm text-white/60"><MapPin size={17} aria-hidden="true" />{location.address}</p>
+          <h1 className="mt-4 text-5xl font-black tracking-[-0.045em] text-white sm:text-6xl">{location.name}</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/72">
+            {vi ? 'Kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và nhu cầu lưu trữ cá nhân.' : 'Flexible mini storage for online sellers, small businesses and personal storage needs.'}
+          </p>
+          <div className="mt-8">
+            <ConversionCta
+              locale={rawLocale}
+              intent="viewing"
+              context={{locationSlug: location.slug, locationId: location.id}}
+              placement="location-detail-hero"
+              size="lg"
+            >
+              {vi ? 'Đặt lịch xem kho' : 'Request a viewing'}
+            </ConversionCta>
+          </div>
+        </div>
+      </Section>
+
+      <Section>
+        <SectionHeading
+          eyebrow={vi ? 'LOẠI KHO TẠI CƠ SỞ' : 'UNITS AT THIS LOCATION'}
+          title={vi ? 'Chọn điểm bắt đầu phù hợp.' : 'Choose a practical starting point.'}
+          description={vi
+            ? 'Tình trạng và giá vẫn cần được NupsBox xác nhận theo thời điểm; các thẻ không phải cam kết giữ chỗ.'
+            : 'Pricing and status still require confirmation; these cards do not represent a reservation.'}
+        />
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          {location.unitTypes.map((unit) => <UnitCard key={unit.id} unit={unit} locale={rawLocale} />)}
+        </div>
+      </Section>
+    </main>
+  );
 }
