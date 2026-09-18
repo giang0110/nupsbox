@@ -1,4 +1,5 @@
 import {redirect} from 'next/navigation';
+import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {CatalogTables} from '@/components/admin/catalog-tables';
 import {Container} from '@/components/ui/container';
 import {getAdminCatalog} from '@/features/admin/catalog';
@@ -11,15 +12,13 @@ export default async function AdminCatalogPage() {
   const catalog = await getAdminCatalog();
 
   return (
-    <main className="py-10 sm:py-14">
-      <Container>
-        <div className="max-w-3xl">
-          <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-blue)]">CATALOG</p>
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">Kho, loại kho & bảng giá</h1>
-          <p className="mt-4 leading-7 text-[var(--nupsbox-slate)]">
-            Kiểm tra dữ liệu catalog đang dùng cho website. Giai đoạn này ưu tiên xác minh dữ liệu đọc trước khi mở mutation catalog trên môi trường production.
-          </p>
-        </div>
+    <main className="py-8 sm:py-10">
+      <Container className="grid gap-6">
+        <AdminPageHeader
+          eyebrow="CATALOG"
+          title="Kho & bảng giá"
+          description="Quản lý địa điểm, loại kho và dữ liệu giá vận hành."
+        />
         <CatalogTables catalog={catalog} />
       </Container>
     </main>

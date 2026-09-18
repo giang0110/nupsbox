@@ -10,6 +10,19 @@ export type NextAppointmentSummary = AppointmentSummaryInput & {
   overdue: boolean;
 };
 
+export type LabelOption = {
+  id: string;
+  label: string;
+};
+
+export function resolveLeadReferenceLabel(
+  id: string | null,
+  options: readonly LabelOption[]
+): string | null {
+  if (!id) return null;
+  return options.find((option) => option.id === id)?.label ?? null;
+}
+
 export function selectNextAppointment(
   rows: readonly AppointmentSummaryInput[],
   now = new Date()

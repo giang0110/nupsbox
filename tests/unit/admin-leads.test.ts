@@ -1,5 +1,9 @@
 import {describe, expect, it} from 'vitest';
-import {isOperationalLeadStatus, prepareLeadStatusUpdate} from '@/features/admin/leads';
+import {
+  isOperationalLeadStatus,
+  prepareLeadStatusUpdate,
+  sanitizeLeadSearchTerm
+} from '@/features/admin/leads';
 
 const leadId = 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0';
 
@@ -28,5 +32,10 @@ describe('admin lead status updates', () => {
 
   it('rejects malformed lead ids', () => {
     expect(() => prepareLeadStatusUpdate('admin', 'not-a-uuid', 'won')).toThrow('invalid_lead_id');
+  });
+
+  it('sanitizes structural PostgREST search characters while preserving useful text', () => {
+    expect(sanitizeLeadSearchTerm('  Nguyễn, An%_  ')).toBe('Nguyễn An');
+    expect(sanitizeLeadSearchTerm('an@example.com')).toBe('an@example.com');
   });
 });

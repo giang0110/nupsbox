@@ -1,5 +1,8 @@
 import {describe, expect, it} from 'vitest';
-import {selectNextAppointment} from '@/features/admin/lead-detail';
+import {
+  resolveLeadReferenceLabel,
+  selectNextAppointment
+} from '@/features/admin/lead-detail';
 
 const now = new Date('2026-09-15T03:00:00.000Z');
 
@@ -24,5 +27,13 @@ describe('CRM next appointment selection', () => {
       {id: 'done', status: 'completed', scheduledAt: '2026-09-16T03:00:00.000Z'},
       {id: 'cancelled', status: 'cancelled', scheduledAt: '2026-09-17T03:00:00.000Z'}
     ], now)).toBeNull();
+  });
+
+  it('resolves a readable reference label without inventing missing metadata', () => {
+    expect(resolveLeadReferenceLabel(
+      '30000000-0000-4000-8000-000000000001',
+      [{id: '30000000-0000-4000-8000-000000000001', label: 'NupsBox Tân Phú'}]
+    )).toBe('NupsBox Tân Phú');
+    expect(resolveLeadReferenceLabel('missing', [])).toBeNull();
   });
 });
