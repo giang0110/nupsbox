@@ -442,7 +442,7 @@ Create `components/admin/admin-shell.tsx` as a Client Component. It must:
 - receive the serializable `groups` produced by `getAdminNavigation(session.role)` in `app/admin/layout.tsx`;
 - render a desktop sidebar at `lg` and a native `<dialog>` drawer below `lg`;
 - use `usePathname()` plus `isAdminRouteActive()` for active navigation;
-- expose a 44 px menu trigger, close button, and desktop collapse toggle;
+- expose a 44 px menu trigger named `Mở menu quản trị`, a drawer close button named `Đóng menu quản trị`, and a desktop collapse toggle whose label switches between `Thu gọn menu quản trị` and `Mở rộng menu quản trị`;
 - use local state only; do not persist collapse state to DB;
 - use `dialog.showModal()`/`dialog.close()` so Escape/focus behavior comes from the native dialog;
 - render the role and `userLabel` in the shell;
@@ -512,7 +512,7 @@ Expected: typecheck passes and the commit contains no schema/migration files.
   - `AdminDashboardStatusCounts = Record<OperationalLeadStatus, number>`
   - `summarizeAdminCrmCounts(byStatus, upcomingAppointments)`
   - `AdminDashboardSummary` with `crm`, `attention`, and `health`.
-  - `getAdminDashboardSummary(now?: Date): Promise<AdminDashboardSummary>`.
+  - `getAdminDashboardSummary(now?: Date): Promise<AdminDashboardSummary>`; the implementation signature is `getAdminDashboardSummary(now = new Date())`.
 
 - [ ] **Step 1: Extend dashboard tests with CRM aggregation semantics**
 
@@ -605,10 +605,18 @@ Keep `normalizeAdminDashboardCounts` for health counts so the existing regressio
 
 - [ ] **Step 4: Extend `getAdminDashboardSummary()` with bounded server queries**
 
-Implement these concrete query rules in `features/admin/dashboard.ts`:
+Implement these concrete query rules in `features/admin/dashboard.ts`. Add the appointment table typing used elsewhere in the repo and create the typed view from the same authenticated Supabase client:
 
 ```ts
-const nowIso = now.toISOString();
+import type {SupabaseClient} from '@supabase/supabase-js';
+import type {DatabaseWithAppointments} from '@/types/appointment-database';
+
+export async function getAdminDashboardSummary(
+  now = new Date()
+): Promise<AdminDashboardSummary> {
+  const supabase = await createSupabaseServerClient();
+  const appointmentClient = supabase as unknown as SupabaseClient<DatabaseWithAppointments>;
+  const nowIso = now.toISOString();
 
 const statusCountResults = await Promise.all(
   operationalLeadStatuses.map((status) =>
@@ -622,7 +630,7 @@ const upcomingCount = await appointmentClient
   .in('status', ['pending', 'confirmed'])
   .gte('scheduled_at', nowIso);
 
-const [newLeadRows, unassignedRows, overdueRows, upcomingRows] = await Promise.all([
+  const [newLeadRows, unassignedRows, overdueRows, upcomingRows] = await Promise.all([
   supabase
     .from('leads')
     .select('id, full_name, phone, status, assigned_to, created_at')
@@ -650,7 +658,11 @@ const [newLeadRows, unassignedRows, overdueRows, upcomingRows] = await Promise.a
     .gte('scheduled_at', nowIso)
     .order('scheduled_at', {ascending: true})
     .limit(5)
-]);
+  ]);
+
+  // Continue by checking every result error, batching appointment lead identities,
+  // normalizing counts, and returning AdminDashboardSummary.
+}
 ```
 
 Then:
@@ -1096,7 +1108,9 @@ import {render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {describe, expect, it, vi} from 'vitest';
 
-const updateLeadStatusValue = vi.fn();
+const {updateLeadStatusValue} = vi.hoisted(() => ({
+  updateLeadStatusValue: vi.fn()
+}));
 
 vi.mock('@/app/admin/leads/actions', () => ({
   updateLeadStatusValue
@@ -1599,14 +1613,77 @@ it('maps appointment audit event types to readable Vietnamese labels', () => {
 
 - [ ] **Step 2: Write Appointment Workspace semantic RED test**
 
-Create `tests/unit/admin-appointment-workspace-ui.test.tsx` using a small projected workspace fixture. Assert:
-- heading “Lịch xem kho”;
-- “Tạo lịch xem kho” disclosure exists for mutable users;
-- status text for an existing appointment;
-- location/unit/assignee readable labels;
-- no separate raw audit-history heading, because history is displayed once in Unified Timeline.
+Create `tests/unit/admin-appointment-workspace-ui.test.tsx`:
 
-Mock the server action module so the test never touches Supabase.
+```tsx
+import {render, screen} from '@testing-library/react';
+import {describe, expect, it, vi} from 'vitest';
+import {AppointmentWorkspace} from '@/components/admin/appointment-workspace';
+import type {AppointmentWorkspace as AppointmentWorkspaceModel} from '@/features/admin/appointment-read-model';
+
+vi.mock('@/app/admin/leads/[leadId]/actions', () => ({
+  createAppointmentValue: vi.fn().mockResolvedValue({ok: true}),
+  updateAppointmentValue: vi.fn().mockResolvedValue({ok: true})
+}));
+
+const workspace: AppointmentWorkspaceModel = {
+  appointments: [{
+    id: '40000000-0000-4000-8000-000000000001',
+    leadId: '10000000-0000-4000-8000-000000000002',
+    locationId: '30000000-0000-4000-8000-000000000001',
+    locationName: 'NupsBox Tân Phú',
+    unitTypeId: '50000000-0000-4000-8000-000000000001',
+    unitTypeName: 'Kho 3 m²',
+    assignedTo: '20000000-0000-4000-8000-000000000001',
+    assignedName: 'Nhân viên A',
+    scheduledAt: '2026-09-20T02:30:00.000Z',
+    durationMinutes: 30,
+    status: 'confirmed',
+    source: 'staff',
+    customerNote: null,
+    internalNote: null,
+    createdBy: '20000000-0000-4000-8000-000000000001',
+    createdAt: '2026-09-15T03:00:00.000Z',
+    updatedAt: '2026-09-15T04:00:00.000Z'
+  }],
+  history: [{
+    id: '60000000-0000-4000-8000-000000000001',
+    appointmentId: '40000000-0000-4000-8000-000000000001',
+    leadId: '10000000-0000-4000-8000-000000000002',
+    changedBy: '20000000-0000-4000-8000-000000000001',
+    changedByName: 'Nhân viên A',
+    eventType: 'status_changed',
+    beforeState: {},
+    afterState: {},
+    createdAt: '2026-09-15T04:00:00.000Z'
+  }],
+  locationOptions: [{id: '30000000-0000-4000-8000-000000000001', label: 'NupsBox Tân Phú'}],
+  unitTypeOptions: [{id: '50000000-0000-4000-8000-000000000001', label: 'Kho 3 m²'}],
+  assigneeOptions: [{id: '20000000-0000-4000-8000-000000000001', label: 'Nhân viên A', role: 'staff'}]
+};
+
+describe('admin appointment workspace presentation', () => {
+  it('keeps Light Booking compact and moves audit history to the unified timeline', () => {
+    render(
+      <AppointmentWorkspace
+        leadId="10000000-0000-4000-8000-000000000002"
+        workspace={workspace}
+        canMutate
+      />
+    );
+
+    expect(screen.getByRole('heading', {name: 'Lịch xem kho'})).toBeInTheDocument();
+    expect(screen.getByText('Tạo lịch xem kho')).toBeInTheDocument();
+    expect(screen.getByText('Đã xác nhận')).toBeInTheDocument();
+    expect(screen.getAllByText('NupsBox Tân Phú').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Kho 3 m²').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Nhân viên A').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByRole('heading', {name: /lịch sử.*lịch hẹn/i})).not.toBeInTheDocument();
+  });
+});
+```
+
+The mocked server-action module ensures this test never touches Supabase.
 
 - [ ] **Step 3: Run the focused tests and verify RED**
 
@@ -1759,12 +1836,61 @@ Expected: all existing appointment domain tests stay green.
 
 - [ ] **Step 1: Write a responsive-list RED test around `CatalogTables`**
 
-Create `tests/unit/admin-responsive-lists.test.tsx` with a minimal catalog fixture and assert that `CatalogTables` renders:
-- desktop table regions marked with `data-admin-desktop-table`;
-- mobile list regions marked with `data-admin-mobile-list`;
-- readable names/status text in both representations.
+Create `tests/unit/admin-responsive-lists.test.tsx`:
 
-The test should assert behavior/semantics, not pixel values.
+```tsx
+import {render, screen} from '@testing-library/react';
+import {describe, expect, it} from 'vitest';
+import {CatalogTables} from '@/components/admin/catalog-tables';
+import type {AdminCatalog} from '@/features/admin/catalog';
+
+const catalog: AdminCatalog = {
+  locations: [{
+    id: 'loc-1',
+    slug: 'tan-phu',
+    nameVi: 'NupsBox Tân Phú',
+    nameEn: 'NupsBox Tan Phu',
+    district: 'Tân Phú',
+    status: 'active',
+    isFeatured: true,
+    sortOrder: 0
+  }],
+  unitTypes: [{
+    id: 'unit-1',
+    slug: 'kho-s',
+    nameVi: 'Kho S',
+    nameEn: 'S Unit',
+    areaM2: 3,
+    active: true,
+    sortOrder: 0
+  }],
+  pricing: [{
+    id: 'price-1',
+    locationId: 'loc-1',
+    unitTypeId: 'unit-1',
+    monthlyPrice: 1_000_000,
+    promoPrice: null,
+    depositAmount: null,
+    availabilityStatus: 'available',
+    availableCount: null,
+    featured: false
+  }]
+};
+
+describe('admin responsive catalog lists', () => {
+  it('renders desktop tables and mobile cards from the same catalog data', () => {
+    const {container} = render(<CatalogTables catalog={catalog} />);
+
+    expect(container.querySelectorAll('[data-admin-desktop-table]')).toHaveLength(3);
+    expect(container.querySelectorAll('[data-admin-mobile-list]')).toHaveLength(3);
+    expect(screen.getAllByText('NupsBox Tân Phú').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Kho S').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Có thể tư vấn').length).toBeGreaterThanOrEqual(2);
+  });
+});
+```
+
+The assertions intentionally verify structural responsive alternatives and readable data, not pixels.
 
 - [ ] **Step 2: Run the responsive-list test and verify RED**
 
@@ -1786,22 +1912,47 @@ In `app/admin/catalog/page.tsx`, replace the bespoke intro with:
 />
 ```
 
-In `components/admin/catalog-tables.tsx`, use one source array for two responsive representations:
+In `components/admin/catalog-tables.tsx`, keep the three existing data collections and maps. For **locations**, render both structures from `catalog.locations`:
 
 ```tsx
 <div data-admin-desktop-table className="hidden lg:block">
-  <table className="w-full text-left text-sm">{/* existing columns/rows */}</table>
+  <table className="w-full text-left text-sm">
+    <thead>
+      <tr>
+        <th scope="col">Tên</th>
+        <th scope="col">Quận</th>
+        <th scope="col">Trạng thái</th>
+        <th scope="col">Slug</th>
+      </tr>
+    </thead>
+    <tbody>
+      {catalog.locations.map((location) => (
+        <tr key={location.id}>
+          <td>{location.nameVi}<span className="block text-xs">{location.nameEn}</span></td>
+          <td>{location.district}</td>
+          <td>{location.status}</td>
+          <td>{location.slug}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
 </div>
 <div data-admin-mobile-list className="grid gap-3 lg:hidden">
-  {rows.map((row) => (
-    <article key={row.id} className="rounded-xl border border-[var(--nupsbox-border)] p-4">
-      {/* same readable fields and status text as the table row */}
+  {catalog.locations.map((location) => (
+    <article key={location.id} className="rounded-xl border border-[var(--nupsbox-border)] p-4">
+      <h3 className="font-black text-[var(--nupsbox-navy)]">{location.nameVi}</h3>
+      <p className="mt-1 text-sm text-[var(--nupsbox-slate)]">{location.district} · {location.status}</p>
+      <p className="mt-2 font-mono text-xs text-[var(--nupsbox-slate)]">{location.slug}</p>
     </article>
   ))}
 </div>
 ```
 
-Apply this concrete two-representation contract separately to locations, unit types, and pricing. Preserve existing labels, price-format helpers, links, and the disclaimer that operational availability is not realtime inventory.
+For **unit types**, use `catalog.unitTypes` in both desktop/mobile structures and show `nameVi`, `nameEn`, `areaM2`, `active ? 'Có' : 'Không'`, and `slug`.
+
+For **pricing**, use `catalog.pricing` in both structures and show the same resolved `locationNames`, `unitNames`, `formatAdminPrice(monthlyPrice)`, `formatAdminPrice(promoPrice)`, and `adminAvailabilityLabel(availabilityStatus)` values already used by the current table.
+
+Each desktop wrapper must carry `data-admin-desktop-table`; each mobile wrapper must carry `data-admin-mobile-list`. Remove the old mandatory `min-w-[720px]` / `min-w-[900px]` wrappers. Preserve the existing operational-availability disclaimer.
 
 - [ ] **Step 4: Migrate Catalog edit pages/forms without changing actions**
 
@@ -1842,17 +1993,29 @@ For Content overview, FAQ, Blog, Media, and Settings:
 - keep Settings limited to the existing allowlisted keys;
 - keep Media metadata-only.
 
-Use this form-header pattern in FAQ/Blog/Media/Settings cards:
+Use these concrete state mappings while keeping the existing permission-gated action forms:
 
 ```tsx
-<div className="flex flex-wrap items-start justify-between gap-3">
-  <div>
-    <AdminStatusBadge label={statusLabel} tone={statusTone} />
-    <h2 className="mt-2 text-lg font-black text-[var(--nupsbox-navy)]">{title}</h2>
-  </div>
-  {existingPermissionGatedAction}
-</div>
+// FAQ
+<AdminStatusBadge
+  label={faq.active ? 'Đang hiển thị' : 'Bản nháp'}
+  tone={faq.active ? 'success' : 'neutral'}
+/>
+
+// Blog
+<AdminStatusBadge
+  label={blog.status === 'published' ? 'Đã xuất bản' : blog.status === 'archived' ? 'Đã lưu trữ' : 'Bản nháp'}
+  tone={blog.status === 'published' ? 'success' : 'neutral'}
+/>
+
+// Media
+<AdminStatusBadge
+  label={media.isPublic ? 'Công khai' : 'Nội bộ'}
+  tone={media.isPublic ? 'success' : 'neutral'}
+/>
 ```
+
+Keep the existing `setFaqPublication`, `setBlogStatus`, metadata update, and settings update forms exactly permission-gated as they are now. Settings need no invented publication badge: group existing allowlisted keys under `AdminPanel` / `AdminFieldGroup` only.
 
 Do not alter CMS publication semantics, upload capability, delete capability, or settings contracts.
 
@@ -1884,6 +2047,7 @@ git commit -m "feat: unify admin catalog and content UX"
 - Modify: `components/admin/lead-operation-rail.tsx`
 - Modify: `components/admin/appointment-workspace.tsx`
 - Modify: `app/globals.css`
+- Create: `tests/unit/admin-shell-accessibility.test.tsx`
 - Modify: `tests/unit/admin-ui-primitives.test.tsx`
 - Modify: `tests/unit/admin-lead-list.test.tsx`
 - Modify: `tests/unit/admin-lead-pipeline.test.tsx`
@@ -1894,22 +2058,64 @@ git commit -m "feat: unify admin catalog and content UX"
 - No new business interfaces.
 - Accessibility contract becomes part of existing components.
 
-- [ ] **Step 1: Add accessibility regression assertions before fixes**
+- [ ] **Step 1: Add concrete accessibility regression tests before fixes**
 
-Add focused assertions:
-- mobile drawer trigger has accessible name “Mở menu quản trị”;
-- close/collapse buttons have accessible names;
-- Pipeline fallback select has a per-lead label;
-- icon-only controls, if any, have `aria-label`;
-- status badge always contains visible status text;
-- lead mobile card has a named “Mở hồ sơ” link;
-- error regions use `role="alert"`;
-- controls use `min-h-11` or an equivalent 44 px minimum.
+Create `tests/unit/admin-shell-accessibility.test.tsx`:
+
+```tsx
+import {render, screen} from '@testing-library/react';
+import {describe, expect, it, vi} from 'vitest';
+import {AdminShell} from '@/components/admin/admin-shell';
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/admin/leads'
+}));
+
+const groups = [
+  {label: 'Tổng quan', items: [{href: '/admin', label: 'Dashboard', action: 'dashboard:read' as const}]},
+  {label: 'CRM', items: [{href: '/admin/leads', label: 'Khách hàng', action: 'leads:read' as const}]}
+];
+
+describe('admin shell accessibility', () => {
+  it('names navigation controls and marks the active route', () => {
+    render(
+      <AdminShell role="staff" userLabel="Nhân viên A" groups={groups}>
+        <main>Nội dung</main>
+      </AdminShell>
+    );
+
+    expect(screen.getByRole('button', {name: 'Mở menu quản trị'})).toHaveClass('min-h-11', 'min-w-11');
+    expect(screen.getByRole('button', {name: 'Thu gọn menu quản trị'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Đóng menu quản trị'})).toBeInTheDocument();
+
+    const activeLinks = screen.getAllByRole('link', {name: 'Khách hàng'});
+    expect(activeLinks.some((link) => link.getAttribute('aria-current') === 'page')).toBe(true);
+  });
+});
+```
+
+Also add these exact assertions to the existing focused tests:
+
+```tsx
+// admin-lead-list.test.tsx
+expect(screen.getAllByRole('link', {name: /mở hồ sơ/i}).length).toBeGreaterThanOrEqual(1);
+
+// admin-lead-pipeline.test.tsx
+expect(screen.getByLabelText('Chuyển trạng thái Nguyễn An')).toHaveClass('min-h-11');
+
+// admin-lead-actions-ui.test.tsx after a mocked failure
+expect(screen.getByRole('alert')).toBeVisible();
+
+// admin-ui-primitives.test.tsx
+expect(screen.getByText('Mới')).toHaveTextContent('Mới');
+```
+
+Any icon-only control introduced by the implementation must receive an explicit Vietnamese `aria-label`; do not add an icon-only control without extending the focused test that renders it.
 
 - [ ] **Step 2: Run the focused UI tests and observe any RED assertions**
 
 ```bash
-npm run test:run -- tests/unit/admin-ui-primitives.test.tsx tests/unit/admin-lead-list.test.tsx tests/unit/admin-lead-pipeline.test.tsx tests/unit/admin-lead-actions-ui.test.tsx tests/unit/admin-appointment-workspace-ui.test.tsx
+npm run test:run -- tests/unit/admin-shell-accessibility.test.tsx tests/unit/admin-ui-primitives.test.tsx tests/unit/admin-lead-list.test.tsx tests/unit/admin-lead-pipeline.test.tsx tests/unit/admin-lead-actions-ui.test.tsx tests/unit/admin-appointment-workspace-ui.test.tsx
 ```
 
 Expected: any missing accessible labels/touch-size contracts fail before hardening.
@@ -1964,7 +2170,7 @@ Expected:
 - [ ] **Step 7: Commit responsive/accessibility hardening**
 
 ```bash
-git add components/admin app/admin app/globals.css tests/unit
+git add components/admin app/admin app/globals.css tests/unit/admin-shell-accessibility.test.tsx tests/unit/admin-ui-primitives.test.tsx tests/unit/admin-lead-list.test.tsx tests/unit/admin-lead-pipeline.test.tsx tests/unit/admin-lead-actions-ui.test.tsx tests/unit/admin-appointment-workspace-ui.test.tsx
 git commit -m "test: harden admin responsive accessibility"
 ```
 
@@ -2111,7 +2317,7 @@ P2.7 does not authorize seeding business data or cutting over `nupsbox.vn` after
 - Light Booking appointment presentation and safe errors: Task 8.
 - Unified readable CRM timeline: Task 8.
 - Catalog/Content consistency without CMS expansion: Task 9.
-- Responsive/accessibility hardening: Task 10.
+- Responsive/accessibility hardening, named shell controls, active-route semantics, 44 px controls: Task 10.
 - No DB migration/seed/domain cutover/dependency expansion: Global Constraints + Tasks 10–11.
 - Auth/noindex/RBAC/RLS preservation: Global Constraints + Task 11.
 - Unit/integration/build/E2E/DB/Preview/runtime verification: Tasks 10–11.
