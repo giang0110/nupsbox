@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useState, type KeyboardEvent} from 'react';
 import {
   Archive,
   Boxes,
@@ -37,6 +37,27 @@ export function HomeChoiceHub({
     {id: 'units', label: vi ? 'Loại kho' : 'Unit types', icon: Boxes},
     {id: 'use-cases', label: vi ? 'Theo nhu cầu' : 'By need', icon: BriefcaseBusiness}
   ];
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, currentId: ChoiceTab) {
+    const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+
+    event.preventDefault();
+    const currentIndex = tabs.findIndex((tab) => tab.id === currentId);
+    const nextIndex = event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? tabs.length - 1
+        : event.key === 'ArrowRight'
+          ? (currentIndex + 1) % tabs.length
+          : (currentIndex - 1 + tabs.length) % tabs.length;
+    const nextId = tabs[nextIndex].id;
+
+    setActiveTab(nextId);
+    requestAnimationFrame(() => {
+      document.getElementById(`choice-tab-${nextId}`)?.focus();
+    });
+  }
 
   const useCases = vi
     ? [
@@ -79,6 +100,7 @@ export function HomeChoiceHub({
                 aria-controls={`choice-panel-${id}`}
                 tabIndex={activeTab === id ? 0 : -1}
                 onClick={() => setActiveTab(id)}
+                onKeyDown={(event) => handleTabKeyDown(event, id)}
                 className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 lg:flex-none ${
                   activeTab === id
                     ? 'bg-[var(--nupsbox-navy)] text-white shadow-sm'

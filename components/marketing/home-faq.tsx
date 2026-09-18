@@ -7,8 +7,8 @@ export function HomeFaq({items, locale}: {items: MarketingFaq[]; locale: 'vi' | 
   if (!items.length) return null;
 
   return (
-    <Section>
-      <div className="grid gap-9 lg:grid-cols-[.72fr_1.28fr] lg:gap-12">
+    <Section size="compact">
+      <div className="grid gap-7 lg:grid-cols-[.72fr_1.28fr] lg:gap-10">
         <div>
           <SectionHeading
             eyebrow="FAQ"
@@ -23,11 +23,11 @@ export function HomeFaq({items, locale}: {items: MarketingFaq[]; locale: 'vi' | 
         </div>
         <div className="divide-y divide-[var(--nupsbox-border)] border-y border-[var(--nupsbox-border)]">
           {items.slice(0, 5).map((item) => (
-            <details key={item.id} className="group py-4.5">
+            <details key={item.id} className="group py-3.5">
               <summary className="cursor-pointer list-none pr-8 text-base font-bold text-[var(--nupsbox-navy)] sm:text-lg">
                 {item.question}
               </summary>
-              <p className="mt-3 max-w-3xl leading-7 text-[var(--nupsbox-slate)]">{item.answer}</p>
+              <p className="mt-2.5 max-w-3xl text-sm leading-6 text-[var(--nupsbox-slate)]">{item.answer}</p>
             </details>
           ))}
         </div>
