@@ -37,7 +37,7 @@ const units = [
 ];
 
 describe('compact homepage choice hub', () => {
-  it('shows one active panel while keeping all three tab choices available', () => {
+  it('shows one active panel and lazy-mounts unit content only after selection', async () => {
     render(
       <HomeChoiceHub
         units={units}
@@ -50,13 +50,14 @@ describe('compact homepage choice hub', () => {
     expect(document.getElementById('choice-panel-finder')).not.toHaveAttribute('hidden');
     expect(document.getElementById('choice-panel-units')).toHaveAttribute('hidden');
     expect(document.getElementById('choice-panel-use-cases')).toHaveAttribute('hidden');
+    expect(screen.queryByText('Kho S')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', {name: 'Loại kho'}));
 
     expect(screen.getByRole('tab', {name: 'Loại kho'})).toHaveAttribute('aria-selected', 'true');
     expect(document.getElementById('choice-panel-finder')).toHaveAttribute('hidden');
     expect(document.getElementById('choice-panel-units')).not.toHaveAttribute('hidden');
-    expect(screen.getByText('Kho S')).toBeInTheDocument();
+    expect(await screen.findByText('Kho S')).toBeInTheDocument();
   });
 
   it('supports arrow-key tab navigation', () => {

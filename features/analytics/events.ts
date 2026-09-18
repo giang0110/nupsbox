@@ -11,7 +11,8 @@ export type AnalyticsEventName =
   | 'storage_recommendation_cta_click'
   | 'unit_compare_open'
   | 'quote_flow_start'
-  | 'viewing_flow_start';
+  | 'viewing_flow_start'
+  | 'web_vital';
 
 export type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
 

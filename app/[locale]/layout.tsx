@@ -8,6 +8,7 @@ import {SiteHeader} from '@/components/marketing/site-header';
 import {SiteFooter} from '@/components/marketing/site-footer';
 import {MobileActionBar} from '@/components/marketing/mobile-action-bar';
 import {JsonLd} from '@/components/seo/json-ld';
+import {WebVitalsReporter} from '@/components/analytics/web-vitals-reporter';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {buildPublicBusinessEntity} from '@/features/seo/business-entity';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
@@ -60,6 +61,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body>
+        <WebVitalsReporter />
         <JsonLd data={businessEntity} />
         <NextIntlClientProvider messages={messages}>
           <SiteHeader />
