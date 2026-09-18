@@ -1,9 +1,9 @@
 import {
   isOperationalLeadStatus,
   operationalLeadStatuses,
-  type AdminLeadRow,
   type OperationalLeadStatus
-} from '@/features/admin/leads';
+} from '@/features/admin/lead-status';
+import type {AdminLeadRow} from '@/features/admin/leads';
 
 export type LeadWorkspaceView = 'table' | 'pipeline';
 

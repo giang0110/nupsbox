@@ -12,9 +12,9 @@ import {
 } from '@/features/admin/lead-workspace';
 import {
   operationalLeadStatuses,
-  type AdminLeadRow,
   type OperationalLeadStatus
-} from '@/features/admin/leads';
+} from '@/features/admin/lead-status';
+import type {AdminLeadRow} from '@/features/admin/leads';
 
 const crmDateTime = new Intl.DateTimeFormat('vi-VN', {
   timeZone: 'Asia/Ho_Chi_Minh',

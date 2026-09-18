@@ -4,10 +4,8 @@ import {
   leadStatusMeta,
   type LeadWorkspaceFilters
 } from '@/features/admin/lead-workspace';
-import {
-  operationalLeadStatuses,
-  type LeadAssigneeOption
-} from '@/features/admin/leads';
+import {operationalLeadStatuses} from '@/features/admin/lead-status';
+import type {LeadAssigneeOption} from '@/features/admin/leads';
 
 export function LeadFilterBar({
   filters,

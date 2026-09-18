@@ -1,19 +1,15 @@
+import {
+  isOperationalLeadStatus,
+  leadStatuses,
+  operationalLeadStatuses,
+  type OperationalLeadStatus
+} from '@/features/admin/lead-status';
 import {can} from '@/features/auth/permissions';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
-import type {AppRole, LeadStatus} from '@/types/database';
+import type {AppRole} from '@/types/database';
 
-export const operationalLeadStatuses = [
-  'new',
-  'contacted',
-  'qualified',
-  'viewing',
-  'negotiating',
-  'won',
-  'lost'
-] as const satisfies readonly LeadStatus[];
-
-export const leadStatuses = operationalLeadStatuses;
-export type OperationalLeadStatus = (typeof operationalLeadStatuses)[number];
+export {isOperationalLeadStatus, leadStatuses, operationalLeadStatuses};
+export type {OperationalLeadStatus};
 
 export type AdminLeadRow = {
   id: string;
@@ -75,10 +71,6 @@ export type LeadAssigneeOption = {
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const maxLeadNoteLength = 2000;
-
-export function isOperationalLeadStatus(value: unknown): value is OperationalLeadStatus {
-  return typeof value === 'string' && (operationalLeadStatuses as readonly string[]).includes(value);
-}
 
 export function sanitizeLeadSearchTerm(value: string) {
   return value

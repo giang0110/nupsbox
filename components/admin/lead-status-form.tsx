@@ -6,7 +6,7 @@ import {leadStatusMeta} from '@/features/admin/lead-workspace';
 import {
   leadStatuses,
   type OperationalLeadStatus
-} from '@/features/admin/leads';
+} from '@/features/admin/lead-status';
 
 export function LeadStatusForm({
   leadId,
