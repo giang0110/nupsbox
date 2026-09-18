@@ -17,6 +17,8 @@ export async function SiteFooter({
     getLocale()
   ]);
   const vi = rawLocale !== 'en';
+  const linkClass =
+    'rounded-sm hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--nupsbox-navy)]';
 
   return (
     <footer className="bg-[var(--nupsbox-navy)] pb-28 pt-14 text-white sm:pb-12">
@@ -34,20 +36,20 @@ export async function SiteFooter({
 
           <nav className="grid content-start gap-3 text-sm text-white/70" aria-label="Footer navigation">
             <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">Explore</p>
-            <Link href="/kho-mini" className="hover:text-white">{nav('storage')}</Link>
-            <Link href="/bang-gia" className="hover:text-white">{nav('pricing')}</Link>
-            <Link href="/giai-phap" className="hover:text-white">{nav('solutions')}</Link>
-            <Link href="/dia-diem" className="hover:text-white">{nav('locations')}</Link>
-            <Link href="/ve-nupsbox" className="hover:text-white">{nav('about')}</Link>
-            <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link>
+            <Link href="/kho-mini" className={linkClass}>{nav('storage')}</Link>
+            <Link href="/bang-gia" className={linkClass}>{nav('pricing')}</Link>
+            <Link href="/giai-phap" className={linkClass}>{nav('solutions')}</Link>
+            <Link href="/dia-diem" className={linkClass}>{nav('locations')}</Link>
+            <Link href="/ve-nupsbox" className={linkClass}>{nav('about')}</Link>
+            <Link href="/lien-he" className={linkClass}>{nav('contact')}</Link>
           </nav>
 
           <div className="grid content-start gap-3 text-sm text-white/70">
             <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">Contact</p>
-            {phone ? <a href={`tel:${phone}`} className="hover:text-white">{phone}</a> : null}
-            {email ? <a href={`mailto:${email}`} className="hover:text-white">{email}</a> : null}
-            {zaloUrl ? <a href={zaloUrl} target="_blank" rel="noreferrer" className="hover:text-white">Zalo</a> : null}
-            {!phone && !email && !zaloUrl ? <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link> : null}
+            {phone ? <a href={`tel:${phone}`} className={linkClass}>{phone}</a> : null}
+            {email ? <a href={`mailto:${email}`} className={linkClass}>{email}</a> : null}
+            {zaloUrl ? <a href={zaloUrl} target="_blank" rel="noreferrer" className={linkClass}>Zalo</a> : null}
+            {!phone && !email && !zaloUrl ? <Link href="/lien-he" className={linkClass}>{nav('contact')}</Link> : null}
           </div>
         </div>
         <p className="pt-6 text-xs text-white/45">© {new Date().getFullYear()} NupsBox. All rights reserved.</p>

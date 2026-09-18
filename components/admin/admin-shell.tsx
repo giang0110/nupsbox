@@ -98,6 +98,13 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
         gridTemplateColumns: collapsed ? '5.5rem minmax(0, 1fr)' : '18rem minmax(0, 1fr)'
       }}
     >
+      <a
+        href="#admin-main-content"
+        className="sr-only z-[100] rounded-full bg-[var(--nupsbox-yellow)] px-4 py-3 text-sm font-extrabold text-[var(--nupsbox-navy)] shadow-lg focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-none focus:ring-2 focus:ring-[var(--nupsbox-blue)]"
+      >
+        Bỏ qua menu quản trị
+      </a>
+
       <div className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-[var(--nupsbox-border)] bg-white px-4 lg:hidden">
         <button
           type="button"
@@ -183,7 +190,7 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
         </div>
       </dialog>
 
-      <div className="min-w-0">
+      <div id="admin-main-content" tabIndex={-1} className="min-w-0">
         {children}
       </div>
     </div>

@@ -52,7 +52,7 @@ export async function MobileActionBar({phoneUrl, zaloUrl, mode = 'default'}: Mob
           href={contactAction.href}
           target={contactAction.href.startsWith('http') ? '_blank' : undefined}
           rel={contactAction.href.startsWith('http') ? 'noreferrer' : undefined}
-          className="col-span-2 flex min-h-11 items-center justify-center gap-2 rounded-[0.85rem] text-xs font-semibold text-[var(--nupsbox-navy)] hover:bg-[var(--nupsbox-surface)]"
+          className="col-span-2 flex min-h-11 items-center justify-center gap-2 rounded-[0.85rem] text-xs font-semibold text-[var(--nupsbox-navy)] hover:bg-[var(--nupsbox-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-inset"
         >
           <contactAction.Icon aria-hidden="true" size={17} />
           {contactAction.label}

@@ -27,6 +27,12 @@ describe('admin shell accessibility', () => {
       </AdminShell>
     );
 
+    expect(screen.getByRole('link', {name: 'Bỏ qua menu quản trị'})).toHaveAttribute(
+      'href',
+      '#admin-main-content'
+    );
+    expect(container.querySelector('#admin-main-content')).toHaveAttribute('tabindex', '-1');
+
     expect(screen.getByRole('button', {name: 'Mở menu quản trị'})).toHaveClass(
       'min-h-11',
       'min-w-11'
