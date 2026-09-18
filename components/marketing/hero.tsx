@@ -5,8 +5,7 @@ import {buttonClassName} from '@/components/ui/button';
 import {Container} from '@/components/ui/container';
 import {ConversionCta} from './conversion-cta';
 import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
-
-const facilityImage = 'https://siaodieqxzlarnvfppox.supabase.co/storage/v1/object/public/onboarding-photos/nupsbox-tan-phu/corridor-1.jpg';
+import {getFacilityMedia} from '@/features/content/facility-media';
 
 export function Hero({
   locale,
@@ -19,6 +18,7 @@ export function Hero({
 }) {
   const vi = locale === 'vi';
   const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2)) : null;
+  const facilityMedia = location ? getFacilityMedia(location.slug) : null;
 
   return (
     <section
@@ -75,10 +75,10 @@ export function Hero({
           </div>
         </div>
 
-        {location ? (
+        {location && facilityMedia ? (
           <div className="home-hero-image relative min-h-[360px] overflow-hidden rounded-[1.65rem] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,.2)] sm:min-h-[420px] lg:h-[clamp(430px,36vw,500px)] lg:min-h-0">
             <Image
-              src={facilityImage}
+              src={facilityMedia.imageUrl}
               alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
               fill
               priority
@@ -113,12 +113,22 @@ export function Hero({
                 NUPSBOX
               </p>
               <h2 className="mt-2 text-2xl font-extrabold tracking-[-0.03em]">
-                {vi ? 'Thông tin cơ sở sẽ xuất hiện sau khi được công bố.' : 'Facility details appear after they are published.'}
+                {location
+                  ? location.name
+                  : (vi ? 'Thông tin cơ sở sẽ xuất hiện sau khi được công bố.' : 'Facility details appear after they are published.')}
               </h2>
               <p className="mt-3 max-w-md text-sm leading-6 text-white/68">
-                {vi
-                  ? 'Bạn vẫn có thể dùng Storage Finder và gửi nhu cầu; website không tự điền địa chỉ, diện tích hay tiện ích khi chưa có dữ liệu xác nhận.'
-                  : 'You can still use Storage Finder and send your requirements; the site does not invent an address, area or facility feature when verified data is unavailable.'}
+                {location
+                  ? (minArea !== null
+                      ? (vi
+                          ? `Đang công bố loại kho từ ${minArea.toFixed(2)} m². Chưa có ảnh đã gắn cho cơ sở này nên website dùng visual trung tính.`
+                          : `Published unit types start from ${minArea.toFixed(2)} m². No approved image is mapped to this facility, so a neutral visual is used.`)
+                      : (vi
+                          ? 'Thông tin cơ sở đã được công bố nhưng chưa có ảnh đã gắn cho cơ sở này.'
+                          : 'Facility information is published, but no approved image is mapped to this facility yet.'))
+                  : (vi
+                      ? 'Bạn vẫn có thể dùng Storage Finder và gửi nhu cầu; website không tự điền địa chỉ, diện tích hay tiện ích khi chưa có dữ liệu xác nhận.'
+                      : 'You can still use Storage Finder and send your requirements; the site does not invent an address, area or facility feature when verified data is unavailable.')}
               </p>
             </div>
           </div>
