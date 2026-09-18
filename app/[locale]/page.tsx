@@ -50,9 +50,9 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
 
   return (
     <main>
-      <Hero locale={locale} />
+      <Hero locale={locale} location={location} units={featuredUnits} />
       <HomeChoiceHub units={featuredUnits} finderUnits={finderUnits} locale={locale} />
-      <HomeProofBento locale={locale} />
+      <HomeProofBento locale={locale} location={location} units={featuredUnits} />
       <HomeLocationJourney location={location} locale={locale} />
       <HomeFaq items={faqs} locale={locale} />
       <FinalCta locale={locale} />
