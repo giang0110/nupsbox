@@ -1,6 +1,7 @@
 import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {Container} from '@/components/ui/container';
+import {TrackedContactLink} from './tracked-contact-link';
 
 export async function SiteFooter({
   phone,
@@ -19,7 +20,7 @@ export async function SiteFooter({
   const vi = rawLocale !== 'en';
 
   return (
-    <footer className="bg-[var(--nupsbox-navy)] pb-28 pt-14 text-white sm:pb-12">
+    <footer className="bg-[var(--nupsbox-navy)] pb-24 pt-14 text-white sm:pb-12">
       <Container>
         <div className="grid gap-10 border-b border-white/10 pb-10 lg:grid-cols-[1.1fr_.8fr_.8fr]">
           <div>
@@ -32,8 +33,8 @@ export async function SiteFooter({
             </p>
           </div>
 
-          <nav className="grid content-start gap-3 text-sm text-white/70" aria-label="Footer navigation">
-            <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">Explore</p>
+          <nav className="grid content-start gap-3 text-sm text-white/70" aria-label={vi ? 'Điều hướng chân trang' : 'Footer navigation'}>
+            <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">{vi ? 'Khám phá' : 'Explore'}</p>
             <Link href="/kho-mini" className="hover:text-white">{nav('storage')}</Link>
             <Link href="/bang-gia" className="hover:text-white">{nav('pricing')}</Link>
             <Link href="/giai-phap" className="hover:text-white">{nav('solutions')}</Link>
@@ -43,10 +44,28 @@ export async function SiteFooter({
           </nav>
 
           <div className="grid content-start gap-3 text-sm text-white/70">
-            <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">Contact</p>
-            {phone ? <a href={`tel:${phone}`} className="hover:text-white">{phone}</a> : null}
+            <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">{vi ? 'Liên hệ' : 'Contact'}</p>
+            {phone ? (
+              <TrackedContactLink
+                href={`tel:${phone}`}
+                label={phone}
+                kind="phone"
+                placement="footer"
+                showIcon={false}
+                className="hover:text-white"
+              />
+            ) : null}
             {email ? <a href={`mailto:${email}`} className="hover:text-white">{email}</a> : null}
-            {zaloUrl ? <a href={zaloUrl} target="_blank" rel="noreferrer" className="hover:text-white">Zalo</a> : null}
+            {zaloUrl ? (
+              <TrackedContactLink
+                href={zaloUrl}
+                label="Zalo"
+                kind="zalo"
+                placement="footer"
+                showIcon={false}
+                className="hover:text-white"
+              />
+            ) : null}
             {!phone && !email && !zaloUrl ? <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link> : null}
           </div>
         </div>
