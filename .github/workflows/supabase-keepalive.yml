@@ -1,0 +1,63 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    # 09:15 Vietnam time (UTC+7), every Monday and Thursday.
+    - cron: '15 2 * * 1,4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_KEEPALIVE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_KEEPALIVE_PUBLISHABLE_KEY }}
+    steps:
+      - name: Validate keepalive secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL}" ]; then
+            echo 'Missing GitHub secret: SUPABASE_KEEPALIVE_URL' >&2
+            exit 1
+          fi
+          if [ -z "${SUPABASE_PUBLISHABLE_KEY}" ]; then
+            echo 'Missing GitHub secret: SUPABASE_KEEPALIVE_PUBLISHABLE_KEY' >&2
+            exit 1
+          fi
+
+      - name: Read one row from Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint="${SUPABASE_URL%/}/rest/v1/locations?select=id&limit=1"
+          response_file="$(mktemp)"
+
+          http_code=$(curl --silent --show-error --location \
+            --connect-timeout 15 \
+            --max-time 30 \
+            --output "${response_file}" \
+            --write-out '%{http_code}' \
+            --header "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            --header 'Accept: application/json' \
+            --header 'Cache-Control: no-cache' \
+            "${endpoint}" || true)
+
+          echo "Supabase keepalive HTTP status: ${http_code}"
+
+          if [ "${http_code}" != "200" ]; then
+            echo 'Supabase keepalive request failed.' >&2
+            head -c 500 "${response_file}" >&2 || true
+            echo >&2
+            exit 1
+          fi
+
+          echo 'Supabase keepalive succeeded.'
