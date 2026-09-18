@@ -33,6 +33,13 @@ export function StorageFinder({units}: StorageFinderProps) {
   const [need, setNeed] = useState<StorageNeed | null>(null);
   const [volume, setVolume] = useState<StorageVolume | null>(null);
 
+  const recommendation = useMemo(() => {
+    if (!need || !volume || units.length === 0) return null;
+    const base = recommendStorage({need, volume}, units);
+    const displayUnit = units.find((unit) => unit.id === base.unit.id) ?? units[0];
+    return {...base, unit: displayUnit};
+  }, [need, volume, units]);
+
   if (units.length === 0) {
     return (
       <section
@@ -68,13 +75,6 @@ export function StorageFinder({units}: StorageFinderProps) {
       </section>
     );
   }
-
-  const recommendation = useMemo(() => {
-    if (!need || !volume || units.length === 0) return null;
-    const base = recommendStorage({need, volume}, units);
-    const displayUnit = units.find((unit) => unit.id === base.unit.id) ?? units[0];
-    return {...base, unit: displayUnit};
-  }, [need, volume, units]);
 
   function chooseNeed(value: StorageNeed) {
     if (!need) trackEvent('storage_finder_start', {need: value});

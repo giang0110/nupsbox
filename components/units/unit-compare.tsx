@@ -25,6 +25,10 @@ export function UnitCompare({units, locale}: {units: PublicUnitType[]; locale: '
     [selectedIds, units]
   );
 
+  useEffect(() => {
+    if (selectedIds.length === 2) trackEvent('unit_compare_open', {count: selectedIds.length, locale});
+  }, [selectedIds.length, locale]);
+
   if (units.length === 0) {
     return (
       <div
@@ -42,10 +46,6 @@ export function UnitCompare({units, locale}: {units: PublicUnitType[]; locale: '
       </div>
     );
   }
-
-  useEffect(() => {
-    if (selectedIds.length === 2) trackEvent('unit_compare_open', {count: selectedIds.length, locale});
-  }, [selectedIds.length, locale]);
 
   function toggle(unitId: string) {
     setSelectedIds((current) => toggleComparedUnit(current, unitId));
