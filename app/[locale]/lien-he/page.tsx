@@ -47,13 +47,29 @@ export default async function Page({
                 : 'Tell NupsBox what you need. If you arrived from Storage Finder or a specific unit, that selection stays attached as context for your enquiry.'}
             </p>
 
-            <aside className="mt-6 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 shadow-[var(--nupsbox-shadow-sm)]">
-              <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]">
-                <MapPin size={19} aria-hidden="true" />
-              </span>
-              <h2 className="mt-4 text-xl font-extrabold tracking-[-0.025em] text-[var(--nupsbox-navy)]">{location.name}</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">{location.address}</p>
-            </aside>
+            {location ? (
+              <aside className="mt-6 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 shadow-[var(--nupsbox-shadow-sm)]">
+                <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]">
+                  <MapPin size={19} aria-hidden="true" />
+                </span>
+                <h2 className="mt-4 text-xl font-extrabold tracking-[-0.025em] text-[var(--nupsbox-navy)]">{location.name}</h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">{location.address}</p>
+              </aside>
+            ) : (
+              <aside
+                className="mt-6 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 text-sm leading-6 text-[var(--nupsbox-slate)] shadow-[var(--nupsbox-shadow-sm)]"
+                role="status"
+              >
+                <p className="font-extrabold text-[var(--nupsbox-navy)]">
+                  {vi ? 'Thông tin cơ sở chưa được công bố.' : 'Facility details are not currently published.'}
+                </p>
+                <p className="mt-2">
+                  {vi
+                    ? 'Bạn vẫn có thể gửi nhu cầu; NupsBox sẽ xác nhận địa điểm phù hợp khi liên hệ.'
+                    : 'You can still send your requirements; NupsBox will confirm a suitable location when contacting you.'}
+                </p>
+              </aside>
+            )}
           </div>
 
           <div id="lead-request">
