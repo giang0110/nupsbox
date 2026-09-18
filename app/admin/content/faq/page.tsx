@@ -1,4 +1,6 @@
 import {redirect} from 'next/navigation';
+import {AdminPageHeader} from '@/components/admin/admin-page-header';
+import {AdminEmptyState} from '@/components/admin/admin-primitives';
 import {FaqForm} from '@/components/admin/faq-form';
 import {Container} from '@/components/ui/container';
 import {listAdminFaqs} from '@/features/admin/faqs';
@@ -15,26 +17,31 @@ export default async function AdminFaqPage() {
   const canPublish = can(session.role, 'content:publish');
 
   return (
-    <main className="py-10 sm:py-14">
-      <Container>
-        <div className="max-w-3xl">
-          <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-blue)]">FAQ CMS</p>
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">FAQ song ngữ</h1>
-          <p className="mt-4 leading-7 text-[var(--nupsbox-slate)]">
-            FAQ mới luôn ở trạng thái nháp. Xuất bản là thao tác riêng và chỉ thành công khi đủ câu hỏi/câu trả lời VI và EN.
-          </p>
-        </div>
+    <main className="py-8 sm:py-10">
+      <Container className="grid gap-6">
+        <AdminPageHeader
+          eyebrow="FAQ CMS"
+          title="FAQ song ngữ"
+          description="FAQ mới luôn ở trạng thái nháp. Xuất bản là thao tác riêng và chỉ thành công khi đủ câu hỏi/câu trả lời VI và EN."
+        />
 
-        <div className="mt-10 grid gap-5">
+        <div className="grid gap-5">
           {canCreate ? <FaqForm canEdit canPublish={false} /> : null}
-          {faqs.map((faq) => (
-            <FaqForm
-              key={faq.id}
-              faq={faq}
-              canEdit={canUpdate}
-              canPublish={canPublish}
+          {faqs.length ? (
+            faqs.map((faq) => (
+              <FaqForm
+                key={faq.id}
+                faq={faq}
+                canEdit={canUpdate}
+                canPublish={canPublish}
+              />
+            ))
+          ) : (
+            <AdminEmptyState
+              title="Chưa có FAQ"
+              description="Chưa có FAQ nào trong cơ sở dữ liệu."
             />
-          ))}
+          )}
         </div>
       </Container>
     </main>

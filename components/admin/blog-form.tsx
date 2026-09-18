@@ -1,9 +1,15 @@
-import type {AdminBlog} from '@/features/admin/blog';
 import {
   createBlogPost,
   setBlogStatus,
   updateBlogPost
 } from '@/app/admin/content/blog/actions';
+import {
+  AdminActionBar,
+  AdminFieldGroup,
+  AdminPanel,
+  AdminStatusBadge
+} from '@/components/admin/admin-primitives';
+import type {AdminBlog} from '@/features/admin/blog';
 
 type MediaOption = {id: string; label: string};
 type Props = {
@@ -15,116 +21,142 @@ type Props = {
 };
 
 const inputClass =
-  'mt-1 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm disabled:bg-slate-50';
+  'mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm disabled:bg-slate-50';
 
 function bodyText(value: Record<string, unknown> | undefined) {
   return JSON.stringify(value ?? {}, null, 2);
 }
 
-export function BlogForm({blog, canCreate, canUpdate, canPublish, mediaOptions}: Props) {
+export function BlogForm({
+  blog,
+  canCreate,
+  canUpdate,
+  canPublish,
+  mediaOptions
+}: Props) {
   const editing = Boolean(blog);
   const canEdit = editing ? canUpdate : canCreate;
   const slugLocked = Boolean(blog?.publishedAt);
+  const statusLabel = !blog
+    ? 'Mới'
+    : blog.status === 'published'
+      ? 'Đã xuất bản'
+      : blog.status === 'archived'
+        ? 'Đã lưu trữ'
+        : 'Bản nháp';
 
   return (
-    <article className="rounded-3xl border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-black tracking-[0.14em] text-[var(--nupsbox-blue)]">
-            {blog?.status?.toUpperCase() ?? 'NEW DRAFT'}
-          </p>
-          <h2 className="mt-1 text-xl font-black text-[var(--nupsbox-navy)]">
-            {blog?.vi.title || blog?.en.title || 'Tạo bài blog'}
-          </h2>
-          {blog?.publishedAt ? (
-            <p className="mt-1 text-xs text-[var(--nupsbox-slate)]">Đã từng xuất bản — slug được khóa vĩnh viễn trong Phase 2.</p>
+    <AdminPanel
+      title={blog?.vi.title || blog?.en.title || 'Tạo bài blog'}
+      description={blog?.publishedAt ? 'Đã từng xuất bản — slug được khóa vĩnh viễn trong Phase 2.' : undefined}
+      actions={
+        <AdminActionBar>
+          <AdminStatusBadge
+            label={statusLabel}
+            tone={blog?.status === 'published' ? 'success' : 'neutral'}
+          />
+          {blog && canPublish && blog.status !== 'archived' ? (
+            <form action={setBlogStatus}>
+              <input type="hidden" name="id" value={blog.id} />
+              <input
+                type="hidden"
+                name="target"
+                value={blog.status === 'draft' ? 'published' : 'archived'}
+              />
+              <button className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]">
+                {blog.status === 'draft' ? 'Xuất bản' : 'Lưu trữ'}
+              </button>
+            </form>
           ) : null}
-        </div>
-
-        {blog && canPublish && blog.status !== 'archived' ? (
-          <form action={setBlogStatus}>
-            <input type="hidden" name="id" value={blog.id} />
-            <input type="hidden" name="target" value={blog.status === 'draft' ? 'published' : 'archived'} />
-            <button className="rounded-full border border-[var(--nupsbox-blue)] px-4 py-2 text-sm font-bold text-[var(--nupsbox-blue)]">
-              {blog.status === 'draft' ? 'Xuất bản' : 'Lưu trữ'}
-            </button>
-          </form>
-        ) : null}
-      </div>
-
-      <form action={editing ? updateBlogPost : createBlogPost} className="space-y-5">
+        </AdminActionBar>
+      }
+    >
+      <form action={editing ? updateBlogPost : createBlogPost} className="grid gap-6">
         {blog ? <input type="hidden" name="id" value={blog.id} /> : null}
         {slugLocked && blog ? <input type="hidden" name="slug" value={blog.slug} /> : null}
-        <fieldset disabled={!canEdit} className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-semibold md:col-span-2">
-            Slug
-            <input
-              className={inputClass}
-              name="slug"
-              required
-              disabled={!canEdit || slugLocked}
-              defaultValue={blog?.slug ?? ''}
-            />
-          </label>
-          <label className="text-sm font-semibold">
-            Tiêu đề VI
-            <input className={inputClass} name="titleVi" required defaultValue={blog?.vi.title ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            Title EN
-            <input className={inputClass} name="titleEn" required defaultValue={blog?.en.title ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            Tóm tắt VI
-            <textarea className={inputClass} name="excerptVi" rows={3} defaultValue={blog?.vi.excerpt ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            Excerpt EN
-            <textarea className={inputClass} name="excerptEn" rows={3} defaultValue={blog?.en.excerpt ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            Body VI (JSON)
-            <textarea className={`${inputClass} font-mono`} name="bodyVi" rows={10} defaultValue={bodyText(blog?.vi.body)} />
-          </label>
-          <label className="text-sm font-semibold">
-            Body EN (JSON)
-            <textarea className={`${inputClass} font-mono`} name="bodyEn" rows={10} defaultValue={bodyText(blog?.en.body)} />
-          </label>
-          <label className="text-sm font-semibold">
-            SEO title VI
-            <input className={inputClass} name="seoTitleVi" defaultValue={blog?.vi.seoTitle ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            SEO title EN
-            <input className={inputClass} name="seoTitleEn" defaultValue={blog?.en.seoTitle ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            SEO description VI
-            <textarea className={inputClass} name="seoDescriptionVi" rows={3} defaultValue={blog?.vi.seoDescription ?? ''} />
-          </label>
-          <label className="text-sm font-semibold">
-            SEO description EN
-            <textarea className={inputClass} name="seoDescriptionEn" rows={3} defaultValue={blog?.en.seoDescription ?? ''} />
-          </label>
-          <label className="text-sm font-semibold md:col-span-2">
-            Cover media
-            <select className={inputClass} name="coverMediaId" defaultValue={blog?.coverMediaId ?? ''}>
-              <option value="">Không chọn</option>
-              {mediaOptions.map((option) => (
-                <option key={option.id} value={option.id}>{option.label}</option>
-              ))}
-            </select>
-          </label>
-        </fieldset>
+
+        <AdminFieldGroup legend="Định danh" disabled={!canEdit}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="text-sm font-semibold">
+              Slug
+              <input
+                className={inputClass}
+                name="slug"
+                required
+                disabled={!canEdit || slugLocked}
+                defaultValue={blog?.slug ?? ''}
+              />
+            </label>
+            <label className="text-sm font-semibold">
+              Cover media
+              <select className={inputClass} name="coverMediaId" defaultValue={blog?.coverMediaId ?? ''}>
+                <option value="">Không chọn</option>
+                {mediaOptions.map((option) => (
+                  <option key={option.id} value={option.id}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </AdminFieldGroup>
+
+        <AdminFieldGroup legend="Tiếng Việt" disabled={!canEdit}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="text-sm font-semibold">
+              Tiêu đề VI
+              <input className={inputClass} name="titleVi" required defaultValue={blog?.vi.title ?? ''} />
+            </label>
+            <label className="text-sm font-semibold">
+              Tóm tắt VI
+              <textarea className={inputClass} name="excerptVi" rows={3} defaultValue={blog?.vi.excerpt ?? ''} />
+            </label>
+            <label className="text-sm font-semibold md:col-span-2">
+              Body VI (JSON)
+              <textarea className={inputClass + ' font-mono'} name="bodyVi" rows={10} defaultValue={bodyText(blog?.vi.body)} />
+            </label>
+            <label className="text-sm font-semibold">
+              SEO title VI
+              <input className={inputClass} name="seoTitleVi" defaultValue={blog?.vi.seoTitle ?? ''} />
+            </label>
+            <label className="text-sm font-semibold">
+              SEO description VI
+              <textarea className={inputClass} name="seoDescriptionVi" rows={3} defaultValue={blog?.vi.seoDescription ?? ''} />
+            </label>
+          </div>
+        </AdminFieldGroup>
+
+        <AdminFieldGroup legend="English" disabled={!canEdit}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="text-sm font-semibold">
+              Title EN
+              <input className={inputClass} name="titleEn" required defaultValue={blog?.en.title ?? ''} />
+            </label>
+            <label className="text-sm font-semibold">
+              Excerpt EN
+              <textarea className={inputClass} name="excerptEn" rows={3} defaultValue={blog?.en.excerpt ?? ''} />
+            </label>
+            <label className="text-sm font-semibold md:col-span-2">
+              Body EN (JSON)
+              <textarea className={inputClass + ' font-mono'} name="bodyEn" rows={10} defaultValue={bodyText(blog?.en.body)} />
+            </label>
+            <label className="text-sm font-semibold">
+              SEO title EN
+              <input className={inputClass} name="seoTitleEn" defaultValue={blog?.en.seoTitle ?? ''} />
+            </label>
+            <label className="text-sm font-semibold">
+              SEO description EN
+              <textarea className={inputClass} name="seoDescriptionEn" rows={3} defaultValue={blog?.en.seoDescription ?? ''} />
+            </label>
+          </div>
+        </AdminFieldGroup>
 
         {canEdit ? (
-          <button className="rounded-full bg-[var(--nupsbox-blue)] px-5 py-2.5 text-sm font-black text-white">
+          <button className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white">
             {editing ? 'Lưu nội dung' : 'Tạo bản nháp'}
           </button>
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
       </form>
-    </article>
+    </AdminPanel>
   );
 }

@@ -1,4 +1,6 @@
 import {redirect} from 'next/navigation';
+import {AdminPageHeader} from '@/components/admin/admin-page-header';
+import {AdminEmptyState} from '@/components/admin/admin-primitives';
 import {MediaMetadataForm} from '@/components/admin/media-metadata-form';
 import {Container} from '@/components/ui/container';
 import {listAdminLocations} from '@/features/admin/locations';
@@ -18,29 +20,34 @@ export default async function AdminMediaPage() {
   ]);
   const canEdit = can(session.role, 'media:update');
   const locationOptions = locations.map((location) => ({id: location.id, label: location.nameVi}));
-  const unitOptions = units.map((unit) => ({id: unit.id, label: `${unit.nameVi} · ${unit.areaM2} m²`}));
+  const unitOptions = units.map((unit) => ({id: unit.id, label: unit.nameVi + ' · ' + unit.areaM2 + ' m²'}));
 
   return (
-    <main className="py-10 sm:py-14">
-      <Container>
-        <div className="max-w-3xl">
-          <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-blue)]">MEDIA CMS</p>
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">Media metadata</h1>
-          <p className="mt-4 leading-7 text-[var(--nupsbox-slate)]">
-            Chỉnh alt text song ngữ, category, thứ tự, trạng thái public và liên kết catalog. P2.2 không thêm upload, thay file hoặc hard-delete.
-          </p>
-        </div>
+    <main className="py-8 sm:py-10">
+      <Container className="grid gap-6">
+        <AdminPageHeader
+          eyebrow="MEDIA CMS"
+          title="Media metadata"
+          description="Chỉnh alt text song ngữ, category, thứ tự, trạng thái public và liên kết catalog. Không thêm upload, thay file hoặc hard-delete."
+        />
 
-        <div className="mt-10 grid gap-5">
-          {mediaRows.map((media) => (
-            <MediaMetadataForm
-              key={media.id}
-              media={media}
-              canEdit={canEdit}
-              locationOptions={locationOptions}
-              unitOptions={unitOptions}
+        <div className="grid gap-5">
+          {mediaRows.length ? (
+            mediaRows.map((media) => (
+              <MediaMetadataForm
+                key={media.id}
+                media={media}
+                canEdit={canEdit}
+                locationOptions={locationOptions}
+                unitOptions={unitOptions}
+              />
+            ))
+          ) : (
+            <AdminEmptyState
+              title="Chưa có media"
+              description="Không có media metadata trong phạm vi hiện tại."
             />
-          ))}
+          )}
         </div>
       </Container>
     </main>
