@@ -64,8 +64,16 @@ export default async function LocaleLayout({
         <WebVitalsReporter />
         <JsonLd data={businessEntity} />
         <NextIntlClientProvider messages={messages}>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[var(--nupsbox-yellow)] focus:px-4 focus:py-3 focus:font-bold focus:text-[var(--nupsbox-navy)] focus:outline-none focus:ring-2 focus:ring-white"
+          >
+            {locale === 'vi' ? 'Bỏ qua điều hướng' : 'Skip to content'}
+          </a>
           <SiteHeader />
-          {children}
+          <div id="main-content" tabIndex={-1}>
+            {children}
+          </div>
           <SiteFooter phone={settings.phone} email={settings.email} zaloUrl={settings.zaloUrl} />
           <MobileActionBar
             phoneUrl={settings.phone ? `tel:${settings.phone}` : null}

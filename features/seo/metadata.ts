@@ -28,6 +28,11 @@ export function createLocalizedMetadata({
       locale: locale === 'vi' ? 'vi_VN' : 'en_US',
       alternateLocale: locale === 'vi' ? ['en_US'] : ['vi_VN'],
       siteName: 'NupsBox'
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description
     }
   };
 }

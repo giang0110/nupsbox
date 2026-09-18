@@ -20,14 +20,14 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/8 bg-[rgba(7,26,56,0.95)] text-white shadow-[0_10px_28px_rgba(7,26,56,0.1)] backdrop-blur-xl">
       <Container className="flex min-h-16 items-center justify-between gap-3">
-        <Link href="/" className="group flex min-h-11 shrink-0 items-center gap-2.5" aria-label="NupsBox home">
+        <Link href="/" className="group flex min-h-11 shrink-0 items-center gap-2.5" aria-label={locale === 'vi' ? 'Trang chủ NupsBox' : 'NupsBox home'}>
           <span className="grid size-9 place-items-center rounded-[0.7rem] bg-[var(--nupsbox-yellow)] text-sm font-black tracking-[-0.08em] text-[var(--nupsbox-navy)] shadow-[0_7px_24px_rgba(255,211,26,0.16)]">
             NB
           </span>
           <span className="text-[1.05rem] font-extrabold tracking-[-0.035em]">NUPSBOX</span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label={locale === 'vi' ? 'Điều hướng chính' : 'Primary navigation'}>
           {navigation.map(({href, key}) => (
             <Link
               key={key}
@@ -52,10 +52,10 @@ export async function SiteHeader() {
           </ConversionCta>
 
           <details className="relative lg:hidden">
-            <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-full border border-white/15 text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label="Menu">
+            <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-full border border-white/15 text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label={locale === 'vi' ? 'Mở menu điều hướng' : 'Open navigation menu'}>
               <Menu size={20} aria-hidden="true" />
             </summary>
-            <nav className="absolute right-0 top-12 w-64 rounded-2xl border border-black/10 bg-white p-2 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-lg)]" aria-label="Mobile navigation">
+            <nav className="absolute right-0 top-12 w-64 rounded-2xl border border-black/10 bg-white p-2 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-lg)]" aria-label={locale === 'vi' ? 'Điều hướng di động' : 'Mobile navigation'}>
               {navigation.map(({href, key}) => (
                 <Link key={key} href={href} className="block min-h-11 rounded-xl px-4 py-3 text-sm font-semibold hover:bg-[var(--nupsbox-surface)]">
                   {t(key)}
