@@ -1,9 +1,24 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {HowItWorks} from '@/components/marketing/how-it-works';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {PageIntro} from '@/components/ui/page-intro';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'how-it-works', {
+    vi: {
+      title: 'Cách thuê kho',
+      description: 'Tìm hiểu quy trình từ xác định nhu cầu, nhận gợi ý đến yêu cầu báo giá hoặc đề xuất lịch xem kho.'
+    },
+    en: {
+      title: 'How to rent storage',
+      description: 'See the journey from identifying your need and reviewing options to requesting a quote or storage viewing.'
+    }
+  });
+}
 
 export default async function Page({params}: {params: Promise<{locale:string}>}) {
   const {locale} = await params;

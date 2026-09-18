@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
@@ -6,6 +7,20 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'solutions', {
+    vi: {
+      title: 'Giải pháp lưu trữ',
+      description: 'Khám phá giải pháp lưu trữ theo nhu cầu của shop online, doanh nghiệp nhỏ, hàng tồn và cá nhân.'
+    },
+    en: {
+      title: 'Storage solutions',
+      description: 'Explore storage solutions for online sellers, small businesses, inventory and personal storage needs.'
+    }
+  });
+}
 
 export default async function SolutionsPage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;

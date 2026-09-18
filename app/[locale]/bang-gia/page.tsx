@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {PageIntro} from '@/components/ui/page-intro';
@@ -7,6 +8,20 @@ import {UnitCompare} from '@/components/units/unit-compare';
 import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'pricing', {
+    vi: {
+      title: 'Bảng giá kho mini',
+      description: 'Xem giá kho mini khi dữ liệu đã được NupsBox xác nhận; giá chưa có nguồn được hiển thị dưới dạng liên hệ báo giá.'
+    },
+    en: {
+      title: 'Mini storage pricing',
+      description: 'View mini storage pricing when values have been confirmed by NupsBox; unverified prices remain contact-for-pricing.'
+    }
+  });
+}
 
 export default async function PricingPage({params}: {params: Promise<{locale: string}>}) {
   const {locale: rawLocale} = await params;

@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {Suspense} from 'react';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
@@ -7,6 +8,20 @@ import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingFeaturedLocation, getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'contact', {
+    vi: {
+      title: 'Liên hệ & nhận tư vấn',
+      description: 'Gửi nhu cầu lưu trữ để NupsBox tư vấn loại kho, mức giá hiện hành và bước tiếp theo phù hợp.'
+    },
+    en: {
+      title: 'Contact & storage advice',
+      description: 'Send your storage requirements so NupsBox can help confirm a suitable unit, current pricing and the next step.'
+    }
+  });
+}
 
 export default async function Page({
   params,

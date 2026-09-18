@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Gallery} from '@/components/marketing/gallery';
@@ -6,6 +7,20 @@ import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'about', {
+    vi: {
+      title: 'Về NupsBox',
+      description: 'Tìm hiểu cách NupsBox xây dựng trải nghiệm kho mini với thông tin minh bạch trước khi thuê.'
+    },
+    en: {
+      title: 'About NupsBox',
+      description: 'Learn how NupsBox approaches mini storage with clear information before you rent.'
+    }
+  });
+}
 
 export default async function Page({params}: {params: Promise<{locale:string}>}) {
   const {locale} = await params;
