@@ -81,8 +81,10 @@
 
 ### Pipeline/Kanban
 
+- Create: `features/admin/lead-appointment-summary.ts` — bounded batch read model for optional nearest appointment context.
 - Create: `components/admin/lead-pipeline.tsx` — seven-column pipeline, explicit selector fallback, native desktop drag/drop.
 - Modify: `app/admin/leads/page.tsx` — switch Table/Pipeline from normalized URL state.
+- Test: `tests/unit/admin-lead-appointment-summary.test.ts`.
 - Test: `tests/unit/admin-lead-pipeline.test.tsx`.
 
 ### Lead detail
@@ -1178,7 +1180,7 @@ describe('admin lead list', () => {
     render(
       <LeadList
         leads={[lead]}
-        assigneeNames={new Map([[lead.assignedTo!, 'Nhân viên A']])}
+        assigneeNames={{[lead.assignedTo!]: 'Nhân viên A'}}
         canUpdate
       />
     );
@@ -1242,7 +1244,7 @@ const [leads, assignees, sources] = await Promise.all([
   listLeadAssignees(),
   listAdminLeadSources()
 ]);
-const assigneeNames = new Map(assignees.map((item) => [item.id, item.fullName]));
+const assigneeNames = Object.fromEntries(assignees.map((item) => [item.id, item.fullName]));
 ```
 
 Render:
@@ -1427,9 +1429,11 @@ git commit -m "feat: add CRM mutation feedback"
 ### Task 6: Add the seven-column Pipeline with explicit fallback and native drag/drop
 
 **Files:**
+- Create: `features/admin/lead-appointment-summary.ts`
 - Create: `components/admin/lead-pipeline.tsx`
 - Modify: `components/admin/lead-filter-bar.tsx`
 - Modify: `app/admin/leads/page.tsx`
+- Create: `tests/unit/admin-lead-appointment-summary.test.ts`
 - Create: `tests/unit/admin-lead-pipeline.test.tsx`
 
 **Interfaces:**
@@ -1438,10 +1442,67 @@ git commit -m "feat: add CRM mutation feedback"
   - `groupLeadsByStatus()`
   - `leadStatusMeta`
   - `updateLeadStatusValue()`
-  - `assigneeNames: Map<string, string>`.
-- Produces: `LeadPipeline({leads, assigneeNames, canUpdate})`.
+  - `assigneeNames: Record<string, string>`
+  - `appointmentSummaries: Record<string, AdminLeadAppointmentSummary>`.
+- Produces:
+  - `listAdminLeadAppointmentSummaries(leadIds, now?)`
+  - `projectLeadAppointmentSummaries(rows, leadIds, now)`
+  - `LeadPipeline({leads, assigneeNames, appointmentSummaries, canUpdate})`.
 
-- [ ] **Step 1: Write Pipeline RED tests for columns and fallback**
+- [ ] **Step 1: Write RED tests for the batched appointment summary and Pipeline UI**
+
+Create `tests/unit/admin-lead-appointment-summary.test.ts`:
+
+```ts
+import {describe, expect, it} from 'vitest';
+import {projectLeadAppointmentSummaries} from '@/features/admin/lead-appointment-summary';
+
+const now = new Date('2026-09-18T03:00:00.000Z');
+
+describe('lead pipeline appointment summaries', () => {
+  it('selects the earliest future actionable appointment per lead', () => {
+    const result = projectLeadAppointmentSummaries([
+      {
+        id: 'a-later',
+        leadId: 'lead-a',
+        status: 'pending',
+        scheduledAt: '2026-09-20T03:00:00.000Z'
+      },
+      {
+        id: 'a-next',
+        leadId: 'lead-a',
+        status: 'confirmed',
+        scheduledAt: '2026-09-19T03:00:00.000Z'
+      }
+    ], ['lead-a'], now);
+
+    expect(result['lead-a']).toMatchObject({
+      id: 'a-next',
+      status: 'confirmed',
+      overdue: false
+    });
+  });
+
+  it('falls back to the latest past appointment and flags confirmed overdue', () => {
+    const result = projectLeadAppointmentSummaries([
+      {
+        id: 'a-old',
+        leadId: 'lead-a',
+        status: 'confirmed',
+        scheduledAt: '2026-09-16T03:00:00.000Z'
+      },
+      {
+        id: 'a-recent',
+        leadId: 'lead-a',
+        status: 'confirmed',
+        scheduledAt: '2026-09-17T03:00:00.000Z'
+      }
+    ], ['lead-a'], now);
+
+    expect(result['lead-a']).toMatchObject({id: 'a-recent', overdue: true});
+  });
+});
+```
 
 Create `tests/unit/admin-lead-pipeline.test.tsx`:
 
@@ -1473,8 +1534,24 @@ const lead = {
 };
 
 describe('lead pipeline', () => {
-  it('renders all seven operational columns even when most are empty', () => {
-    render(<LeadPipeline leads={[lead]} assigneeNames={new Map()} canUpdate />);
+  it('renders all seven columns, an explicit status fallback and appointment context', () => {
+    render(
+      <LeadPipeline
+        leads={[lead]}
+        assigneeNames={{}}
+        appointmentSummaries={{
+          [lead.id]: {
+            id: 'appointment-1',
+            leadId: lead.id,
+            status: 'confirmed',
+            scheduledAt: '2026-09-20T02:30:00.000Z',
+            overdue: false
+          }
+        }}
+        canUpdate
+      />
+    );
+
     expect(screen.getByRole('heading', {name: 'Mới'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Đã liên hệ'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Đã xác nhận nhu cầu'})).toBeInTheDocument();
@@ -1482,24 +1559,115 @@ describe('lead pipeline', () => {
     expect(screen.getByRole('heading', {name: 'Đang thương lượng'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Đã thuê'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Không chuyển đổi'})).toBeInTheDocument();
-  });
-
-  it('keeps an explicit status selector for non-drag interaction', () => {
-    render(<LeadPipeline leads={[lead]} assigneeNames={new Map()} canUpdate />);
     expect(screen.getByLabelText('Chuyển trạng thái Nguyễn An')).toBeInTheDocument();
+    expect(screen.getByText(/lịch gần nhất/i)).toBeInTheDocument();
   });
 });
 ```
 
-- [ ] **Step 2: Run test and verify RED**
+- [ ] **Step 2: Run both focused tests and verify RED**
 
 ```bash
-npm run test:run -- tests/unit/admin-lead-pipeline.test.tsx
+npm run test:run -- tests/unit/admin-lead-appointment-summary.test.ts tests/unit/admin-lead-pipeline.test.tsx
 ```
 
-Expected: FAIL because Pipeline does not exist.
+Expected: FAIL because neither the batched appointment-summary read model nor Pipeline component exists.
 
-- [ ] **Step 3: Implement the Client Component Pipeline**
+- [ ] **Step 3: Implement the bounded appointment-summary read model**
+
+Create `features/admin/lead-appointment-summary.ts`:
+
+```ts
+import type {SupabaseClient} from '@supabase/supabase-js';
+import {selectNextAppointment} from '@/features/admin/lead-detail';
+import {createSupabaseServerClient} from '@/lib/supabase/server';
+import type {DatabaseWithAppointments} from '@/types/appointment-database';
+
+export type LeadAppointmentSummaryRow = {
+  id: string;
+  leadId: string;
+  status: 'pending' | 'confirmed';
+  scheduledAt: string;
+};
+
+export type AdminLeadAppointmentSummary = LeadAppointmentSummaryRow & {
+  overdue: boolean;
+};
+
+export function projectLeadAppointmentSummaries(
+  rows: readonly LeadAppointmentSummaryRow[],
+  leadIds: readonly string[],
+  now = new Date()
+): Record<string, AdminLeadAppointmentSummary> {
+  return Object.fromEntries(
+    leadIds.flatMap((leadId) => {
+      const selected = selectNextAppointment(
+        rows
+          .filter((row) => row.leadId === leadId)
+          .map((row) => ({
+            id: row.id,
+            status: row.status,
+            scheduledAt: row.scheduledAt
+          })),
+        now
+      );
+      return selected
+        ? [[leadId, {...selected, leadId} satisfies AdminLeadAppointmentSummary]]
+        : [];
+    })
+  );
+}
+
+export async function listAdminLeadAppointmentSummaries(
+  leadIds: readonly string[],
+  now = new Date()
+): Promise<Record<string, AdminLeadAppointmentSummary>> {
+  const ids = [...new Set(leadIds)].slice(0, 100);
+  if (ids.length === 0) return {};
+
+  const supabase = await createSupabaseServerClient();
+  const client = supabase as unknown as SupabaseClient<DatabaseWithAppointments>;
+  const nowIso = now.toISOString();
+
+  const [future, past] = await Promise.all([
+    client
+      .from('lead_appointments')
+      .select('id, lead_id, status, scheduled_at')
+      .in('lead_id', ids)
+      .in('status', ['pending', 'confirmed'])
+      .gte('scheduled_at', nowIso)
+      .order('scheduled_at', {ascending: true})
+      .limit(500),
+    client
+      .from('lead_appointments')
+      .select('id, lead_id, status, scheduled_at')
+      .in('lead_id', ids)
+      .in('status', ['pending', 'confirmed'])
+      .lt('scheduled_at', nowIso)
+      .order('scheduled_at', {ascending: false})
+      .limit(500)
+  ]);
+
+  if (future.error) throw future.error;
+  if (past.error) throw past.error;
+
+  const rows = [...(future.data ?? []), ...(past.data ?? [])].flatMap((row) => {
+    if (row.status !== 'pending' && row.status !== 'confirmed') return [];
+    return [{
+      id: row.id,
+      leadId: row.lead_id,
+      status: row.status,
+      scheduledAt: row.scheduled_at
+    }];
+  });
+
+  return projectLeadAppointmentSummaries(rows, ids, now);
+}
+```
+
+The two queries are intentionally bounded and run only for the at-most-100 leads already present in the Pipeline result set. Missing summary data simply omits the appointment line; it never fabricates an appointment.
+
+- [ ] **Step 4: Implement the Client Component Pipeline**
 
 Use native browser drag events, not a package.
 
@@ -1512,7 +1680,7 @@ State:
 Render:
 - a horizontally scrollable Pipeline board only inside the Pipeline view; this horizontal scroll is intentional Kanban navigation, unlike the mobile Table requirement;
 - seven fixed semantic sections in operational order;
-- each card with name, phone, need type, assignee, source, created time, and detail link;
+- each card with name, phone, need type, assignee, source, created time, detail link, and the optional nearest appointment summary from `appointmentSummaries[lead.id]`;
 - an explicit labelled status `select` for every mutable card;
 - read-only cards for users without `leads:update`.
 
@@ -1560,15 +1728,24 @@ must call `commitStatus()`.
 
 Do not mutate local lead objects in place.
 
-- [ ] **Step 4: Add the view toggle and switch the page between Table/Pipeline**
+- [ ] **Step 5: Fetch Pipeline appointment summaries, add the view toggle, and switch views**
 
-Update `LeadFilterBar` to render Table/Pipeline links with `buildLeadWorkspaceHref()` while preserving all current filters. Then update `app/admin/leads/page.tsx` to render:
+Update `LeadFilterBar` to render Table/Pipeline links with `buildLeadWorkspaceHref()` while preserving all current filters. In `app/admin/leads/page.tsx`, fetch summaries only after the filtered leads are known:
+
+```tsx
+const appointmentSummaries = query.view === 'pipeline'
+  ? await listAdminLeadAppointmentSummaries(leads.map((lead) => lead.id))
+  : {};
+```
+
+Then render:
 
 ```tsx
 {query.view === 'pipeline' ? (
   <LeadPipeline
     leads={leads}
     assigneeNames={assigneeNames}
+    appointmentSummaries={appointmentSummaries}
     canUpdate={canUpdate}
   />
 ) : (
@@ -1582,7 +1759,7 @@ Update `LeadFilterBar` to render Table/Pipeline links with `buildLeadWorkspaceHr
 
 Keep the same `LeadFilterBar` above both views.
 
-- [ ] **Step 5: Test the error rollback path**
+- [ ] **Step 6: Test the error rollback path**
 
 Extend `admin-lead-pipeline.test.tsx` with a mocked failed `updateLeadStatusValue` and a selector-driven status change. Assert:
 - alert text is shown;
@@ -1591,12 +1768,12 @@ Extend `admin-lead-pipeline.test.tsx` with a mocked failed `updateLeadStatusValu
 
 This verifies the same rollback behavior used by drag/drop without relying on fragile JSDOM drag geometry.
 
-- [ ] **Step 6: Run focused tests/typecheck and commit**
+- [ ] **Step 7: Run focused tests/typecheck and commit**
 
 ```bash
-npm run test:run -- tests/unit/admin-lead-pipeline.test.tsx tests/unit/admin-lead-list.test.tsx tests/unit/admin-lead-actions-ui.test.tsx
+npm run test:run -- tests/unit/admin-lead-appointment-summary.test.ts tests/unit/admin-lead-pipeline.test.tsx tests/unit/admin-lead-list.test.tsx tests/unit/admin-lead-actions-ui.test.tsx
 npm run typecheck
-git add components/admin/lead-pipeline.tsx components/admin/lead-filter-bar.tsx app/admin/leads/page.tsx tests/unit/admin-lead-pipeline.test.tsx
+git add features/admin/lead-appointment-summary.ts components/admin/lead-pipeline.tsx components/admin/lead-filter-bar.tsx app/admin/leads/page.tsx tests/unit/admin-lead-appointment-summary.test.ts tests/unit/admin-lead-pipeline.test.tsx
 git commit -m "feat: add hybrid lead pipeline"
 ```
 
@@ -2664,7 +2841,7 @@ P2.7 does not authorize seeding business data or cutting over `nupsbox.vn` after
 - Name/phone/email search, status/assignee/source filters: Tasks 3–4.
 - Responsive Table and mobile lead cards: Task 4.
 - Visible status/assignment/note mutation feedback: Task 5.
-- Seven-status Pipeline, explicit selector, optional DnD, rollback: Task 6.
+- Seven-status Pipeline, optional nearest appointment summary, explicit selector, optional DnD, rollback: Task 6.
 - Adaptive Lead Detail and low-height sticky rule: Task 7.
 - Readable location/unit/assignee context: Task 7.
 - Light Booking appointment presentation and safe errors: Task 8.
