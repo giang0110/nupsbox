@@ -97,3 +97,19 @@ for (const route of ['/lien-he', '/dat-kho']) {
     expect(fieldBox?.y ?? 999).toBeLessThan(760);
   });
 }
+
+
+for (const route of ['/lien-he', '/dat-kho']) {
+  test(`${route} keeps the conversion form within the first desktop viewport`, async ({page}) => {
+    await page.setViewportSize({width: 1366, height: 768});
+    await page.goto(route);
+
+    const heading = page.locator('h1:visible');
+    const firstField = page.getByLabel(/tên/i);
+    const headingBox = await heading.boundingBox();
+    const fieldBox = await firstField.boundingBox();
+
+    expect(headingBox?.y ?? 999).toBeLessThan(300);
+    expect(fieldBox?.y ?? 999).toBeLessThan(760);
+  });
+}
