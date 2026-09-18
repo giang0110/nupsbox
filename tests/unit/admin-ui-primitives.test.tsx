@@ -36,7 +36,7 @@ describe('admin UI primitives', () => {
     );
 
     expect(screen.getByText('8')).toBeInTheDocument();
-    expect(screen.getByText('Mới')).toBeInTheDocument();
+    expect(screen.getByText('Mới')).toBeInTheDocument();\n    expect(screen.getByText('Mới')).toHaveTextContent('Mới');
     expect(screen.getByRole('heading', {name: 'Việc cần chú ý'})).toBeInTheDocument();
     expect(screen.getByText('Không có bản ghi phù hợp.')).toBeInTheDocument();
   });
