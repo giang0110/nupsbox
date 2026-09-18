@@ -49,7 +49,7 @@ export default async function LocaleLayout({
   const [messages, location, settings] = await Promise.all([
     getMessages(),
     getMarketingFeaturedLocation(locale),
-    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, openingHours: {}}))
+    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, facebookUrl: null, openingHours: {}}))
   ]);
   const businessEntity = buildPublicBusinessEntity({
     origin: SITE_ORIGIN,
@@ -74,10 +74,11 @@ export default async function LocaleLayout({
           <div id="main-content" tabIndex={-1}>
             {children}
           </div>
-          <SiteFooter phone={settings.phone} email={settings.email} zaloUrl={settings.zaloUrl} />
+          <SiteFooter phone={settings.phone} email={settings.email} zaloUrl={settings.zaloUrl} facebookUrl={settings.facebookUrl} />
           <MobileActionBar
             phoneUrl={settings.phone ? `tel:${settings.phone}` : null}
             zaloUrl={settings.zaloUrl ?? null}
+            facebookUrl={settings.facebookUrl ?? null}
           />
         </NextIntlClientProvider>
       </body>

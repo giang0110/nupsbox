@@ -6,11 +6,13 @@ import {TrackedContactLink} from './tracked-contact-link';
 export async function SiteFooter({
   phone,
   email,
-  zaloUrl
+  zaloUrl,
+  facebookUrl
 }: {
   phone?: string | null;
   email?: string | null;
   zaloUrl?: string | null;
+  facebookUrl?: string | null;
 }) {
   const [nav, brand, rawLocale] = await Promise.all([
     getTranslations('nav'),
@@ -66,7 +68,17 @@ export async function SiteFooter({
                 className="hover:text-white"
               />
             ) : null}
-            {!phone && !email && !zaloUrl ? <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link> : null}
+            {facebookUrl ? (
+              <TrackedContactLink
+                href={facebookUrl}
+                label="Facebook"
+                kind="facebook"
+                placement="footer"
+                showIcon={false}
+                className="hover:text-white"
+              />
+            ) : null}
+            {!phone && !email && !zaloUrl && !facebookUrl ? <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link> : null}
           </div>
         </div>
         <p className="pt-6 text-xs text-white/45">© {new Date().getFullYear()} NupsBox. All rights reserved.</p>

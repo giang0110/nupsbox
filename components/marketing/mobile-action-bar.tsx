@@ -6,10 +6,11 @@ import {TrackedContactLink} from './tracked-contact-link';
 export type MobileActionBarProps = {
   phoneUrl?: string | null;
   zaloUrl?: string | null;
+  facebookUrl?: string | null;
   mode?: 'default' | 'viewing';
 };
 
-export async function MobileActionBar({phoneUrl, zaloUrl, mode = 'default'}: MobileActionBarProps) {
+export async function MobileActionBar({phoneUrl, zaloUrl, facebookUrl, mode = 'default'}: MobileActionBarProps) {
   const [t, rawLocale] = await Promise.all([getTranslations('actions'), getLocale()]);
   const locale = rawLocale === 'en' ? 'en' : 'vi';
   const contextualIntent = mode === 'viewing' ? 'viewing' : 'quote';
@@ -18,7 +19,9 @@ export async function MobileActionBar({phoneUrl, zaloUrl, mode = 'default'}: Mob
     ? {href: phoneUrl, label: t('phone'), kind: 'phone' as const}
     : zaloUrl
       ? {href: zaloUrl, label: t('zalo'), kind: 'zalo' as const}
-      : null;
+      : facebookUrl
+        ? {href: facebookUrl, label: 'Facebook', kind: 'facebook' as const}
+        : null;
 
   return (
     <nav
