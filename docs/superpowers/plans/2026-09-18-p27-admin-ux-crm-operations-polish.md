@@ -160,7 +160,7 @@
 - Produces:
   - `getAdminNavigation(role: AppRole): AdminNavigationGroup[]`
   - `isAdminRouteActive(pathname: string, href: string): boolean`
-  - `AdminShell({role, userLabel, children})`
+  - `AdminShell({role, userLabel, groups, children})`
   - `AdminPageHeader({eyebrow, title, description, breadcrumbs?, actions?})`
   - `AdminPanel`, `AdminStatCard`, `AdminStatusBadge`, `AdminEmptyState`, `AdminFieldGroup`, `AdminActionBar`.
 
@@ -439,7 +439,7 @@ export function AdminPageHeader({
 ```
 
 Create `components/admin/admin-shell.tsx` as a Client Component. It must:
-- call `getAdminNavigation(role)` before/through serializable data or receive the produced groups from `app/admin/layout.tsx`;
+- receive the serializable `groups` produced by `getAdminNavigation(session.role)` in `app/admin/layout.tsx`;
 - render a desktop sidebar at `lg` and a native `<dialog>` drawer below `lg`;
 - use `usePathname()` plus `isAdminRouteActive()` for active navigation;
 - expose a 44 px menu trigger, close button, and desktop collapse toggle;
@@ -1011,7 +1011,6 @@ The component is server-renderable and uses a GET form. It must include:
 - hidden `view=pipeline` only when Pipeline is active;
 - “Lọc” submit;
 - “Xóa lọc” link that keeps the current view but clears filters;
-- Table/Pipeline links built with `buildLeadWorkspaceHref()`;
 - labels with 44 px controls.
 
 Do not store filters in client state.
@@ -1052,10 +1051,9 @@ Render:
 - `AdminPageHeader`;
 - `LeadFilterBar`;
 - a small “Tối đa 100 lead mới nhất phù hợp bộ lọc” context note;
-- `LeadList` when `query.view === 'table'`;
-- leave the Pipeline branch as a clear temporary server-side empty state only inside this task branch, then complete it in Task 6 before PR review.
+- `LeadList` as the only rendered result view in this task.
 
-Do not merge Task 4 independently to `main`; the branch remains the implementation branch.
+The normalized `view` parameter already exists in the read model, but the UI does not expose the Pipeline toggle until Task 6 delivers a complete Pipeline. This keeps Task 4 independently usable instead of exposing an incomplete route state.
 
 - [ ] **Step 6: Run tests and commit**
 
@@ -1230,6 +1228,7 @@ git commit -m "feat: add CRM mutation feedback"
 
 **Files:**
 - Create: `components/admin/lead-pipeline.tsx`
+- Modify: `components/admin/lead-filter-bar.tsx`
 - Modify: `app/admin/leads/page.tsx`
 - Create: `tests/unit/admin-lead-pipeline.test.tsx`
 
@@ -1361,9 +1360,9 @@ must call `commitStatus()`.
 
 Do not mutate local lead objects in place.
 
-- [ ] **Step 4: Complete the Pipeline branch in `app/admin/leads/page.tsx`**
+- [ ] **Step 4: Add the view toggle and switch the page between Table/Pipeline**
 
-Replace Task 4’s temporary Pipeline empty state with:
+Update `LeadFilterBar` to render Table/Pipeline links with `buildLeadWorkspaceHref()` while preserving all current filters. Then update `app/admin/leads/page.tsx` to render:
 
 ```tsx
 {query.view === 'pipeline' ? (
@@ -1397,7 +1396,7 @@ This verifies the same rollback behavior used by drag/drop without relying on fr
 ```bash
 npm run test:run -- tests/unit/admin-lead-pipeline.test.tsx tests/unit/admin-lead-list.test.tsx tests/unit/admin-lead-actions-ui.test.tsx
 npm run typecheck
-git add components/admin/lead-pipeline.tsx app/admin/leads/page.tsx tests/unit/admin-lead-pipeline.test.tsx
+git add components/admin/lead-pipeline.tsx components/admin/lead-filter-bar.tsx app/admin/leads/page.tsx tests/unit/admin-lead-pipeline.test.tsx
 git commit -m "feat: add hybrid lead pipeline"
 ```
 
@@ -1666,11 +1665,37 @@ Presentation:
 6. no duplicate appointment audit list in this component.
 
 Mutation UX:
-- use small client form wrappers around create/update submissions;
-- disable submit while pending;
+- convert `components/admin/appointment-workspace.tsx` to a Client Component;
+- submit create/update forms with `onSubmit`, `new FormData(event.currentTarget)`, and the safe `createAppointmentValue` / `updateAppointmentValue` server actions;
+- keep one local pending identifier (`'create'` or appointment id) and one local error message;
+- disable only the form currently being submitted;
 - show `role="alert"` on failure;
+- call `router.refresh()` after a successful result;
 - keep entered values on failure;
 - preserve all current fields and max lengths.
+
+Use this concrete submit shape inside the component:
+
+```tsx
+async function submitAppointment(
+  key: string,
+  form: HTMLFormElement,
+  action: (formData: FormData) => Promise<AdminActionResult>
+) {
+  setPendingKey(key);
+  setError(null);
+  try {
+    const result = await action(new FormData(form));
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+    router.refresh();
+  } finally {
+    setPendingKey(null);
+  }
+}
+```
 
 Keep the explicit text “Tạo lịch chờ xác nhận” so the interface does not imply reservation.
 
@@ -1701,7 +1726,24 @@ Expected: all existing appointment domain tests stay green.
 ### Task 9: Apply the Admin design system consistently to Catalog and Content
 
 **Files:**
-- Modify all Catalog/Content page/form files listed in the File Structure section.
+- Modify: `app/admin/catalog/page.tsx`
+- Modify: `app/admin/catalog/locations/page.tsx`
+- Modify: `app/admin/catalog/unit-types/page.tsx`
+- Modify: `app/admin/catalog/pricing/page.tsx`
+- Modify: `components/admin/catalog-tables.tsx`
+- Modify: `components/admin/location-form.tsx`
+- Modify: `components/admin/unit-type-form.tsx`
+- Modify: `components/admin/pricing-form.tsx`
+- Modify: `app/admin/content/page.tsx`
+- Modify: `app/admin/content/faq/page.tsx`
+- Modify: `app/admin/content/blog/page.tsx`
+- Modify: `app/admin/content/blog/[id]/page.tsx`
+- Modify: `app/admin/content/media/page.tsx`
+- Modify: `app/admin/content/settings/page.tsx`
+- Modify: `components/admin/faq-form.tsx`
+- Modify: `components/admin/blog-form.tsx`
+- Modify: `components/admin/media-metadata-form.tsx`
+- Modify: `components/admin/site-setting-form.tsx`.
 - Create: `tests/unit/admin-responsive-lists.test.tsx`.
 - Preserve existing:
   - `tests/unit/admin-catalog.test.ts`
@@ -1734,42 +1776,85 @@ Expected: FAIL because current Catalog tables only render wide desktop tables.
 
 - [ ] **Step 3: Migrate Catalog summary/list pages to shared Admin primitives**
 
-For:
-- `app/admin/catalog/page.tsx`;
-- `components/admin/catalog-tables.tsx`;
+In `app/admin/catalog/page.tsx`, replace the bespoke intro with:
 
-replace bespoke title/card/table wrappers with shared primitives.
+```tsx
+<AdminPageHeader
+  eyebrow="CATALOG"
+  title="Kho & bảng giá"
+  description="Quản lý địa điểm, loại kho và dữ liệu giá vận hành."
+/>
+```
 
-For each catalog table:
-- desktop semantic table at `lg`;
-- card/list representation below `lg`;
-- no mandatory page-level horizontal scroll;
-- status shown as readable text/badge;
-- preserve the disclaimer that operational availability is not realtime inventory.
+In `components/admin/catalog-tables.tsx`, use one source array for two responsive representations:
+
+```tsx
+<div data-admin-desktop-table className="hidden lg:block">
+  <table className="w-full text-left text-sm">{/* existing columns/rows */}</table>
+</div>
+<div data-admin-mobile-list className="grid gap-3 lg:hidden">
+  {rows.map((row) => (
+    <article key={row.id} className="rounded-xl border border-[var(--nupsbox-border)] p-4">
+      {/* same readable fields and status text as the table row */}
+    </article>
+  ))}
+</div>
+```
+
+Apply this concrete two-representation contract separately to locations, unit types, and pricing. Preserve existing labels, price-format helpers, links, and the disclaimer that operational availability is not realtime inventory.
 
 - [ ] **Step 4: Migrate Catalog edit pages/forms without changing actions**
 
-For Locations, Unit Types, Pricing:
-- use `AdminPageHeader`;
-- create/edit form panels share the same surface/spacing;
-- group related fields with `AdminFieldGroup`;
-- preserve all existing action imports and permission props;
-- preserve publication/slug semantics;
-- do not add bulk actions or imports.
+For Locations, Unit Types, and Pricing pages, replace each page intro with `AdminPageHeader`. In each existing form component, keep the current action and props but wrap fields by purpose:
 
-Run existing mutation tests immediately after this step.
+```tsx
+<AdminPanel title={editing ? 'Chỉnh sửa' : 'Tạo mới'}>
+  <form action={existingAction} className="grid gap-5">
+    <AdminFieldGroup legend="Thông tin chính">
+      <div className="grid gap-4 md:grid-cols-2">{/* existing primary fields */}</div>
+    </AdminFieldGroup>
+    <AdminFieldGroup legend="Hiển thị & vận hành">
+      <div className="grid gap-4 md:grid-cols-2">{/* existing status/publish fields */}</div>
+    </AdminFieldGroup>
+    {/* existing permission-gated submit/publish controls */}
+  </form>
+</AdminPanel>
+```
+
+Do not rename form field names, action imports, permission props, publication rules, or slug-lock behavior. Do not add bulk actions or import flows.
+
+Run:
+
+```bash
+npm run test:run -- tests/unit/admin-catalog.test.ts tests/unit/admin-catalog-mutations.test.ts
+```
+
+Expected: PASS before continuing to Content.
 
 - [ ] **Step 5: Migrate Content pages/forms**
 
-For Content overview, FAQ, Blog, Media, Settings:
-- shared `AdminPageHeader`;
-- `AdminPanel` for major blocks;
-- explicit draft/published/active state via `AdminStatusBadge`;
-- metadata/content grouped into readable field groups;
-- content overview media table gains a mobile card/list equivalent;
-- settings grouped by existing keys only;
-- media remains metadata-only; no upload/delete subsystem;
-- no CMS workflow changes.
+For Content overview, FAQ, Blog, Media, and Settings:
+- use `AdminPageHeader` on every page;
+- wrap major sections in `AdminPanel`;
+- render draft/published/active state through `AdminStatusBadge`;
+- wrap existing fieldsets with `AdminFieldGroup` while preserving every current field name and server action;
+- render the Content overview media rows as desktop table + mobile cards using the same `data-admin-desktop-table` / `data-admin-mobile-list` contract;
+- keep Settings limited to the existing allowlisted keys;
+- keep Media metadata-only.
+
+Use this form-header pattern in FAQ/Blog/Media/Settings cards:
+
+```tsx
+<div className="flex flex-wrap items-start justify-between gap-3">
+  <div>
+    <AdminStatusBadge label={statusLabel} tone={statusTone} />
+    <h2 className="mt-2 text-lg font-black text-[var(--nupsbox-navy)]">{title}</h2>
+  </div>
+  {existingPermissionGatedAction}
+</div>
+```
+
+Do not alter CMS publication semantics, upload capability, delete capability, or settings contracts.
 
 - [ ] **Step 6: Run all Catalog/Content regressions**
 
@@ -1792,13 +1877,13 @@ git commit -m "feat: unify admin catalog and content UX"
 ### Task 10: Harden responsive/accessibility contracts without weakening authentication
 
 **Files:**
-- Modify as needed: `components/admin/admin-shell.tsx`
-- Modify as needed: `components/admin/lead-filter-bar.tsx`
-- Modify as needed: `components/admin/lead-list.tsx`
-- Modify as needed: `components/admin/lead-pipeline.tsx`
-- Modify as needed: `components/admin/lead-operation-rail.tsx`
-- Modify as needed: `components/admin/appointment-workspace.tsx`
-- Modify as needed: `app/globals.css`
+- Modify: `components/admin/admin-shell.tsx`
+- Modify: `components/admin/lead-filter-bar.tsx`
+- Modify: `components/admin/lead-list.tsx`
+- Modify: `components/admin/lead-pipeline.tsx`
+- Modify: `components/admin/lead-operation-rail.tsx`
+- Modify: `components/admin/appointment-workspace.tsx`
+- Modify: `app/globals.css`
 - Modify: `tests/unit/admin-ui-primitives.test.tsx`
 - Modify: `tests/unit/admin-lead-list.test.tsx`
 - Modify: `tests/unit/admin-lead-pipeline.test.tsx`
@@ -2044,4 +2129,4 @@ P2.7 does not authorize seeding business data or cutting over `nupsbox.vn` after
 
 ### Placeholder scan
 
-The plan contains no unresolved implementation marker such as `TBD`, `TODO`, `FIXME`, `XXX`, “implement later”, or an unspecified “write tests” step. Each implementation task names concrete files, interfaces, test expectations, commands, and acceptance behavior.
+Automated red-flag scanning returns zero deferred-work markers and no vague test-only follow-ups. Each implementation task names concrete files, interfaces, test expectations, commands, and acceptance behavior.
