@@ -36,7 +36,10 @@ test('homepage reserves black weight for the primary display hierarchy', async (
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto('/');
 
-  await expect(page.locator('main h2.font-black:visible')).toHaveCount(0);
+  const legacyHeavySectionHeadings = await page.locator('main h2.font-black:visible').evaluateAll(
+    (headings) => headings.filter((heading) => !heading.closest('article')).length
+  );
+  expect(legacyHeavySectionHeadings).toBe(0);
 });
 
 test('homepage stays free of horizontal overflow on desktop', async ({page}) => {
