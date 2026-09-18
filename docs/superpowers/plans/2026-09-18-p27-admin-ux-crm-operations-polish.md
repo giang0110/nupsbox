@@ -1304,6 +1304,7 @@ const {updateLeadStatusValue} = vi.hoisted(() => ({
 }));
 
 vi.mock('@/app/admin/leads/actions', () => ({
+  updateLeadStatus: vi.fn(),
   updateLeadStatusValue
 }));
 
@@ -1988,6 +1989,8 @@ import {AppointmentWorkspace} from '@/components/admin/appointment-workspace';
 import type {AppointmentWorkspace as AppointmentWorkspaceModel} from '@/features/admin/appointment-read-model';
 
 vi.mock('@/app/admin/leads/[leadId]/actions', () => ({
+  createAppointment: vi.fn(),
+  updateAppointment: vi.fn(),
   createAppointmentValue: vi.fn().mockResolvedValue({ok: true}),
   updateAppointmentValue: vi.fn().mockResolvedValue({ok: true})
 }));
@@ -2079,29 +2082,107 @@ Use `appointmentEventLabels[entry.eventType] ?? entry.eventType` for the timelin
 
 - [ ] **Step 5: Add safe appointment server-action results**
 
-Keep all parsing and validation in:
-- `appointmentCreatePayloadFromFormData`;
-- `appointmentUpdatePayloadFromFormData`;
-- `prepareAppointmentCreate`;
-- `prepareAppointmentUpdate`;
-- optimistic-concurrency guard.
+Keep the current parsing, validation, optimistic concurrency, and three-path revalidation in private persistence functions. Import `ZodError`, `AppointmentConflictError`, and `AdminActionResult`, then add one safe message mapper:
 
-Wrap the action boundary so the UI receives a safe Vietnamese result instead of a silent/uncaught mutation failure.
+```ts
+import {ZodError} from 'zod';
+import type {AdminActionResult} from '@/features/admin/action-result';
 
-On success, preserve all three revalidations.
+const appointmentValidationMessages = new Set([
+  'scheduled_at_not_future',
+  'appointment_mismatch',
+  'terminal_appointment',
+  'invalid_status_transition',
+  'confirmed_requires_location_assignee_future_time',
+  'invalid_local_datetime'
+]);
 
-Map at least:
-- `appointment_conflict` → “Lịch hẹn vừa được thay đổi bởi phiên khác. Hãy tải lại và thử lại.”
-- validation/past-time errors → “Thông tin lịch hẹn chưa hợp lệ. Kiểm tra thời gian, trạng thái và người phụ trách.”
-- unknown DB errors → “Không thể lưu lịch hẹn. Vui lòng thử lại.”
+function appointmentActionMessage(error: unknown): string {
+  if (
+    error instanceof AppointmentConflictError ||
+    (error instanceof Error && error.message === 'appointment_conflict')
+  ) {
+    return 'Lịch hẹn vừa được thay đổi bởi phiên khác. Hãy tải lại và thử lại.';
+  }
+  if (error instanceof Error && error.message === 'forbidden') {
+    return 'Bạn không có quyền thay đổi lịch hẹn.';
+  }
+  if (
+    error instanceof ZodError ||
+    (error instanceof Error && appointmentValidationMessages.has(error.message))
+  ) {
+    return 'Thông tin lịch hẹn chưa hợp lệ. Kiểm tra thời gian, trạng thái và người phụ trách.';
+  }
+  return 'Không thể lưu lịch hẹn. Vui lòng thử lại.';
+}
+```
 
-Do not weaken or bypass `AppointmentConflictError` or status-transition validation.
+Move the current bodies of `createAppointment(formData)` and `updateAppointment(formData)` into private functions that receive the already-authenticated session, for example:
+
+```ts
+async function performAppointmentCreate(
+  session: AdminSession,
+  formData: FormData
+) {
+  const raw = appointmentCreatePayloadFromFormData(formData);
+  const parsed = prepareAppointmentCreate(session.role, {
+    leadId: raw.leadId,
+    locationId: raw.locationId,
+    unitTypeId: raw.unitTypeId,
+    assignedTo: raw.assignedTo,
+    scheduledAt: hoChiMinhLocalToIso(raw.scheduledAtLocal),
+    durationMinutes: raw.durationMinutes,
+    customerNote: raw.customerNote,
+    internalNote: raw.internalNote
+  });
+
+  const supabase = await appointmentClient();
+  const {error} = await supabase
+    .from('lead_appointments')
+    .insert(toAppointmentInsertRow(parsed, session.user.id));
+  if (error) throw error;
+
+  revalidateLeadWorkspace(parsed.leadId);
+}
+```
+
+Keep the existing update body equivalently inside `performAppointmentUpdate(session, formData)`; it must still select the current row, call `prepareAppointmentUpdate()`, update with `.eq('updated_at', parsed.expectedUpdatedAt)`, and call `assertAppointmentWriteResult(updatedRow)`.
+
+Expose Client-Component-safe wrappers:
+
+```ts
+export async function createAppointmentValue(
+  formData: FormData
+): Promise<AdminActionResult> {
+  const session = await requireAdminUser();
+  try {
+    await performAppointmentCreate(session, formData);
+    return {ok: true};
+  } catch (error) {
+    return {ok: false, message: appointmentActionMessage(error)};
+  }
+}
+
+export async function updateAppointmentValue(
+  formData: FormData
+): Promise<AdminActionResult> {
+  const session = await requireAdminUser();
+  try {
+    await performAppointmentUpdate(session, formData);
+    return {ok: true};
+  } catch (error) {
+    return {ok: false, message: appointmentActionMessage(error)};
+  }
+}
+```
+
+Keep the original FormData exports only while a call site still imports them. Once `AppointmentWorkspace` uses the value wrappers, remove unused wrappers only after `npm run typecheck` proves there are no consumers. Do not weaken `AppointmentConflictError`, status-transition validation, or server permission checks.
 
 - [ ] **Step 6: Rebuild `AppointmentWorkspace`**
 
 Presentation:
 1. section header with “LIGHT BOOKING CRM”;
-2. next actionable appointment card at the top when present;
+2. compute the next actionable row with `selectNextAppointment(workspace.appointments)` and match the returned id back to `workspace.appointments`; render that appointment card first when present;
 3. native `<details>` disclosure labelled “Tạo lịch xem kho” for mutable users;
 4. compact appointment cards;
 5. edit controls inside each non-terminal appointment disclosure;
@@ -2134,6 +2215,8 @@ async function submitAppointment(
       return;
     }
     router.refresh();
+  } catch {
+    setError('Không thể lưu lịch hẹn. Vui lòng thử lại.');
   } finally {
     setPendingKey(null);
   }
