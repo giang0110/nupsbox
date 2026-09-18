@@ -24,9 +24,20 @@ export type AdminLeadRow = {
   needType: string;
   status: OperationalLeadStatus;
   preferredLanguage: 'vi' | 'en';
+  source: string | null;
   utmSource: string | null;
   utmCampaign: string | null;
+  assignedTo: string | null;
   createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminLeadListOptions = {
+  status?: OperationalLeadStatus;
+  assignee?: string;
+  source?: string;
+  q?: string;
+  limit?: number;
 };
 
 export type AdminLeadNoteRow = {
@@ -48,12 +59,10 @@ export type AdminLeadDetail = AdminLeadRow & {
   estimatedVolume: string;
   locationId: string | null;
   unitTypeId: string | null;
-  source: string | null;
   utmMedium: string | null;
   utmContent: string | null;
   landingPage: string | null;
   referrer: string | null;
-  assignedTo: string | null;
   notes: AdminLeadNoteRow[];
   history: AdminLeadHistoryRow[];
 };
@@ -69,6 +78,15 @@ const maxLeadNoteLength = 2000;
 
 export function isOperationalLeadStatus(value: unknown): value is OperationalLeadStatus {
   return typeof value === 'string' && (operationalLeadStatuses as readonly string[]).includes(value);
+}
+
+export function sanitizeLeadSearchTerm(value: string) {
+  return value
+    .trim()
+    .slice(0, 80)
+    .replace(/[,*()%_]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function prepareLeadStatusUpdate(role: AppRole, leadId: string, status: unknown) {
@@ -110,9 +128,12 @@ function mapLeadRow(row: Record<string, unknown>): AdminLeadRow {
     needType: String(row.need_type ?? 'other'),
     status,
     preferredLanguage: row.preferred_language === 'en' ? 'en' : 'vi',
+    source: nullableString(row.source),
     utmSource: nullableString(row.utm_source),
     utmCampaign: nullableString(row.utm_campaign),
-    createdAt: String(row.created_at ?? '')
+    assignedTo: nullableString(row.assigned_to),
+    createdAt: String(row.created_at ?? ''),
+    updatedAt: String(row.updated_at ?? row.created_at ?? '')
   };
 }
 
@@ -146,33 +167,62 @@ export function projectAdminLeadDetail(
     estimatedVolume: String(lead.estimated_volume ?? 'unknown'),
     locationId: nullableString(lead.location_id),
     unitTypeId: nullableString(lead.unit_type_id),
-    source: nullableString(lead.source),
     utmMedium: nullableString(lead.utm_medium),
     utmContent: nullableString(lead.utm_content),
     landingPage: nullableString(lead.landing_page),
     referrer: nullableString(lead.referrer),
-    assignedTo: nullableString(lead.assigned_to),
     notes: notes.map(mapLeadNote),
     history: history.map(mapLeadHistory).filter((item): item is AdminLeadHistoryRow => item !== null)
   };
 }
 
 export async function listAdminLeads(
-  options: {status?: OperationalLeadStatus; limit?: number} = {}
+  options: AdminLeadListOptions = {}
 ): Promise<AdminLeadRow[]> {
   const supabase = await createSupabaseServerClient();
   const limit = Math.min(Math.max(options.limit ?? 50, 1), 100);
   let query = supabase
     .from('leads')
-    .select('id, full_name, phone, email, message, need_type, status, preferred_language, utm_source, utm_campaign, created_at')
+    .select('id, full_name, phone, email, message, need_type, status, preferred_language, source, utm_source, utm_campaign, assigned_to, created_at, updated_at')
     .order('created_at', {ascending: false})
     .limit(limit);
 
   if (options.status) query = query.eq('status', options.status);
+  if (options.assignee) query = query.eq('assigned_to', options.assignee);
+  if (options.source) query = query.eq('source', options.source);
+
+  const search = options.q ? sanitizeLeadSearchTerm(options.q) : '';
+  if (search) {
+    query = query.or(
+      'full_name.ilike.*' + search +
+      '*,phone.ilike.*' + search +
+      '*,email.ilike.*' + search + '*'
+    );
+  }
 
   const {data, error} = await query;
   if (error) throw error;
   return (data ?? []).map((row) => mapLeadRow(row as Record<string, unknown>));
+}
+
+export async function listAdminLeadSources(): Promise<string[]> {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase
+    .from('leads')
+    .select('source')
+    .not('source', 'is', null)
+    .order('source', {ascending: true})
+    .limit(100);
+
+  if (error) throw error;
+
+  return [
+    ...new Set(
+      (data ?? [])
+        .map((row) => row.source?.trim())
+        .filter((value): value is string => Boolean(value))
+    )
+  ];
 }
 
 export async function getAdminLeadDetail(leadId: string): Promise<AdminLeadDetail | null> {
@@ -181,7 +231,7 @@ export async function getAdminLeadDetail(leadId: string): Promise<AdminLeadDetai
   const supabase = await createSupabaseServerClient();
   const {data: lead, error: leadError} = await supabase
     .from('leads')
-    .select('id, full_name, phone, email, message, need_type, estimated_volume, preferred_language, location_id, unit_type_id, source, utm_source, utm_medium, utm_campaign, utm_content, landing_page, referrer, status, assigned_to, created_at')
+    .select('id, full_name, phone, email, message, need_type, estimated_volume, preferred_language, location_id, unit_type_id, source, utm_source, utm_medium, utm_campaign, utm_content, landing_page, referrer, status, assigned_to, created_at, updated_at')
     .eq('id', leadId)
     .maybeSingle();
 
