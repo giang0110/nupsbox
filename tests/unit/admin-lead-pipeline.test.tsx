@@ -1,6 +1,6 @@
-import {render, screen, waitFor} from '@testing-library/react';
+import {cleanup, render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 const {updateLeadStatusValue, refresh} = vi.hoisted(() => ({
   updateLeadStatusValue: vi.fn(),
@@ -16,6 +16,8 @@ vi.mock('@/app/admin/leads/actions', () => ({
 }));
 
 import {LeadPipeline} from '@/components/admin/lead-pipeline';
+
+afterEach(() => cleanup());
 
 const lead = {
   id: 'a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0',

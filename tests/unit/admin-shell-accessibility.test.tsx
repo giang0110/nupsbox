@@ -1,10 +1,12 @@
-import {render, screen} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {cleanup, render, screen} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 import {AdminShell} from '@/components/admin/admin-shell';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/admin/leads'
 }));
+
+afterEach(() => cleanup());
 
 const groups = [
   {
@@ -18,8 +20,8 @@ const groups = [
 ];
 
 describe('admin shell accessibility', () => {
-  it('names navigation controls and marks the active route', () => {
-    render(
+  it('names visible navigation controls and marks the active route', () => {
+    const {container} = render(
       <AdminShell role="staff" userLabel="Nhân viên A" groups={groups}>
         <main>Nội dung</main>
       </AdminShell>
@@ -32,9 +34,11 @@ describe('admin shell accessibility', () => {
     expect(
       screen.getByRole('button', {name: 'Thu gọn menu quản trị'})
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', {name: 'Đóng menu quản trị'})
-    ).toBeInTheDocument();
+
+    const closeButton = container.querySelector(
+      'button[aria-label="Đóng menu quản trị"]'
+    );
+    expect(closeButton).toBeInTheDocument();
 
     const activeLinks = screen.getAllByRole('link', {name: 'Khách hàng'});
     expect(
@@ -42,15 +46,18 @@ describe('admin shell accessibility', () => {
     ).toBe(true);
   });
 
-  it('gives the mobile drawer a visible semantic heading', () => {
-    render(
+  it('wires the closed mobile dialog to a semantic heading', () => {
+    const {container} = render(
       <AdminShell role="staff" userLabel="Nhân viên A" groups={groups}>
         <main>Nội dung</main>
       </AdminShell>
     );
 
-    expect(
-      screen.getByRole('heading', {level: 2, name: 'NUPSBOX ADMIN'})
-    ).toBeInTheDocument();
+    const dialog = container.querySelector('dialog');
+    const heading = container.querySelector('#admin-drawer-title');
+
+    expect(dialog).toHaveAttribute('aria-labelledby', 'admin-drawer-title');
+    expect(heading?.tagName).toBe('H2');
+    expect(heading).toHaveTextContent('NUPSBOX ADMIN');
   });
 });

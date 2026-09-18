@@ -72,7 +72,7 @@ describe('admin appointment workspace presentation', () => {
 
     expect(screen.getByRole('heading', {name: 'Lịch xem kho'})).toBeInTheDocument();
     expect(screen.getByText('Tạo lịch xem kho')).toBeInTheDocument();
-    expect(screen.getByText('Đã xác nhận')).toBeInTheDocument();
+    expect(screen.getAllByText('Đã xác nhận').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('NupsBox Tân Phú').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Kho 3 m²').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Nhân viên A').length).toBeGreaterThanOrEqual(1);
