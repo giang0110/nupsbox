@@ -47,4 +47,26 @@ describe('tracked contact links', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
   });
+
+  it('tracks Facebook source clicks with placement only', () => {
+    render(
+      <TrackedContactLink
+        href="https://www.facebook.com/share/example"
+        label="Facebook"
+        kind="facebook"
+        placement="contact-page"
+      />
+    );
+
+    const link = screen.getByRole('link', {name: 'Facebook'});
+    fireEvent.click(link);
+
+    expect(trackEvent).toHaveBeenCalledWith('click_facebook', {placement: 'contact-page'});
+    expect(trackEvent).not.toHaveBeenCalledWith(
+      'click_facebook',
+      expect.objectContaining({href: expect.anything()})
+    );
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noreferrer');
+  });
 });
