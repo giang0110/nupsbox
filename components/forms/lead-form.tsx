@@ -109,7 +109,7 @@ export function LeadForm({
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-4.5 rounded-3xl border border-[var(--nupsbox-border)] bg-white p-5 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)] sm:p-7">
+    <form aria-busy={state === 'submitting'} onSubmit={submit} className="grid gap-4.5 rounded-3xl border border-[var(--nupsbox-border)] bg-white p-5 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)] sm:p-7">
       <div className="absolute -left-[10000px]" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <ConversionSummary locale={locale} unitName={unitName} locationName={locationName} appointmentMode={appointmentMode} />
       <LeadFormFields locale={locale} />

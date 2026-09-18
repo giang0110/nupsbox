@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {JsonLd} from '@/components/seo/json-ld';
@@ -7,6 +8,20 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {getMarketingFaqs} from '@/features/content/faqs';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'faq', {
+    vi: {
+      title: 'Câu hỏi thường gặp',
+      description: 'Xem câu trả lời về loại kho, giá, quy trình tư vấn và các bước tiếp theo trước khi liên hệ NupsBox.'
+    },
+    en: {
+      title: 'Frequently asked questions',
+      description: 'Find answers about storage options, pricing, enquiry flow and the next steps before contacting NupsBox.'
+    }
+  });
+}
 
 export default async function Page({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;

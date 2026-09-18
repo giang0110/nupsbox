@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {PageIntro} from '@/components/ui/page-intro';
@@ -7,6 +8,20 @@ import {UnitCompare} from '@/components/units/unit-compare';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'units', {
+    vi: {
+      title: 'Các loại kho mini',
+      description: 'So sánh diện tích, mục đích sử dụng, giá đã được xác nhận và tình trạng đang hiển thị của các loại kho NupsBox.'
+    },
+    en: {
+      title: 'Mini storage unit types',
+      description: 'Compare area, use guidance, confirmed pricing and the currently displayed status of NupsBox storage unit types.'
+    }
+  });
+}
 
 export default async function StorageIndexPage({params}: {params: Promise<{locale: string}>}) {
   const {locale: rawLocale} = await params;

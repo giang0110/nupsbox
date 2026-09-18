@@ -1,3 +1,4 @@
+import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
@@ -7,6 +8,20 @@ import {SectionHeading} from '@/components/ui/section-heading';
 import {LocationCard} from '@/components/locations/location-card';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {isSupportedLocale} from '@/i18n/routing';
+import {createStaticPageMetadata} from '@/features/seo/static-page';
+
+export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  return createStaticPageMetadata(params, 'locations', {
+    vi: {
+      title: 'Địa điểm NupsBox',
+      description: 'Xem thông tin cơ sở NupsBox đang được xác nhận và công bố trên website.'
+    },
+    en: {
+      title: 'NupsBox locations',
+      description: 'View NupsBox facility information that is currently verified and published on the website.'
+    }
+  });
+}
 
 export default async function LocationsPage({params}: {params: Promise<{locale: string}>}) {
   const {locale: rawLocale} = await params;
