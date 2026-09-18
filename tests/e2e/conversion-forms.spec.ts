@@ -12,5 +12,5 @@ test('viewing flow clearly says the requested time is not a reservation', async 
   await page.goto('/dat-kho?unit=s&location=tan-phu');
   await expect(page.getByText(/Kho S/i)).toBeVisible();
   await page.getByLabel(/đề xuất thời gian xem kho/i).check();
-  await expect(page.getByText(/không phải giữ chỗ|not a reservation/i)).toBeVisible();
+  await expect(page.getByText(/Thời gian này là đề xuất.*không phải giữ chỗ|This time is a request.*not a storage reservation/i)).toBeVisible();
 });
