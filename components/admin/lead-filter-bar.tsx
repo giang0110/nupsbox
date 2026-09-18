@@ -24,12 +24,31 @@ export function LeadFilterBar({
     source: undefined,
     q: undefined
   });
+  const tableHref = buildLeadWorkspaceHref(filters, {view: 'table'});
+  const pipelineHref = buildLeadWorkspaceHref(filters, {view: 'pipeline'});
 
   return (
     <form
       method="get"
       className="grid gap-3 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(13rem,2fr)_repeat(3,minmax(10rem,1fr))_auto_auto]"
     >
+      <div className="flex flex-wrap gap-2 md:col-span-2 xl:col-span-full">
+        <Link
+          href={tableHref}
+          aria-current={filters.view === 'table' ? 'page' : undefined}
+          className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] aria-[current=page]:border-[var(--nupsbox-blue)] aria-[current=page]:bg-blue-50 aria-[current=page]:text-[var(--nupsbox-blue)]"
+        >
+          Bảng
+        </Link>
+        <Link
+          href={pipelineHref}
+          aria-current={filters.view === 'pipeline' ? 'page' : undefined}
+          className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] aria-[current=page]:border-[var(--nupsbox-blue)] aria-[current=page]:bg-blue-50 aria-[current=page]:text-[var(--nupsbox-blue)]"
+        >
+          Pipeline
+        </Link>
+      </div>
+
       {filters.view === 'pipeline' ? <input type="hidden" name="view" value="pipeline" /> : null}
 
       <label className="grid gap-1.5 text-xs font-bold text-[var(--nupsbox-slate)]">

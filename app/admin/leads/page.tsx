@@ -2,7 +2,9 @@ import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {LeadFilterBar} from '@/components/admin/lead-filter-bar';
 import {LeadList} from '@/components/admin/lead-list';
+import {LeadPipeline} from '@/components/admin/lead-pipeline';
 import {Container} from '@/components/ui/container';
+import {listAdminLeadAppointmentSummaries} from '@/features/admin/lead-appointment-summary';
 import {normalizeLeadWorkspaceQuery} from '@/features/admin/lead-workspace';
 import {
   listAdminLeads,
@@ -32,6 +34,10 @@ export default async function AdminLeadsPage({
     listLeadAssignees(),
     listAdminLeadSources()
   ]);
+  const appointmentSummaries =
+    query.view === 'pipeline'
+      ? await listAdminLeadAppointmentSummaries(leads.map((lead) => lead.id))
+      : {};
   const assigneeNames = Object.fromEntries(
     assignees.map((item) => [item.id, item.fullName])
   );
@@ -50,13 +56,25 @@ export default async function AdminLeadsPage({
 
         <p className="text-sm text-[var(--nupsbox-slate)]">
           Tối đa 100 lead mới nhất phù hợp bộ lọc hiện tại.
+          {query.view === 'pipeline'
+            ? ' Kéo ngang để xem đủ bảy cột trên màn hình hẹp.'
+            : ''}
         </p>
 
-        <LeadList
-          leads={leads}
-          assigneeNames={assigneeNames}
-          canUpdate={canUpdate}
-        />
+        {query.view === 'pipeline' ? (
+          <LeadPipeline
+            leads={leads}
+            assigneeNames={assigneeNames}
+            appointmentSummaries={appointmentSummaries}
+            canUpdate={canUpdate}
+          />
+        ) : (
+          <LeadList
+            leads={leads}
+            assigneeNames={assigneeNames}
+            canUpdate={canUpdate}
+          />
+        )}
       </Container>
     </main>
   );
