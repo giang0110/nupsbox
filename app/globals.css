@@ -119,3 +119,10 @@ a {
   }
 }
 
+@media (min-width: 1280px) and (min-height: 820px) {
+  .admin-lead-operation-rail {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+  }
+}
