@@ -14,18 +14,28 @@ export function SectionHeading({
   tone?: 'default' | 'dark';
 }) {
   const dark = tone === 'dark';
+
   return (
     <div className={clsx('max-w-3xl', align === 'center' && 'mx-auto text-center')}>
       {eyebrow ? (
-        <p className={clsx('text-xs font-black uppercase tracking-[0.16em]', dark ? 'text-[var(--nupsbox-yellow)]' : 'text-[var(--nupsbox-blue)]')}>
+        <p className={clsx(
+          'text-xs font-extrabold uppercase tracking-[0.14em]',
+          dark ? 'text-[var(--nupsbox-yellow)]' : 'text-[var(--nupsbox-blue)]'
+        )}>
           {eyebrow}
         </p>
       ) : null}
-      <h2 className={clsx('mt-3 text-4xl font-black tracking-[-0.04em] sm:text-5xl', dark ? 'text-white' : 'text-[var(--nupsbox-navy)]')}>
+      <h2 className={clsx(
+        'mt-3 text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.035em]',
+        dark ? 'text-white' : 'text-[var(--nupsbox-navy)]'
+      )}>
         {title}
       </h2>
       {description ? (
-        <p className={clsx('mt-5 text-base leading-7 sm:text-lg', dark ? 'text-white/70' : 'text-[var(--nupsbox-slate)]')}>
+        <p className={clsx(
+          'mt-4 text-base leading-7 sm:text-lg',
+          dark ? 'text-white/70' : 'text-[var(--nupsbox-slate)]'
+        )}>
           {description}
         </p>
       ) : null}
