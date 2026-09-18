@@ -6,7 +6,7 @@ describe('compact homepage composition', () => {
   it('uses six primary blocks instead of the previous stacked marketing sections', () => {
     const source = readFileSync(join(process.cwd(), 'app/[locale]/page.tsx'), 'utf8');
 
-    expect(source).toContain('<Hero locale={locale} />');
+    expect(source).toContain('<Hero locale={locale} location={location} units={featuredUnits} />');
     expect(source).toContain('<HomeChoiceHub');
     expect(source).toContain('<HomeProofBento');
     expect(source).toContain('<HomeLocationJourney');
