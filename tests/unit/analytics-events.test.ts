@@ -7,11 +7,12 @@ const requiredEvents: AnalyticsEventName[] = [
   'unit_compare_open',
   'quote_flow_start',
   'viewing_flow_start',
+  'click_facebook',
   'web_vital'
 ];
 
 describe('analytics event contracts', () => {
   it('includes the non-sensitive public conversion funnel events', () => {
-    expect(requiredEvents).toHaveLength(6);
+    expect(requiredEvents).toHaveLength(7);
   });
 });

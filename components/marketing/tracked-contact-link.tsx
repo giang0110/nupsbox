@@ -1,6 +1,6 @@
 'use client';
 
-import {MessageCircle, Phone} from 'lucide-react';
+import {ExternalLink, MessageCircle, Phone} from 'lucide-react';
 import {trackEvent} from '@/features/analytics/events';
 
 export function TrackedContactLink({
@@ -13,19 +13,20 @@ export function TrackedContactLink({
 }: {
   href: string;
   label: string;
-  kind: 'phone' | 'zalo';
+  kind: 'phone' | 'zalo' | 'facebook';
   placement: string;
   className?: string;
   showIcon?: boolean;
 }) {
-  const Icon = kind === 'phone' ? Phone : MessageCircle;
+  const Icon = kind === 'phone' ? Phone : kind === 'zalo' ? MessageCircle : ExternalLink;
+  const event = kind === 'phone' ? 'click_phone' : kind === 'zalo' ? 'click_zalo' : 'click_facebook';
 
   return (
     <a
       href={href}
       target={href.startsWith('http') ? '_blank' : undefined}
       rel={href.startsWith('http') ? 'noreferrer' : undefined}
-      onClick={() => trackEvent(kind === 'phone' ? 'click_phone' : 'click_zalo', {placement})}
+      onClick={() => trackEvent(event, {placement})}
       className={className}
     >
       {showIcon ? <Icon aria-hidden="true" size={17} /> : null}

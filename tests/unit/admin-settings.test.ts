@@ -8,7 +8,10 @@ const validContact = {
   key: 'public_contact',
   value: {
     phone: '0901234567',
-    zalo_url: 'https://zalo.me/0901234567'
+    zalo_url: 'https://zalo.me/0901234567',
+    email: 'hello@nupsbox.vn',
+    facebook_url: 'https://www.facebook.com/share/1L3q7bDAfp/',
+    opening_hours: {monday: '09:00-18:00'}
   },
   isPublic: true
 };
@@ -26,16 +29,15 @@ describe('admin site settings CMS contracts', () => {
     expect(() => preparePublicSiteSettingUpdate('viewer', validContact)).toThrow('forbidden');
   });
 
-  it('accepts admin public_contact updates and normalizes blanks to null', () => {
+  it('accepts Facebook/email contact fields and preserves opening hours', () => {
     expect(preparePublicSiteSettingUpdate('admin', validContact)).toEqual({
       key: 'public_contact',
-      value: {
-        phone: '0901234567',
-        zalo_url: 'https://zalo.me/0901234567'
-      },
+      value: validContact.value,
       is_public: true
     });
+  });
 
+  it('normalizes missing optional contact fields without inventing values', () => {
     expect(
       preparePublicSiteSettingUpdate('admin', {
         key: 'public_contact',
@@ -44,12 +46,18 @@ describe('admin site settings CMS contracts', () => {
       })
     ).toEqual({
       key: 'public_contact',
-      value: {phone: null, zalo_url: null},
+      value: {
+        phone: null,
+        zalo_url: null,
+        email: null,
+        facebook_url: null,
+        opening_hours: {}
+      },
       is_public: true
     });
   });
 
-  it('rejects non-allowlisted keys, private mutation and invalid contact URLs', () => {
+  it('rejects non-allowlisted keys, private mutation and unsafe contact URLs', () => {
     expect(() =>
       preparePublicSiteSettingUpdate('admin', {
         key: 'homepage_banner',
@@ -68,7 +76,7 @@ describe('admin site settings CMS contracts', () => {
     expect(() =>
       preparePublicSiteSettingUpdate('admin', {
         key: 'public_contact',
-        value: {phone: '0901234567', zalo_url: 'javascript:alert(1)'},
+        value: {facebook_url: 'javascript:alert(1)'},
         isPublic: true
       })
     ).toThrow();

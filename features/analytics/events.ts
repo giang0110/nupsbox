@@ -1,6 +1,7 @@
 export type AnalyticsEventName =
   | 'click_zalo'
   | 'click_phone'
+  | 'click_facebook'
   | 'lead_submit'
   | 'storage_finder_start'
   | 'storage_finder_complete'

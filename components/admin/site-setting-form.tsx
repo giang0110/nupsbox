@@ -1,15 +1,8 @@
 import {updatePublicSiteSetting} from '@/app/admin/content/settings/actions';
-import {
-  AdminFieldGroup,
-  AdminPanel,
-  AdminStatusBadge
-} from '@/components/admin/admin-primitives';
+import {AdminFieldGroup, AdminPanel, AdminStatusBadge} from '@/components/admin/admin-primitives';
 import type {AdminPublicSetting} from '@/features/admin/settings';
 
-type Props = {
-  setting: AdminPublicSetting;
-  canEdit: boolean;
-};
+type Props = {setting: AdminPublicSetting; canEdit: boolean};
 
 const inputClass =
   'mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm disabled:bg-slate-50';
@@ -18,13 +11,8 @@ export function SiteSettingForm({setting, canEdit}: Props) {
   return (
     <AdminPanel
       title="Liên hệ công khai"
-      description={'Key cố định: ' + setting.key + '. Secrets và deployment credentials không được quản lý tại đây.'}
-      actions={
-        <AdminStatusBadge
-          label={setting.isPublic ? 'Công khai' : 'Nội bộ'}
-          tone={setting.isPublic ? 'success' : 'neutral'}
-        />
-      }
+      description={'Key cố định: ' + setting.key + '. Chỉ lưu business contact công khai; secrets không được quản lý tại đây.'}
+      actions={<AdminStatusBadge label="Công khai" tone="success" />}
     >
       <form action={updatePublicSiteSetting} className="grid gap-6">
         <input type="hidden" name="key" value={setting.key} />
@@ -33,24 +21,24 @@ export function SiteSettingForm({setting, canEdit}: Props) {
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-semibold">
               Điện thoại
-              <input
-                className={inputClass}
-                name="phone"
-                defaultValue={setting.value.phone ?? ''}
-                placeholder="Chưa xác nhận"
-              />
+              <input className={inputClass} name="phone" defaultValue={setting.value.phone ?? ''} placeholder="Chưa xác nhận" />
+            </label>
+            <label className="text-sm font-semibold">
+              Email
+              <input className={inputClass} name="email" type="email" defaultValue={setting.value.email ?? ''} placeholder="hello@example.com" />
             </label>
             <label className="text-sm font-semibold">
               Zalo URL
-              <input
-                className={inputClass}
-                name="zaloUrl"
-                type="url"
-                defaultValue={setting.value.zalo_url ?? ''}
-                placeholder="https://..."
-              />
+              <input className={inputClass} name="zaloUrl" type="url" defaultValue={setting.value.zalo_url ?? ''} placeholder="https://..." />
+            </label>
+            <label className="text-sm font-semibold">
+              Facebook URL
+              <input className={inputClass} name="facebookUrl" type="url" defaultValue={setting.value.facebook_url ?? ''} placeholder="https://www.facebook.com/..." />
             </label>
           </div>
+          <p className="mt-3 text-xs leading-5 text-[var(--nupsbox-slate)]">
+            Facebook có thể dùng link page/post công khai. Website không tự suy đoán địa chỉ, số điện thoại hoặc hình ảnh từ URL này.
+          </p>
         </AdminFieldGroup>
 
         {canEdit ? (
