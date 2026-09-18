@@ -35,6 +35,7 @@ describe('lead action feedback', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(
         'Không thể cập nhật trạng thái.'
       );
+      expect(screen.getByRole('alert')).toBeVisible();
     });
   });
 });

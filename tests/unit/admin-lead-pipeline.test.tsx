@@ -62,7 +62,8 @@ describe('lead pipeline', () => {
     expect(screen.getByRole('heading', {name: 'Đang thương lượng'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Đã thuê'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Không chuyển đổi'})).toBeInTheDocument();
-    expect(screen.getByLabelText('Chuyển trạng thái Nguyễn An')).toBeInTheDocument();\n    expect(screen.getByLabelText('Chuyển trạng thái Nguyễn An')).toHaveClass('min-h-11');
+    expect(screen.getByLabelText('Chuyển trạng thái Nguyễn An')).toBeInTheDocument();
+    expect(screen.getByLabelText('Chuyển trạng thái Nguyễn An')).toHaveClass('min-h-11');
     expect(screen.getByText(/lịch gần nhất/i)).toBeInTheDocument();
   });
 
