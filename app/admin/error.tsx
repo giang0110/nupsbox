@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export default function AdminError({
   reset
 }: {
@@ -25,12 +27,12 @@ export default function AdminError({
         >
           Thử lại
         </button>
-        <a
+        <Link
           href="/admin"
           className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
         >
           Về Dashboard
-        </a>
+        </Link>
       </div>
     </section>
   );
