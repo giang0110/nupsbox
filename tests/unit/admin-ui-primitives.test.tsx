@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {render, screen} from '@testing-library/react';
 import {describe, expect, it} from 'vitest';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
@@ -15,7 +16,7 @@ describe('admin UI primitives', () => {
         eyebrow="CRM"
         title="Khách hàng tiềm năng"
         description="Theo dõi và xử lý lead."
-        actions={<a href="/admin/leads?view=pipeline">Pipeline</a>}
+        actions={<Link href="/admin/leads?view=pipeline">Pipeline</Link>}
       />
     );
 
