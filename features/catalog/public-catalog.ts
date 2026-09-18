@@ -2,6 +2,7 @@ import 'server-only';
 
 import type {AppLocale} from '@/i18n/routing';
 import {selectHomepageUnits} from '@/features/home/content';
+import {isCatalogFixtureMode} from './public-catalog-mode';
 import type {PublicLocation, PublicUnitType} from './types';
 import {getActiveUnitTypes, getFeaturedLocation, getLocationBySlug, getUnitTypeBySlug} from './queries';
 
@@ -65,18 +66,13 @@ function fallbackLocation(locale: AppLocale): PublicLocation {
   };
 }
 
-function shouldUseFallbackCatalog() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  return !url || url.includes('example.supabase.co');
-}
-
 export async function getMarketingUnits(locale: AppLocale): Promise<PublicUnitType[]> {
-  if (shouldUseFallbackCatalog()) return localizedUnits(locale);
+  if (isCatalogFixtureMode()) return localizedUnits(locale);
+
   try {
-    const units = await getActiveUnitTypes(locale);
-    return units.length ? units : localizedUnits(locale);
+    return await getActiveUnitTypes(locale);
   } catch {
-    return localizedUnits(locale);
+    return [];
   }
 }
 
@@ -86,28 +82,31 @@ export async function getMarketingFeaturedUnits(locale: AppLocale): Promise<Publ
 }
 
 export async function getMarketingUnitBySlug(slug: string, locale: AppLocale): Promise<PublicUnitType | null> {
-  if (shouldUseFallbackCatalog()) return localizedUnits(locale).find((unit) => unit.slug === slug) ?? null;
+  if (isCatalogFixtureMode()) return localizedUnits(locale).find((unit) => unit.slug === slug) ?? null;
+
   try {
     return await getUnitTypeBySlug(slug, locale);
   } catch {
-    return localizedUnits(locale).find((unit) => unit.slug === slug) ?? null;
+    return null;
   }
 }
 
-export async function getMarketingFeaturedLocation(locale: AppLocale): Promise<PublicLocation> {
-  if (shouldUseFallbackCatalog()) return fallbackLocation(locale);
+export async function getMarketingFeaturedLocation(locale: AppLocale): Promise<PublicLocation | null> {
+  if (isCatalogFixtureMode()) return fallbackLocation(locale);
+
   try {
-    return (await getFeaturedLocation(locale)) ?? fallbackLocation(locale);
+    return await getFeaturedLocation(locale);
   } catch {
-    return fallbackLocation(locale);
+    return null;
   }
 }
 
 export async function getMarketingLocationBySlug(slug: string, locale: AppLocale): Promise<PublicLocation | null> {
-  if (shouldUseFallbackCatalog()) return slug === 'tan-phu' ? fallbackLocation(locale) : null;
+  if (isCatalogFixtureMode()) return slug === 'tan-phu' ? fallbackLocation(locale) : null;
+
   try {
     return await getLocationBySlug(slug, locale);
   } catch {
-    return slug === 'tan-phu' ? fallbackLocation(locale) : null;
+    return null;
   }
 }

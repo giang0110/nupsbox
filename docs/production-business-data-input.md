@@ -34,11 +34,15 @@ P2.4 production smoke did not seed any business-content row. After synthetic CRM
 
 ## Existing static factual content requiring approval
 
-The current production HTML/JSON-LD already contains the static address:
+The previously verified production HTML/JSON-LD contains the static address:
 
 `1/1 Nguyễn Hữu Tiến, Tây Thạnh, Tân Phú, TP.HCM`
 
-This value predates P2.4 and is not sourced from the currently empty production `locations` table. Before final go-live/domain cutover, explicitly confirm this address as authoritative or remove/replace the static claim. Do not treat its presence in existing source code as business approval.
+This value predates P2.4 and is not sourced from the currently empty production `locations` table. It remains unapproved business data.
+
+P2.8 changes source behavior so this fixture can be used only when the Supabase URL is absent or is the explicit `example.supabase.co` CI placeholder. Any real Supabase environment now returns only database-backed catalog rows; empty/error reads become empty/null and structured data omits the postal address when no published location exists.
+
+This source remediation does not approve the address and does not prove that production has been redeployed. Keep this item open until the P2.8 deployment is verified, or until an explicitly approved production location is later published.
 
 The live booking page also currently has no approved phone or Zalo value from `site_settings`; those values remain null/fallback-only until explicitly approved.
 
