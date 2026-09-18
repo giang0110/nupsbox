@@ -51,40 +51,52 @@ export function StorageFinder({units}: StorageFinderProps) {
   }
 
   return (
-    <section aria-labelledby="storage-finder-title" className="overflow-hidden rounded-[2rem] border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow)]">
-      <div className="grid gap-0 lg:grid-cols-[.72fr_1.28fr]">
-        <div className="bg-[var(--nupsbox-navy)] p-6 text-white sm:p-8 lg:p-10">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--nupsbox-yellow)]">Storage Finder</p>
-          <h2 id="storage-finder-title" className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">
+    <section
+      aria-labelledby="storage-finder-title"
+      className="overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)]"
+    >
+      <div className="grid lg:grid-cols-[.7fr_1.3fr]">
+        <div className="bg-[linear-gradient(145deg,var(--nupsbox-navy),#0c326d)] p-6 text-white sm:p-7 lg:p-8">
+          <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.15em] text-[var(--nupsbox-yellow)]">
+            Storage Finder
+          </p>
+          <h2
+            id="storage-finder-title"
+            className="mt-3 max-w-lg text-[clamp(2rem,3vw,2.8rem)] font-extrabold leading-[1.06] tracking-[-0.035em]"
+          >
             {locale === 'vi' ? 'Kho nào phù hợp với bạn?' : 'Which storage size fits you?'}
           </h2>
-          <p className="mt-5 max-w-xl text-sm leading-6 text-white/68 sm:text-base">
+          <p className="mt-4 max-w-xl text-sm leading-6 text-white/68 sm:text-base">
             {locale === 'vi'
               ? 'Trả lời hai câu hỏi ngắn. Bạn sẽ thấy gợi ý trước khi cần để lại thông tin.'
               : 'Answer two quick questions. You will see a recommendation before sharing contact details.'}
           </p>
-          <div className="mt-8 flex items-center gap-3 text-xs font-bold text-white/58" aria-label={locale === 'vi' ? 'Tiến trình tìm kho' : 'Storage finder progress'}>
+
+          <div
+            className="mt-6 flex items-center gap-2.5 text-xs font-bold text-white/56"
+            aria-label={locale === 'vi' ? 'Tiến trình tìm kho' : 'Storage finder progress'}
+          >
             <span className={`grid size-8 place-items-center rounded-full border ${need ? 'border-[var(--nupsbox-yellow)] bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]' : 'border-white/20'}`}>1</span>
-            <span className="h-px flex-1 bg-white/15" />
+            <span className="h-px flex-1 bg-white/14" />
             <span className={`grid size-8 place-items-center rounded-full border ${volume ? 'border-[var(--nupsbox-yellow)] bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]' : 'border-white/20'}`}>2</span>
-            <span className="h-px flex-1 bg-white/15" />
+            <span className="h-px flex-1 bg-white/14" />
             <span className={`grid size-8 place-items-center rounded-full border ${recommendation ? 'border-[var(--nupsbox-yellow)] bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]' : 'border-white/20'}`}>✓</span>
           </div>
         </div>
 
-        <div className="p-5 sm:p-8 lg:p-10">
+        <div className="p-5 sm:p-7 lg:p-8">
           <fieldset>
-            <legend className="text-sm font-black uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">
+            <legend className="text-xs font-extrabold uppercase tracking-[0.11em] text-[var(--nupsbox-blue)] sm:text-sm">
               {locale === 'vi' ? 'Bước 1 · Bạn cần kho cho?' : 'Step 1 · What do you need storage for?'}
             </legend>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-3.5 grid gap-2 sm:grid-cols-2">
               {needOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   aria-pressed={need === option.value}
                   onClick={() => chooseNeed(option.value)}
-                  className={`min-h-12 rounded-2xl border px-4 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 ${
+                  className={`min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 ${
                     need === option.value
                       ? 'border-[var(--nupsbox-blue)] bg-[var(--nupsbox-blue)] text-white shadow-sm'
                       : 'border-[var(--nupsbox-border)] bg-white text-[var(--nupsbox-navy)] hover:border-[var(--nupsbox-blue)] hover:bg-[var(--nupsbox-surface)]'
@@ -96,18 +108,18 @@ export function StorageFinder({units}: StorageFinderProps) {
             </div>
           </fieldset>
 
-          <fieldset className="mt-7" disabled={!need}>
-            <legend className="text-sm font-black uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">
+          <fieldset className="mt-6" disabled={!need}>
+            <legend className="text-xs font-extrabold uppercase tracking-[0.11em] text-[var(--nupsbox-blue)] sm:text-sm">
               {locale === 'vi' ? 'Bước 2 · Bạn có khoảng bao nhiêu hàng?' : 'Step 2 · Roughly how much do you store?'}
             </legend>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-3.5 grid gap-2 sm:grid-cols-2">
               {volumeOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   aria-pressed={volume === option.value}
                   onClick={() => chooseVolume(option.value)}
-                  className={`min-h-12 rounded-2xl border px-4 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+                  className={`min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
                     volume === option.value
                       ? 'border-[var(--nupsbox-yellow-warm)] bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]'
                       : 'border-[var(--nupsbox-border)] bg-white text-[var(--nupsbox-navy)] hover:border-[var(--nupsbox-blue)] hover:bg-[var(--nupsbox-surface)]'
@@ -120,7 +132,7 @@ export function StorageFinder({units}: StorageFinderProps) {
           </fieldset>
 
           {recommendation && need && volume ? (
-            <div className="mt-8 border-t border-[var(--nupsbox-border)] pt-8">
+            <div className="mt-6 border-t border-[var(--nupsbox-border)] pt-6">
               <StorageResult recommendation={recommendation} input={{need, volume}} locale={locale} />
             </div>
           ) : null}
