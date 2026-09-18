@@ -25,6 +25,24 @@ export function UnitCompare({units, locale}: {units: PublicUnitType[]; locale: '
     [selectedIds, units]
   );
 
+  if (units.length === 0) {
+    return (
+      <div
+        className="rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 text-sm leading-6 text-[var(--nupsbox-slate)]"
+        role="status"
+      >
+        <p className="font-bold text-[var(--nupsbox-navy)]">
+          {vi ? 'Chưa có loại kho được công bố.' : 'No storage unit types are currently published.'}
+        </p>
+        <p className="mt-1">
+          {vi
+            ? 'NupsBox chỉ hiển thị diện tích, giá và tình trạng sau khi dữ liệu đã được xác nhận.'
+            : 'NupsBox shows area, pricing and status only after the data has been verified.'}
+        </p>
+      </div>
+    );
+  }
+
   useEffect(() => {
     if (selectedIds.length === 2) trackEvent('unit_compare_open', {count: selectedIds.length, locale});
   }, [selectedIds.length, locale]);

@@ -2,6 +2,7 @@
 
 import {useMemo, useState} from 'react';
 import {useLocale} from 'next-intl';
+import {Link} from '@/i18n/navigation';
 import {trackEvent} from '@/features/analytics/events';
 import {recommendStorage} from '@/features/storage-finder/recommend';
 import type {StorageCatalogItem, StorageNeed, StorageVolume} from '@/features/storage-finder/types';
@@ -31,6 +32,42 @@ export function StorageFinder({units}: StorageFinderProps) {
   const locale = (useLocale() === 'en' ? 'en' : 'vi') as 'vi' | 'en';
   const [need, setNeed] = useState<StorageNeed | null>(null);
   const [volume, setVolume] = useState<StorageVolume | null>(null);
+
+  if (units.length === 0) {
+    return (
+      <section
+        aria-labelledby="storage-finder-title"
+        className="overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)]"
+      >
+        <div className="grid lg:grid-cols-[.7fr_1.3fr]">
+          <div className="bg-[linear-gradient(145deg,var(--nupsbox-navy),#0c326d)] p-6 text-white sm:p-7 lg:p-8">
+            <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.15em] text-[var(--nupsbox-yellow)]">
+              Storage Finder
+            </p>
+            <h2
+              id="storage-finder-title"
+              className="mt-3 max-w-lg text-[clamp(2rem,3vw,2.8rem)] font-extrabold leading-[1.06] tracking-[-0.035em]"
+            >
+              {locale === 'vi' ? 'Thông tin loại kho đang được cập nhật.' : 'Storage options are being updated.'}
+            </h2>
+          </div>
+          <div className="p-5 sm:p-7 lg:p-8">
+            <p className="max-w-xl text-sm leading-6 text-[var(--nupsbox-slate)] sm:text-base">
+              {locale === 'vi'
+                ? 'Website chưa có loại kho đã được xác nhận để đưa ra gợi ý. Bạn vẫn có thể gửi nhu cầu để NupsBox tư vấn trực tiếp.'
+                : 'There are no verified unit types available for an automated recommendation yet. You can still send your requirements for direct advice.'}
+            </p>
+            <Link
+              href="/lien-he"
+              className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[var(--nupsbox-blue)] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2"
+            >
+              {locale === 'vi' ? 'Gửi nhu cầu' : 'Send your requirements'}
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const recommendation = useMemo(() => {
     if (!need || !volume || units.length === 0) return null;

@@ -9,6 +9,7 @@ import {SiteFooter} from '@/components/marketing/site-footer';
 import {MobileActionBar} from '@/components/marketing/mobile-action-bar';
 import {JsonLd} from '@/components/seo/json-ld';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
+import {buildPublicBusinessEntity} from '@/features/seo/business-entity';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {SITE_ORIGIN} from '@/features/seo/routes';
 import '../globals.css';
@@ -49,27 +50,17 @@ export default async function LocaleLayout({
     getMarketingFeaturedLocation(locale),
     getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, openingHours: {}}))
   ]);
-  const localBusiness = {
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    '@id': `${SITE_ORIGIN}/#nupsbox`,
-    name: 'NupsBox',
-    url: locale === 'vi' ? SITE_ORIGIN : `${SITE_ORIGIN}/en`,
-    ...(settings.phone ? {telephone: settings.phone} : {}),
-    ...(settings.email ? {email: settings.email} : {}),
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: location.address,
-      addressLocality: location.district,
-      addressRegion: 'Ho Chi Minh City',
-      addressCountry: 'VN'
-    }
-  };
+  const businessEntity = buildPublicBusinessEntity({
+    origin: SITE_ORIGIN,
+    locale,
+    location,
+    settings
+  });
 
   return (
     <html lang={locale}>
       <body>
-        <JsonLd data={localBusiness} />
+        <JsonLd data={businessEntity} />
         <NextIntlClientProvider messages={messages}>
           <SiteHeader />
           {children}

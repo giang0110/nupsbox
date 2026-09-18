@@ -65,18 +65,20 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
       <SecurityBenefits locale={locale} />
       <CostComparison locale={locale} />
 
-      <Section>
-        <div className="grid items-start gap-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-14">
-          <SectionHeading
-            eyebrow={vi ? 'ĐỊA ĐIỂM' : 'LOCATION'}
-            title={vi ? 'Xem không gian trước khi quyết định.' : 'See the space before you decide.'}
-            description={vi
-              ? 'Tìm hiểu cơ sở đang hiển thị, các loại kho tại đó và gửi yêu cầu xem kho khi bạn sẵn sàng.'
-              : 'Explore the listed facility, its unit options, and request a viewing when you are ready.'}
-          />
-          <LocationCard location={location} locale={locale} />
-        </div>
-      </Section>
+      {location ? (
+        <Section>
+          <div className="grid items-start gap-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-14">
+            <SectionHeading
+              eyebrow={vi ? 'ĐỊA ĐIỂM' : 'LOCATION'}
+              title={vi ? 'Xem không gian trước khi quyết định.' : 'See the space before you decide.'}
+              description={vi
+                ? 'Tìm hiểu cơ sở đang hiển thị, các loại kho tại đó và gửi yêu cầu xem kho khi bạn sẵn sàng.'
+                : 'Explore the listed facility, its unit options, and request a viewing when you are ready.'}
+            />
+            <LocationCard location={location} locale={locale} />
+          </div>
+        </Section>
+      ) : null}
 
       <HowItWorks locale={locale} />
       <SocialProof locale={locale} />
