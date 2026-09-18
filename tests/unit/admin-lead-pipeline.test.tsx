@@ -92,7 +92,9 @@ describe('lead pipeline', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(
         'Không thể cập nhật trạng thái.'
       );
-      expect(select).toHaveValue('new');
+      expect(
+        screen.getByLabelText('Chuyển trạng thái Nguyễn An')
+      ).toHaveValue('new');
     });
     expect(screen.getByRole('link', {name: /mở hồ sơ/i})).toBeInTheDocument();
   });
