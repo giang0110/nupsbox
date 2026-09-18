@@ -66,3 +66,17 @@ test('finder keeps a lighter hierarchy and practical desktop footprint', async (
   await page.keyboard.press('Enter');
   await expect(firstChoice).toHaveAttribute('aria-pressed', 'true');
 });
+
+
+for (const route of ['/kho-mini', '/bang-gia', '/dia-diem']) {
+  test(`${route} uses the compact premium page-intro hierarchy`, async ({page}) => {
+    await page.setViewportSize({width: 1366, height: 768});
+    await page.goto(route);
+
+    const heading = page.locator('h1:visible');
+    const box = await heading.boundingBox();
+
+    await expect(heading).not.toHaveClass(/font-black/);
+    expect(box?.y ?? 999).toBeLessThan(250);
+  });
+}
