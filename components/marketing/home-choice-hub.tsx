@@ -54,9 +54,7 @@ export function HomeChoiceHub({
     const nextId = tabs[nextIndex].id;
 
     setActiveTab(nextId);
-    requestAnimationFrame(() => {
-      document.getElementById(`choice-tab-${nextId}`)?.focus();
-    });
+    document.getElementById(`choice-tab-${nextId}`)?.focus();
   }
 
   const useCases = vi
