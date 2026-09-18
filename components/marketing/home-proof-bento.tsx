@@ -4,9 +4,7 @@ import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
-
-const facilityImage =
-  'https://siaodieqxzlarnvfppox.supabase.co/storage/v1/object/public/onboarding-photos/nupsbox-tan-phu/corridor-1.jpg';
+import {getFacilityMedia} from '@/features/content/facility-media';
 
 export function HomeProofBento({
   locale,
@@ -20,6 +18,7 @@ export function HomeProofBento({
   const vi = locale === 'vi';
   const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2) ) : null;
   const maxArea = units.length ? Math.max(...units.map((unit) => unit.areaM2) ) : null;
+  const facilityMedia = location ? getFacilityMedia(location.slug) : null;
 
   const locationBody = location
     ? (vi
@@ -67,11 +66,11 @@ export function HomeProofBento({
       />
 
       <div className="mt-7 grid gap-4 lg:grid-cols-12">
-        {location ? (
+        {location && facilityMedia ? (
           <figure className="overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)] lg:col-span-7">
             <div className="relative min-h-[280px] sm:min-h-[340px] lg:h-full">
               <Image
-                src={facilityImage}
+                src={facilityMedia.imageUrl}
                 alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
                 fill
                 sizes="(max-width: 1024px) 100vw, 58vw"
@@ -95,15 +94,21 @@ export function HomeProofBento({
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(255,211,26,.16),transparent_26%),radial-gradient(circle_at_28%_78%,rgba(8,70,168,.28),transparent_34%)]" />
             <div className="relative z-10 self-end">
               <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">
-                {vi ? 'FACT-SAFE BY DEFAULT' : 'FACT-SAFE BY DEFAULT'}
+                {location ? (vi ? 'MEDIA THEO ĐÚNG CƠ SỞ' : 'LOCATION-SCOPED MEDIA') : 'FACT-SAFE BY DEFAULT'}
               </p>
               <h3 className="mt-2 max-w-xl text-2xl font-extrabold tracking-[-0.03em]">
-                {vi ? 'Chưa có cơ sở được công bố thì không hiển thị facility facts.' : 'No published facility means no facility facts are shown.'}
+                {location
+                  ? location.name
+                  : (vi ? 'Chưa có cơ sở được công bố thì không hiển thị facility facts.' : 'No published facility means no facility facts are shown.')}
               </h3>
               <p className="mt-3 max-w-xl text-sm leading-6 text-white/68">
-                {vi
-                  ? 'Địa chỉ, diện tích, hình ảnh và tiện ích cụ thể không được suy đoán để lấp khoảng trống dữ liệu.'
-                  : 'Address, unit area, imagery and facility features are not guessed to fill missing data.'}
+                {location
+                  ? (vi
+                      ? 'Thông tin cơ sở vẫn hiển thị theo dữ liệu đã công bố; ảnh chỉ xuất hiện khi có asset được gắn đúng slug của cơ sở.'
+                      : 'Published facility information remains visible; imagery appears only when an asset is explicitly mapped to that facility slug.')
+                  : (vi
+                      ? 'Địa chỉ, diện tích, hình ảnh và tiện ích cụ thể không được suy đoán để lấp khoảng trống dữ liệu.'
+                      : 'Address, unit area, imagery and facility features are not guessed to fill missing data.')}
               </p>
             </div>
           </div>

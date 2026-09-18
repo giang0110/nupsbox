@@ -7,6 +7,7 @@ import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {isSupportedLocale} from '@/i18n/routing';
+import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
@@ -27,6 +28,7 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const vi = locale === 'vi';
+  const location = await getMarketingFeaturedLocation(locale);
 
   return (
     <main>
@@ -49,7 +51,7 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
         />
       </Section>
 
-      <Gallery locale={locale}/>
+      <Gallery locale={locale} location={location} />
       <FinalCta locale={locale}/>
     </main>
   );
