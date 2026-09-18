@@ -1,5 +1,5 @@
-import {fireEvent, render, screen} from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest';
+import {cleanup, fireEvent, render, screen} from '@testing-library/react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 vi.mock('@/i18n/navigation', () => ({
   Link: ({children, href, ...props}: {children: React.ReactNode; href: string}) => (
@@ -16,6 +16,8 @@ vi.mock('@/components/units/unit-card', () => ({
 }));
 
 import {HomeChoiceHub} from '@/components/marketing/home-choice-hub';
+
+afterEach(() => cleanup());
 
 const units = [
   {
