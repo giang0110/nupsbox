@@ -141,3 +141,29 @@ test('tablet homepage remains overflow-free with readable hierarchy', async ({pa
   await expect(page.getByRole('link', {name: /tìm kho phù hợp/i}).first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
 });
+
+
+test('homepage hero stays complete in a low-height desktop viewport', async ({page}) => {
+  const viewport = {width: 1536, height: 670};
+  await page.setViewportSize(viewport);
+  await page.goto('/');
+
+  const hero = page.getByRole('region', {name: /thêm không gian|more room/i});
+  const heading = hero.getByRole('heading', {level: 1});
+  const description = hero.locator('p').filter({hasText: /Kho mini riêng|Flexible private mini storage/i}).first();
+  const primary = hero.getByRole('link', {name: /tìm kho phù hợp/i});
+  const secondary = hero.getByRole('link', {name: /xem bảng giá/i});
+  const trust = hero.getByText(/kho riêng/i);
+
+  const headingBox = await heading.boundingBox();
+  const descriptionBox = await description.boundingBox();
+  const primaryBox = await primary.boundingBox();
+  const secondaryBox = await secondary.boundingBox();
+  const trustBox = await trust.boundingBox();
+
+  expect(headingBox?.height ?? 999).toBeLessThan(260);
+  expect((descriptionBox?.y ?? 999) + (descriptionBox?.height ?? 999)).toBeLessThan(viewport.height);
+  expect((primaryBox?.y ?? 999) + (primaryBox?.height ?? 999)).toBeLessThan(viewport.height);
+  expect((secondaryBox?.y ?? 999) + (secondaryBox?.height ?? 999)).toBeLessThan(viewport.height);
+  expect((trustBox?.y ?? 999) + (trustBox?.height ?? 999)).toBeLessThanOrEqual(viewport.height);
+});
