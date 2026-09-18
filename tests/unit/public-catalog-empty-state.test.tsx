@@ -5,6 +5,10 @@ vi.mock('@/features/analytics/events', () => ({
   trackEvent: vi.fn()
 }));
 
+vi.mock('@/components/units/unit-card', () => ({
+  UnitCard: () => null
+}));
+
 import {UnitCompare} from '@/components/units/unit-compare';
 
 describe('public catalog empty states', () => {
