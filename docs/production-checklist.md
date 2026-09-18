@@ -1,6 +1,6 @@
 # NupsBox Production Checklist
 
-Last reviewed: 2026-09-17
+Last reviewed: 2026-09-18
 
 ## Current production baseline
 
@@ -103,7 +103,11 @@ If a price, stock/count, phone, Zalo, business-hours, or similar field has not b
 
 ### Existing static factual content requiring confirmation
 
-The live production HTML/JSON-LD currently contains the static address `1/1 Nguyễn Hữu Tiến, Tây Thạnh, Tân Phú, TP.HCM` even though production `locations = 0`. This predates P2.4 and is not treated as approved business data. Confirm it explicitly or remove/replace that static claim before final go-live/domain cutover.
+The currently verified production deployment previously emitted the static address `1/1 Nguyễn Hữu Tiến, Tây Thạnh, Tân Phú, TP.HCM` through catalog fallback behavior even though production `locations = 0`. This value is not treated as approved business data.
+
+P2.8 changes the source contract so a real Supabase environment never activates catalog fixtures when rows are empty or reads fail. In that source version, an empty production catalog yields empty/null read models, no fabricated location card, and Organization structured data without a postal address. The hard-coded fixture remains available only for the absent/`example.supabase.co` CI-development mode.
+
+Do not mark the live production address issue as cleared until a deployment containing P2.8 is successfully verified. A source merge by itself is not proof of deployed HTML.
 
 The live booking page currently receives null phone/Zalo fallbacks from production settings, consistent with `site_settings = 0`.
 
@@ -202,7 +206,7 @@ Actual domain/DNS cutover requires a separate explicit user approval.
 
 ## 10. Remaining go-live blockers
 
-1. Approve factual production business content, or explicitly decide which null/contact fallbacks are acceptable at launch; specifically confirm or remove the current static JSON-LD address.
+1. Approve factual production business content, or explicitly decide which null/contact fallbacks are acceptable at launch. P2.8 removes the unapproved catalog/address fallback from real-data source behavior, but the deployed production HTML must still be re-verified after a successful deployment.
 2. Verify Vercel Production environment-variable names/presence without exposing secret values.
 3. Verify Supabase Auth custom-domain Site URL/callback configuration where applicable.
 4. Run authenticated viewer/staff/admin runtime role E2E when corresponding authorized accounts/sessions exist; until then this sub-gate remains `PENDING` rather than guessed.
