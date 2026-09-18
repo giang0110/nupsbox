@@ -132,6 +132,7 @@
   - `components/admin/media-metadata-form.tsx`
   - `components/admin/site-setting-form.tsx`
 - Test: `tests/unit/admin-responsive-lists.test.tsx`.
+- Test: `tests/unit/admin-content-ui.test.tsx`.
 - Preserve current data/mutation contracts covered by existing Admin catalog/content/settings tests.
 
 ### Verification
@@ -1985,7 +1986,7 @@ Expected: all existing appointment domain tests stay green.
 
 ---
 
-### Task 9: Apply the Admin design system consistently to Catalog and Content
+### Task 9: Apply the Admin design system to Catalog
 
 **Files:**
 - Modify: `app/admin/catalog/page.tsx`
@@ -1996,28 +1997,14 @@ Expected: all existing appointment domain tests stay green.
 - Modify: `components/admin/location-form.tsx`
 - Modify: `components/admin/unit-type-form.tsx`
 - Modify: `components/admin/pricing-form.tsx`
-- Modify: `app/admin/content/page.tsx`
-- Modify: `app/admin/content/faq/page.tsx`
-- Modify: `app/admin/content/blog/page.tsx`
-- Modify: `app/admin/content/blog/[id]/page.tsx`
-- Modify: `app/admin/content/media/page.tsx`
-- Modify: `app/admin/content/settings/page.tsx`
-- Modify: `components/admin/faq-form.tsx`
-- Modify: `components/admin/blog-form.tsx`
-- Modify: `components/admin/media-metadata-form.tsx`
-- Modify: `components/admin/site-setting-form.tsx`.
-- Create: `tests/unit/admin-responsive-lists.test.tsx`.
-- Preserve existing:
+- Create: `tests/unit/admin-responsive-lists.test.tsx`
+- Preserve:
   - `tests/unit/admin-catalog.test.ts`
   - `tests/unit/admin-catalog-mutations.test.ts`
-  - `tests/unit/admin-content.test.ts`
-  - `tests/unit/admin-content-mutations.test.ts`
-  - `tests/unit/admin-blog.test.ts`
-  - `tests/unit/admin-settings.test.ts`.
 
 **Interfaces:**
 - Consumes: `AdminPageHeader`, `AdminPanel`, `AdminStatusBadge`, `AdminFieldGroup`, `AdminEmptyState`.
-- Produces no new business/data interfaces.
+- Produces no new Catalog business/data interfaces and does not change any Catalog server action.
 
 - [ ] **Step 1: Write a responsive-list RED test around `CatalogTables`**
 
@@ -2075,17 +2062,15 @@ describe('admin responsive catalog lists', () => {
 });
 ```
 
-The assertions intentionally verify structural responsive alternatives and readable data, not pixels.
-
 - [ ] **Step 2: Run the responsive-list test and verify RED**
 
 ```bash
 npm run test:run -- tests/unit/admin-responsive-lists.test.tsx
 ```
 
-Expected: FAIL because current Catalog tables only render wide desktop tables.
+Expected: FAIL because the current Catalog summary renders only wide tables.
 
-- [ ] **Step 3: Migrate Catalog summary/list pages to shared Admin primitives**
+- [ ] **Step 3: Rebuild the Catalog overview with shared primitives and responsive alternatives**
 
 In `app/admin/catalog/page.tsx`, replace the bespoke intro with:
 
@@ -2097,165 +2082,315 @@ In `app/admin/catalog/page.tsx`, replace the bespoke intro with:
 />
 ```
 
-In `components/admin/catalog-tables.tsx`, keep the three existing data collections and maps. For **locations**, render both structures from `catalog.locations`:
+In `components/admin/catalog-tables.tsx`, preserve the existing `locationNames`, `unitNames`, `formatAdminPrice()`, and `adminAvailabilityLabel()` logic. Render each of the three collections twice from the same source array:
+- desktop: semantic table in `<div data-admin-desktop-table className="hidden lg:block">…</div>`;
+- mobile/tablet: cards in `<div data-admin-mobile-list className="grid gap-3 lg:hidden">…</div>`.
+
+For Locations the mobile card is:
 
 ```tsx
-<div data-admin-desktop-table className="hidden lg:block">
-  <table className="w-full text-left text-sm">
-    <thead>
-      <tr>
-        <th scope="col">Tên</th>
-        <th scope="col">Quận</th>
-        <th scope="col">Trạng thái</th>
-        <th scope="col">Slug</th>
-      </tr>
-    </thead>
-    <tbody>
-      {catalog.locations.map((location) => (
-        <tr key={location.id}>
-          <td>{location.nameVi}<span className="block text-xs">{location.nameEn}</span></td>
-          <td>{location.district}</td>
-          <td>{location.status}</td>
-          <td>{location.slug}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-<div data-admin-mobile-list className="grid gap-3 lg:hidden">
-  {catalog.locations.map((location) => (
-    <article key={location.id} className="rounded-xl border border-[var(--nupsbox-border)] p-4">
-      <h3 className="font-black text-[var(--nupsbox-navy)]">{location.nameVi}</h3>
-      <p className="mt-1 text-sm text-[var(--nupsbox-slate)]">{location.district} · {location.status}</p>
-      <p className="mt-2 font-mono text-xs text-[var(--nupsbox-slate)]">{location.slug}</p>
-    </article>
-  ))}
-</div>
+{catalog.locations.map((location) => (
+  <article
+    key={location.id}
+    className="rounded-xl border border-[var(--nupsbox-border)] p-4"
+  >
+    <div className="flex flex-wrap items-start justify-between gap-2">
+      <div>
+        <h3 className="font-black text-[var(--nupsbox-navy)]">{location.nameVi}</h3>
+        <p className="mt-1 text-xs text-[var(--nupsbox-slate)]">{location.nameEn}</p>
+      </div>
+      <AdminStatusBadge label={location.status} tone={location.status === 'active' ? 'success' : 'neutral'} />
+    </div>
+    <p className="mt-3 text-sm text-[var(--nupsbox-slate)]">{location.district}</p>
+    <p className="mt-2 font-mono text-xs text-[var(--nupsbox-slate)]">{location.slug}</p>
+  </article>
+))}
 ```
 
-For **unit types**, use `catalog.unitTypes` in both desktop/mobile structures and show `nameVi`, `nameEn`, `areaM2`, `active ? 'Có' : 'Không'`, and `slug`.
+For Unit Types, each desktop row/mobile card must show `nameVi`, `nameEn`, `areaM2`, `active ? 'Có' : 'Không'`, and `slug`. For Pricing, each representation must show the resolved location/unit names, `formatAdminPrice(monthlyPrice)`, `formatAdminPrice(promoPrice)`, and `adminAvailabilityLabel(availabilityStatus)`.
 
-For **pricing**, use `catalog.pricing` in both structures and show the same resolved `locationNames`, `unitNames`, `formatAdminPrice(monthlyPrice)`, `formatAdminPrice(promoPrice)`, and `adminAvailabilityLabel(availabilityStatus)` values already used by the current table.
+Remove the old `min-w-[720px]` / `min-w-[900px]` requirement. Preserve the existing text that availability is operational guidance, not realtime inventory.
 
-Each desktop wrapper must carry `data-admin-desktop-table`; each mobile wrapper must carry `data-admin-mobile-list`. Remove the old mandatory `min-w-[720px]` / `min-w-[900px]` wrappers. Preserve the existing operational-availability disclaimer.
+- [ ] **Step 4: Migrate the Locations page/form without changing mutation behavior**
 
-- [ ] **Step 4: Migrate Catalog edit pages/forms without changing actions**
+In `app/admin/catalog/locations/page.tsx`, replace the bespoke page intro/back control with `AdminPageHeader` and an action link back to `/admin/catalog`.
 
-For Locations, Unit Types, and Pricing pages, replace each bespoke page intro with `AdminPageHeader`. Keep each current action function, hidden id/slug inputs, and permission prop unchanged.
+In `components/admin/location-form.tsx`:
+- keep `createLocation`, `updateLocation`, and `setLocationPublication` imports unchanged;
+- keep hidden `id` and locked `slug` inputs unchanged;
+- use `AdminPanel` for the card;
+- place the existing publish/unpublish form in `AdminPanel.actions`;
+- replace the one large disabled fieldset with these `AdminFieldGroup disabled={!canMutate}` sections:
+  - **Thông tin chính:** `slug`, `district`, `nameVi`, `nameEn`, `addressVi`, `addressEn`, `city`;
+  - **Vị trí & liên hệ:** `latitude`, `longitude`, `phone`, `zaloUrl`;
+  - **Hiển thị & vận hành:** `openingHours`, `sortOrder`, `isFeatured`.
 
-Use this outer structure in `LocationForm` while preserving the current `action = editing ? updateLocation : createLocation`:
+The publication action remains exactly:
 
 ```tsx
-<AdminPanel
-  title={editing ? location!.nameVi : 'Thêm địa điểm'}
-  description={location?.publishedAt ? 'Đã từng xuất bản — slug được khóa.' : undefined}
-  actions={location && canPublish ? publicationForm : undefined}
->
-  <form action={action} className="grid gap-5">
-    {location ? <input type="hidden" name="id" value={location.id} /> : null}
-    {slugLocked && location ? <input type="hidden" name="slug" value={location.slug} /> : null}
-
-    <AdminFieldGroup legend="Thông tin chính" disabled={!canMutate}>
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Move the current slug, district, nameVi, nameEn, addressVi, addressEn and city labels here unchanged. */}
-      </div>
-    </AdminFieldGroup>
-
-    <AdminFieldGroup legend="Vị trí & liên hệ" disabled={!canMutate}>
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Move the current latitude, longitude, phone and zaloUrl labels here unchanged. */}
-      </div>
-    </AdminFieldGroup>
-
-    <AdminFieldGroup legend="Hiển thị & vận hành" disabled={!canMutate}>
-      {/* Move the current openingHours, sortOrder and isFeatured controls here unchanged. */}
-    </AdminFieldGroup>
-
-    {canMutate ? submitButton : readOnlyMessage}
+{location && canPublish ? (
+  <form action={setLocationPublication}>
+    <input type="hidden" name="id" value={location.id} />
+    <input
+      type="hidden"
+      name="publish"
+      value={location.status === 'active' ? 'false' : 'true'}
+    />
+    <button type="submit" className="min-h-11 rounded-xl border px-4 text-sm font-bold">
+      {location.status === 'active' ? 'Ngừng xuất bản' : 'Xuất bản'}
+    </button>
   </form>
-</AdminPanel>
+) : null}
 ```
 
-The identifiers in the snippet are existing local values/elements: define `publicationForm`, `submitButton`, and `readOnlyMessage` immediately above the return from the exact JSX currently rendered by the component; do not create new actions or change input names.
+Do not change the current field names, slug-lock rule, or mutation permissions.
 
-Apply the same grouping rule to `UnitTypeForm` with these exact fields:
+- [ ] **Step 5: Migrate Unit Types and Pricing with their exact existing field contracts**
+
+In `app/admin/catalog/unit-types/page.tsx` and `components/admin/unit-type-form.tsx`, use `AdminPageHeader`, `AdminPanel`, and:
 - **Thông tin chính:** `slug`, `areaM2`, `nameVi`, `nameEn`;
 - **Nội dung tư vấn:** `recommendedForVi`, `recommendedForEn`, `capacityNoteVi`, `capacityNoteEn`;
 - **Hiển thị & vận hành:** `sortOrder`.
 
-Apply it to `PricingForm` with:
+Keep `createUnitType`, `updateUnitType`, `setUnitTypePublication`, hidden ids, slug locking, and `canMutate/canPublish` behavior unchanged.
+
+In `app/admin/catalog/pricing/page.tsx` and `components/admin/pricing-form.tsx`, group:
 - **Phạm vi áp dụng:** `locationId`, `unitTypeId`;
 - **Giá:** `monthlyPrice`, `promoPrice`, `depositAmount`;
 - **Hiển thị & vận hành:** `availabilityStatus`, `availableCount`, `featured`.
 
-For all three forms, `AdminFieldGroup disabled={!canMutate}` replaces the old outer disabled fieldset, so read-only behavior remains native HTML behavior.
-
-Do not rename form field names, action imports, permission props, publication rules, or slug-lock behavior. Do not add bulk actions or import flows.
-
-Run:
-
-```bash
-npm run test:run -- tests/unit/admin-catalog.test.ts tests/unit/admin-catalog-mutations.test.ts
-```
-
-Expected: PASS before continuing.
-
-- [ ] **Step 5: Migrate Content pages/forms**
-
-For Content overview, FAQ, Blog, Media, and Settings:
-- use `AdminPageHeader` on every page;
-- wrap major sections in `AdminPanel`;
-- render draft/published/active state through `AdminStatusBadge`;
-- wrap existing fieldsets with `AdminFieldGroup` while preserving every current field name and server action;
-- render the Content overview media rows as desktop table + mobile cards using the same `data-admin-desktop-table` / `data-admin-mobile-list` contract;
-- keep Settings limited to the existing allowlisted keys;
-- keep Media metadata-only.
-
-Use these concrete state mappings while keeping the existing permission-gated action forms:
+Keep this explanatory text attached to `availableCount`:
 
 ```tsx
-// FAQ
-<AdminStatusBadge
-  label={faq.active ? 'Đang hiển thị' : 'Bản nháp'}
-  tone={faq.active ? 'success' : 'neutral'}
-/>
-
-// Blog
-<AdminStatusBadge
-  label={blog.status === 'published' ? 'Đã xuất bản' : blog.status === 'archived' ? 'Đã lưu trữ' : 'Bản nháp'}
-  tone={blog.status === 'published' ? 'success' : 'neutral'}
-/>
-
-// Media
-<AdminStatusBadge
-  label={media.isPublic ? 'Công khai' : 'Nội bộ'}
-  tone={media.isPublic ? 'success' : 'neutral'}
-/>
+<span className="mt-1 block text-xs font-normal text-[var(--nupsbox-slate)]">
+  Không phải số tồn kho realtime và không được dùng như cam kết chỗ trống công khai.
+</span>
 ```
 
-Keep the existing `setFaqPublication`, `setBlogStatus`, metadata update, and settings update forms exactly permission-gated as they are now. Settings need no invented publication badge: group existing allowlisted keys under `AdminPanel` / `AdminFieldGroup` only.
+Do not add bulk edit/import or change any action input name.
 
-Do not alter CMS publication semantics, upload capability, delete capability, or settings contracts.
-
-- [ ] **Step 6: Run all Catalog/Content regressions**
+- [ ] **Step 6: Run Catalog regressions and commit**
 
 ```bash
-npm run test:run -- tests/unit/admin-responsive-lists.test.tsx tests/unit/admin-catalog.test.ts tests/unit/admin-catalog-mutations.test.ts tests/unit/admin-content.test.ts tests/unit/admin-content-mutations.test.ts tests/unit/admin-blog.test.ts tests/unit/admin-settings.test.ts
+npm run test:run -- tests/unit/admin-responsive-lists.test.tsx tests/unit/admin-catalog.test.ts tests/unit/admin-catalog-mutations.test.ts
 npm run typecheck
+git add app/admin/catalog components/admin/catalog-tables.tsx components/admin/location-form.tsx components/admin/unit-type-form.tsx components/admin/pricing-form.tsx tests/unit/admin-responsive-lists.test.tsx
+git commit -m "feat: unify admin catalog UX"
 ```
 
-Expected: PASS.
-
-- [ ] **Step 7: Commit**
-
-```bash
-git add app/admin/catalog components/admin/catalog-tables.tsx components/admin/location-form.tsx components/admin/unit-type-form.tsx components/admin/pricing-form.tsx app/admin/content components/admin/faq-form.tsx components/admin/blog-form.tsx components/admin/media-metadata-form.tsx components/admin/site-setting-form.tsx tests/unit/admin-responsive-lists.test.tsx
-git commit -m "feat: unify admin catalog and content UX"
-```
+Expected: PASS and no Catalog mutation contract changes.
 
 ---
 
-### Task 10: Harden responsive/accessibility contracts without weakening authentication
+### Task 10: Apply the Admin design system to Content
+
+**Files:**
+- Modify: `app/admin/content/page.tsx`
+- Modify: `app/admin/content/faq/page.tsx`
+- Modify: `app/admin/content/blog/page.tsx`
+- Modify: `app/admin/content/blog/[id]/page.tsx`
+- Modify: `app/admin/content/media/page.tsx`
+- Modify: `app/admin/content/settings/page.tsx`
+- Modify: `components/admin/faq-form.tsx`
+- Modify: `components/admin/blog-form.tsx`
+- Modify: `components/admin/media-metadata-form.tsx`
+- Modify: `components/admin/site-setting-form.tsx`
+- Create: `tests/unit/admin-content-ui.test.tsx`
+- Preserve:
+  - `tests/unit/admin-content.test.ts`
+  - `tests/unit/admin-content-mutations.test.ts`
+  - `tests/unit/admin-blog.test.ts`
+  - `tests/unit/admin-settings.test.ts`
+
+**Interfaces:**
+- Consumes: `AdminPageHeader`, `AdminPanel`, `AdminStatusBadge`, `AdminFieldGroup`, `AdminEmptyState`.
+- Produces no new CMS/business-data interface.
+
+- [ ] **Step 1: Write a Content visual-contract RED test**
+
+Create `tests/unit/admin-content-ui.test.tsx`:
+
+```tsx
+import {render, screen} from '@testing-library/react';
+import {describe, expect, it, vi} from 'vitest';
+import {FaqForm} from '@/components/admin/faq-form';
+import {BlogForm} from '@/components/admin/blog-form';
+import type {AdminFaq} from '@/features/admin/faqs';
+import type {AdminBlog} from '@/features/admin/blog';
+
+vi.mock('@/app/admin/content/faq/actions', () => ({
+  createFaq: vi.fn(),
+  updateFaq: vi.fn(),
+  setFaqPublication: vi.fn()
+}));
+
+vi.mock('@/app/admin/content/blog/actions', () => ({
+  createBlogPost: vi.fn(),
+  updateBlogPost: vi.fn(),
+  setBlogStatus: vi.fn()
+}));
+
+const faq: AdminFaq = {
+  id: '10000000-0000-4000-8000-000000000001',
+  questionVi: 'NupsBox có an toàn không?',
+  answerVi: 'Có kiểm soát an ninh.',
+  questionEn: 'Is NupsBox secure?',
+  answerEn: 'Security controls are in place.',
+  active: true,
+  sortOrder: 1,
+  createdAt: '2026-09-15T03:00:00.000Z',
+  updatedAt: '2026-09-15T03:00:00.000Z'
+};
+
+const blog: AdminBlog = {
+  id: '20000000-0000-4000-8000-000000000001',
+  slug: 'huong-dan-kho-mini',
+  status: 'published',
+  publishedAt: '2026-09-15T03:00:00.000Z',
+  coverMediaId: null,
+  authorId: null,
+  createdAt: '2026-09-15T03:00:00.000Z',
+  updatedAt: '2026-09-15T03:00:00.000Z',
+  vi: {
+    locale: 'vi',
+    title: 'Hướng dẫn kho mini',
+    excerpt: null,
+    body: {type: 'doc'},
+    seoTitle: null,
+    seoDescription: null
+  },
+  en: {
+    locale: 'en',
+    title: 'Mini storage guide',
+    excerpt: null,
+    body: {type: 'doc'},
+    seoTitle: null,
+    seoDescription: null
+  }
+};
+
+describe('admin content visual contracts', () => {
+  it('shows readable publication state instead of raw uppercase status tokens', () => {
+    render(
+      <>
+        <FaqForm faq={faq} canEdit canPublish />
+        <BlogForm
+          blog={blog}
+          canCreate={false}
+          canUpdate
+          canPublish
+          mediaOptions={[]}
+        />
+      </>
+    );
+
+    expect(screen.getByText('Đang hiển thị')).toBeInTheDocument();
+    expect(screen.getByText('Đã xuất bản')).toBeInTheDocument();
+    expect(screen.queryByText('PUBLISHED')).not.toBeInTheDocument();
+  });
+});
+```
+
+- [ ] **Step 2: Run the Content UI test and verify RED**
+
+```bash
+npm run test:run -- tests/unit/admin-content-ui.test.tsx
+```
+
+Expected: FAIL because current FAQ/Blog cards still expose raw `PUBLISHED`/status styling rather than the shared Admin status treatment.
+
+- [ ] **Step 3: Migrate the Content overview page**
+
+In `app/admin/content/page.tsx`:
+- replace the bespoke intro with `AdminPageHeader`;
+- render the three existing QA counts with `AdminStatCard`;
+- wrap FAQ QA, Media metadata, and Settings blocks with `AdminPanel`;
+- preserve the existing `mediaAltCompleteness()` logic and `includeSettings` permission check;
+- make the Media rows responsive using the same structural contract as Catalog:
+  - `data-admin-desktop-table className="hidden lg:block"`;
+  - `data-admin-mobile-list className="grid gap-3 lg:hidden"`.
+
+Each mobile Media card must show `storagePath`, `category`, VI alt, EN alt, and `qa.complete ? 'Đủ alt' : 'Thiếu alt'`. Do not change the QA calculation.
+
+- [ ] **Step 4: Migrate FAQ while preserving draft/publish semantics**
+
+In `app/admin/content/faq/page.tsx`, use `AdminPageHeader` and `AdminEmptyState` when `faqs.length === 0`.
+
+In `components/admin/faq-form.tsx`:
+- keep `createFaq`, `updateFaq`, and `setFaqPublication`;
+- use `AdminPanel`;
+- show:
+
+```tsx
+<AdminStatusBadge
+  label={faq?.active ? 'Đang hiển thị' : editing ? 'Bản nháp' : 'Mới'}
+  tone={faq?.active ? 'success' : 'neutral'}
+/>
+```
+
+- group `questionVi` + `answerVi` under **Tiếng Việt**;
+- group `questionEn` + `answerEn` under **English**;
+- group `sortOrder` under **Hiển thị & vận hành**;
+- keep `AdminFieldGroup disabled={!canEdit}`;
+- preserve the separate permission-gated publication form and all current field names.
+
+- [ ] **Step 5: Migrate Blog while preserving publication and slug-lock behavior**
+
+In `app/admin/content/blog/page.tsx` and `app/admin/content/blog/[id]/page.tsx`, use `AdminPageHeader`, `AdminPanel`, and `AdminEmptyState` where appropriate.
+
+In `components/admin/blog-form.tsx`, keep the current server actions and show:
+
+```tsx
+<AdminStatusBadge
+  label={
+    !blog
+      ? 'Mới'
+      : blog.status === 'published'
+        ? 'Đã xuất bản'
+        : blog.status === 'archived'
+          ? 'Đã lưu trữ'
+          : 'Bản nháp'
+  }
+  tone={blog?.status === 'published' ? 'success' : 'neutral'}
+/>
+```
+
+Group existing fields exactly as:
+- **Định danh:** `slug`, `coverMediaId`;
+- **Tiếng Việt:** `titleVi`, `excerptVi`, `bodyVi`, `seoTitleVi`, `seoDescriptionVi`;
+- **English:** `titleEn`, `excerptEn`, `bodyEn`, `seoTitleEn`, `seoDescriptionEn`.
+
+Keep `slugLocked = Boolean(blog?.publishedAt)` and the hidden locked slug input unchanged. Do not change `setBlogStatus` transitions.
+
+- [ ] **Step 6: Migrate Media and Settings without expanding CMS capabilities**
+
+In `app/admin/content/media/page.tsx` and `components/admin/media-metadata-form.tsx`:
+- use `AdminPageHeader` / `AdminPanel`;
+- show `AdminStatusBadge label={media.isPublic ? 'Công khai' : 'Nội bộ'}`;
+- group `altVi` + `altEn` under **Alt text song ngữ**;
+- group `category`, `sortOrder`, `isPublic`, `locationId`, `unitTypeId` under **Phân loại & liên kết**;
+- keep metadata-only behavior; do not add upload, replace, hard-delete, or storage mutation.
+
+In `app/admin/content/settings/page.tsx` and `components/admin/site-setting-form.tsx`:
+- use `AdminPageHeader` / `AdminPanel`;
+- group existing `phone` + `zaloUrl` under **Liên hệ công khai**;
+- keep `key=public_contact` hidden/immutable and the allowlist unchanged;
+- do not introduce settings keys or secret/environment editors.
+
+- [ ] **Step 7: Run Content regressions and commit**
+
+```bash
+npm run test:run -- tests/unit/admin-content-ui.test.tsx tests/unit/admin-content.test.ts tests/unit/admin-content-mutations.test.ts tests/unit/admin-blog.test.ts tests/unit/admin-settings.test.ts
+npm run typecheck
+git add app/admin/content components/admin/faq-form.tsx components/admin/blog-form.tsx components/admin/media-metadata-form.tsx components/admin/site-setting-form.tsx tests/unit/admin-content-ui.test.tsx
+git commit -m "feat: unify admin content UX"
+```
+
+Expected: PASS with no CMS mutation semantic changes.
+
+---
+
+### Task 11: Harden responsive/accessibility contracts without weakening authentication
 
 **Files:**
 - Modify: `components/admin/admin-shell.tsx`
@@ -2394,7 +2529,7 @@ git commit -m "test: harden admin responsive accessibility"
 
 ---
 
-### Task 11: Run CI/Preview gates, inspect exact-head runtime, and prepare the PR
+### Task 12: Run CI/Preview gates, inspect exact-head runtime, and prepare the PR
 
 **Files:**
 - No implementation file should change unless a failing gate exposes a real defect.
@@ -2534,11 +2669,12 @@ P2.7 does not authorize seeding business data or cutting over `nupsbox.vn` after
 - Readable location/unit/assignee context: Task 7.
 - Light Booking appointment presentation and safe errors: Task 8.
 - Unified readable CRM timeline: Task 8.
-- Catalog/Content consistency without CMS expansion: Task 9.
-- Responsive/accessibility hardening, named shell controls, active-route semantics, 44 px controls: Task 10.
-- No DB migration/seed/domain cutover/dependency expansion: Global Constraints + Tasks 10–11.
-- Auth/noindex/RBAC/RLS preservation: Global Constraints + Task 11.
-- Unit/integration/build/E2E/DB/Preview/runtime verification: Tasks 10–11.
+- Catalog consistency without functional expansion: Task 9.
+- Content consistency without CMS expansion: Task 10.
+- Responsive/accessibility hardening, named shell controls, active-route semantics, 44 px controls: Task 11.
+- No DB migration/seed/domain cutover/dependency expansion: Global Constraints + Tasks 11–12.
+- Auth/noindex/RBAC/RLS preservation: Global Constraints + Task 12.
+- Unit/integration/build/E2E/DB/Preview/runtime verification: Tasks 11–12.
 
 ### Type/interface consistency
 
