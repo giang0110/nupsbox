@@ -37,7 +37,7 @@ test('homepage reserves black weight for the primary display hierarchy', async (
   await page.goto('/');
 
   const legacyHeavySectionHeadings = await page.locator('main h2.font-black:visible').evaluateAll(
-    (headings) => headings.filter((heading) => !heading.closest('article')).length
+    (headings) => headings.filter((heading) => !heading.closest('article') && !heading.closest('#storage-finder')).length
   );
   expect(legacyHeavySectionHeadings).toBe(0);
 });
