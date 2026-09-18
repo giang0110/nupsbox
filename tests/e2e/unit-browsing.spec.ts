@@ -2,7 +2,7 @@ import {expect, test} from '@playwright/test';
 
 test('unit browsing can compare listed storage types without inventing data', async ({page}) => {
   await page.goto('/kho-mini');
-  const compareChoices = page.getByLabel(/thêm vào so sánh/i);
+  const compareChoices = page.getByRole('checkbox');
   await expect(compareChoices).toHaveCount(2);
   await compareChoices.nth(0).check();
   await compareChoices.nth(1).check();
