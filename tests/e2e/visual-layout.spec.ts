@@ -113,3 +113,31 @@ for (const route of ['/lien-he', '/dat-kho']) {
     expect(fieldBox?.y ?? 999).toBeLessThan(760);
   });
 }
+
+
+test('mobile sticky chrome does not cover the homepage content', async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto('/');
+
+  const header = page.locator('header').first();
+  const heading = page.getByRole('heading', {level: 1});
+  const actionBar = page.getByRole('navigation', {name: /quick actions/i});
+
+  const headerBox = await header.boundingBox();
+  const headingBox = await heading.boundingBox();
+  const actionBox = await actionBar.boundingBox();
+
+  expect(headerBox?.height ?? 999).toBeLessThanOrEqual(68);
+  expect(headingBox?.y ?? 0).toBeGreaterThanOrEqual((headerBox?.height ?? 0) - 2);
+  expect((actionBox?.y ?? 0) + (actionBox?.height ?? 0)).toBeLessThanOrEqual(844);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
+});
+
+test('tablet homepage remains overflow-free with readable hierarchy', async ({page}) => {
+  await page.setViewportSize({width: 768, height: 1024});
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', {level: 1})).toBeVisible();
+  await expect(page.getByRole('link', {name: /tìm kho phù hợp/i}).first()).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
+});
