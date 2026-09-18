@@ -31,3 +31,17 @@ for (const viewport of desktopViewports) {
     expect((trustBox?.y ?? 999) + (trustBox?.height ?? 999)).toBeLessThanOrEqual(viewport.height);
   });
 }
+
+test('homepage reserves black weight for the primary display hierarchy', async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto('/');
+
+  await expect(page.locator('main h2.font-black:visible')).toHaveCount(0);
+});
+
+test('homepage stays free of horizontal overflow on desktop', async ({page}) => {
+  await page.setViewportSize({width: 1366, height: 768});
+  await page.goto('/');
+
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
+});
