@@ -35,6 +35,16 @@ export type LeadTimelineInput = {
   appointmentHistory: readonly AppointmentHistoryInput[];
 };
 
+const appointmentEventLabels: Record<string, string> = {
+  created: 'Tạo lịch hẹn',
+  rescheduled: 'Đổi thời gian',
+  location_changed: 'Đổi địa điểm',
+  unit_type_changed: 'Đổi loại kho',
+  assignee_changed: 'Đổi người phụ trách',
+  status_changed: 'Đổi trạng thái',
+  details_changed: 'Cập nhật chi tiết'
+};
+
 function timestamp(value: string) {
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -55,7 +65,7 @@ export function buildLeadTimeline(input: LeadTimelineInput): LeadTimelineItem[] 
     kind: 'lead_status',
     createdAt: entry.createdAt,
     title: 'Trạng thái lead',
-    detail: `${entry.fromStatus ?? '—'} → ${entry.toStatus}`,
+    detail: (entry.fromStatus ?? '—') + ' → ' + entry.toStatus,
     actorName: entry.changedByName
   }));
 
@@ -64,7 +74,7 @@ export function buildLeadTimeline(input: LeadTimelineInput): LeadTimelineItem[] 
     kind: 'appointment',
     createdAt: entry.createdAt,
     title: 'Lịch hẹn',
-    detail: entry.eventType,
+    detail: appointmentEventLabels[entry.eventType] ?? entry.eventType,
     actorName: entry.changedByName
   }));
 
