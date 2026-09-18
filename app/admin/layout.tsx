@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import '../globals.css';
 import {AdminShell} from '@/components/admin/admin-shell';
 import {getAdminNavigation} from '@/features/admin/navigation';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
