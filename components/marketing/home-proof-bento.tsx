@@ -1,20 +1,47 @@
 import Image from 'next/image';
-import {Camera, ChevronDown, Expand, KeyRound, Warehouse} from 'lucide-react';
+import {BadgeCheck, ChevronDown, MapPin, MessageCircleMore, Ruler} from 'lucide-react';
 import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
+import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
 
 const facilityImage =
   'https://siaodieqxzlarnvfppox.supabase.co/storage/v1/object/public/onboarding-photos/nupsbox-tan-phu/corridor-1.jpg';
 
-export function HomeProofBento({locale}: {locale: 'vi' | 'en'}) {
+export function HomeProofBento({
+  locale,
+  location,
+  units
+}: {
+  locale: 'vi' | 'en';
+  location: PublicLocation | null;
+  units: PublicUnitType[];
+}) {
   const vi = locale === 'vi';
+  const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2) ) : null;
+  const maxArea = units.length ? Math.max(...units.map((unit) => unit.areaM2) ) : null;
+
+  const locationBody = location
+    ? (vi
+        ? `${location.district}, ${location.city} — theo thông tin cơ sở đang được công bố.`
+        : `${location.district}, ${location.city} — based on the currently published facility record.`)
+    : (vi
+        ? 'Địa điểm chỉ xuất hiện khi có bản ghi cơ sở đã được công bố.'
+        : 'A location appears only when a published facility record is available.');
+
+  const unitBody = units.length && minArea !== null && maxArea !== null
+    ? (vi
+        ? `${units.length} loại kho đang hiển thị, từ ${minArea.toFixed(2)} đến ${maxArea.toFixed(2)} m².`
+        : `${units.length} published unit types, from ${minArea.toFixed(2)} to ${maxArea.toFixed(2)} m².`)
+    : (vi
+        ? 'Diện tích và loại kho chỉ hiển thị sau khi dữ liệu được xác nhận.'
+        : 'Unit sizes and types appear only after the data has been verified.');
 
   const benefits = [
-    [Camera, 'CCTV', vi ? 'Camera giám sát là một phần tiện ích được ghi nhận tại cơ sở.' : 'CCTV is listed among the facility features.'],
-    [KeyRound, 'Keypad access', vi ? 'Kiểm soát ra vào bằng keypad tại cơ sở.' : 'Keypad-controlled facility access.'],
-    [Warehouse, vi ? 'Kho riêng' : 'Private unit', vi ? 'Không gian lưu trữ tách biệt cho hàng hóa và vật dụng.' : 'A dedicated storage space for inventory and belongings.'],
-    [Expand, vi ? 'Linh hoạt' : 'Flexible', vi ? 'Chọn loại kho phù hợp thay vì trả tiền cho diện tích dư thừa.' : 'Choose a suitable unit instead of paying for unused floor area.']
+    [MapPin, location ? location.name : (vi ? 'Địa điểm công bố' : 'Published location'), locationBody],
+    [Ruler, vi ? 'Kích thước cụ thể' : 'Specific unit sizes', unitBody],
+    [BadgeCheck, vi ? 'Dữ liệu có nguồn' : 'Source-backed data', vi ? 'Giá, tình trạng và thông tin catalog chỉ hiển thị từ dữ liệu NupsBox đang duy trì.' : 'Pricing, status and catalog details are shown only from data maintained by NupsBox.'],
+    [MessageCircleMore, vi ? 'Xác nhận trước khi thuê' : 'Confirm before renting', vi ? 'Báo giá, tình trạng và lịch xem được xác nhận lại qua luồng tư vấn.' : 'Pricing, status and viewing details are reconfirmed through the enquiry flow.']
   ] as const;
 
   const comparisonRows = vi
@@ -35,33 +62,52 @@ export function HomeProofBento({locale}: {locale: 'vi' | 'en'}) {
         eyebrow={vi ? 'VÌ SAO NUPSBOX' : 'WHY NUPSBOX'}
         title={vi ? 'Thông tin chính trong một góc nhìn.' : 'The essentials in one view.'}
         description={vi
-          ? 'Hình ảnh thực tế, tiện ích và cách tối ưu không gian được gom lại để bạn kiểm tra nhanh trước khi đi sâu.'
-          : 'Real imagery, facility features and space-use guidance are grouped so you can scan the essentials before going deeper.'}
+          ? 'Trang chủ ưu tiên dữ liệu đã công bố, cách sử dụng không gian và bước xác nhận tiếp theo — không tự bổ sung facility facts khi chưa có nguồn.'
+          : 'The homepage prioritizes published data, space-use guidance and the next confirmation step without inventing facility facts.'}
       />
 
       <div className="mt-7 grid gap-4 lg:grid-cols-12">
-        <figure className="overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)] lg:col-span-7">
-          <div className="relative min-h-[280px] sm:min-h-[340px] lg:h-full">
-            <Image
-              src={facilityImage}
-              alt={vi ? 'Hình ảnh thực tế cơ sở NupsBox' : 'Real NupsBox facility image'}
-              fill
-              sizes="(max-width: 1024px) 100vw, 58vw"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.78)] via-transparent to-transparent" />
-            <figcaption className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/12 bg-[rgba(7,26,56,.72)] p-4 text-white backdrop-blur-md">
+        {location ? (
+          <figure className="overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)] lg:col-span-7">
+            <div className="relative min-h-[280px] sm:min-h-[340px] lg:h-full">
+              <Image
+                src={facilityImage}
+                alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 58vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.78)] via-transparent to-transparent" />
+              <figcaption className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/12 bg-[rgba(7,26,56,.72)] p-4 text-white backdrop-blur-md">
+                <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">
+                  {location.name}
+                </p>
+                <p className="mt-1.5 text-sm leading-6 text-white/76">
+                  {vi
+                    ? 'Hình ảnh cơ sở chỉ xuất hiện cùng một địa điểm đang được công bố.'
+                    : 'Facility imagery is shown only alongside a currently published location.'}
+                </p>
+              </figcaption>
+            </div>
+          </figure>
+        ) : (
+          <div className="relative grid min-h-[280px] overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-navy)] p-6 text-white shadow-[var(--nupsbox-shadow-sm)] sm:min-h-[340px] lg:col-span-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(255,211,26,.16),transparent_26%),radial-gradient(circle_at_28%_78%,rgba(8,70,168,.28),transparent_34%)]" />
+            <div className="relative z-10 self-end">
               <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">
-                {vi ? 'HÌNH ẢNH THỰC TẾ' : 'REAL FACILITY'}
+                {vi ? 'FACT-SAFE BY DEFAULT' : 'FACT-SAFE BY DEFAULT'}
               </p>
-              <p className="mt-1.5 text-sm leading-6 text-white/76">
+              <h3 className="mt-2 max-w-xl text-2xl font-extrabold tracking-[-0.03em]">
+                {vi ? 'Chưa có cơ sở được công bố thì không hiển thị facility facts.' : 'No published facility means no facility facts are shown.'}
+              </h3>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/68">
                 {vi
-                  ? 'Website ưu tiên hình ảnh thực tế; thư viện quản trị có thể tiếp tục bổ sung ảnh độ phân giải cao.'
-                  : 'The site prioritizes real imagery; higher-resolution originals can continue to be added through the media library.'}
+                  ? 'Địa chỉ, diện tích, hình ảnh và tiện ích cụ thể không được suy đoán để lấp khoảng trống dữ liệu.'
+                  : 'Address, unit area, imagery and facility features are not guessed to fill missing data.'}
               </p>
-            </figcaption>
+            </div>
           </div>
-        </figure>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:col-span-5">
           {benefits.map(([Icon, title, body]) => (
@@ -114,13 +160,7 @@ export function HomeProofBento({locale}: {locale: 'vi' | 'en'}) {
             ))}
           </div>
 
-          <ConversionCta
-            locale={locale}
-            intent="finder"
-            placement="home-proof-bento"
-            size="md"
-            className="mt-5"
-          >
+          <ConversionCta locale={locale} intent="finder" placement="home-proof-bento" size="md" className="mt-5">
             {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
           </ConversionCta>
         </div>
