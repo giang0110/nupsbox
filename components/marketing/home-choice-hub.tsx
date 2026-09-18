@@ -1,17 +1,13 @@
 'use client';
 
 import {useState, type KeyboardEvent} from 'react';
+import dynamic from 'next/dynamic';
 import {
-  Archive,
   Boxes,
   BriefcaseBusiness,
-  House,
-  Package,
   Sparkles
 } from 'lucide-react';
-import {Link} from '@/i18n/navigation';
 import {StorageFinder} from '@/components/storage-finder/storage-finder';
-import {UnitCard} from '@/components/units/unit-card';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import type {PublicUnitType} from '@/features/catalog/types';
@@ -19,6 +15,31 @@ import type {PublicUnitType} from '@/features/catalog/types';
 type ChoiceTab = 'finder' | 'units' | 'use-cases';
 
 type FinderUnit = Pick<PublicUnitType, 'id' | 'slug' | 'name' | 'areaM2' | 'sortOrder'>;
+
+function LazyPanelPlaceholder() {
+  return (
+    <div
+      className="grid min-h-48 place-items-center rounded-2xl border border-[var(--nupsbox-border)] bg-white p-6 text-sm text-[var(--nupsbox-slate)]"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="inline-flex items-center gap-3">
+        <span className="size-4 animate-pulse rounded-full bg-[var(--nupsbox-yellow)]" aria-hidden="true" />
+        Đang tải / Loading…
+      </span>
+    </div>
+  );
+}
+
+const HomeUnitOptionsPanel = dynamic(
+  () => import('./home-unit-options-panel').then((module) => module.HomeUnitOptionsPanel),
+  {loading: () => <LazyPanelPlaceholder />}
+);
+
+const HomeUseCasesPanel = dynamic(
+  () => import('./home-use-cases-panel').then((module) => module.HomeUseCasesPanel),
+  {loading: () => <LazyPanelPlaceholder />}
+);
 
 export function HomeChoiceHub({
   units,
@@ -56,20 +77,6 @@ export function HomeChoiceHub({
     setActiveTab(nextId);
     document.getElementById(`choice-tab-${nextId}`)?.focus();
   }
-
-  const useCases = vi
-    ? [
-        [Package, 'Bán hàng online', 'Tách hàng hóa khỏi không gian sống và có điểm lưu trữ riêng cho vận hành shop.', '/giai-phap/shop-online'],
-        [BriefcaseBusiness, 'Doanh nghiệp nhỏ', 'Thêm chỗ cho hàng mẫu, thiết bị và tồn kho mà không cần thuê mặt bằng lớn.', '/giai-phap/doanh-nghiep-nho'],
-        [Archive, 'Hàng tồn & hồ sơ', 'Giữ những thứ vẫn cần nhưng không phải nằm ngay tại nơi làm việc.', '/giai-phap/chua-hang'],
-        [House, 'Đồ cá nhân', 'Giải phóng diện tích nhà ở với một không gian lưu trữ riêng.', '/giai-phap/ca-nhan']
-      ] as const
-    : [
-        [Package, 'Online selling', 'Separate inventory from your living space with a dedicated operating base.', '/giai-phap/shop-online'],
-        [BriefcaseBusiness, 'Small business', 'Add room for samples, equipment and inventory without another large lease.', '/giai-phap/doanh-nghiep-nho'],
-        [Archive, 'Inventory & files', 'Keep business items you still need without crowding the workspace.', '/giai-phap/chua-hang'],
-        [House, 'Personal storage', 'Free up room at home with a separate storage space.', '/giai-phap/ca-nhan']
-      ] as const;
 
   return (
     <Section tone="soft" size="compact">
@@ -128,22 +135,9 @@ export function HomeChoiceHub({
             aria-labelledby="choice-tab-units"
             hidden={activeTab !== 'units'}
           >
-            {units.length ? (
-              <div className="grid gap-4 lg:grid-cols-3">
-                {units.map((unit) => <UnitCard key={unit.id} unit={unit} locale={locale} />)}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-[var(--nupsbox-border)] bg-white p-6 text-sm leading-6 text-[var(--nupsbox-slate)]" role="status">
-                <p className="font-bold text-[var(--nupsbox-navy)]">
-                  {vi ? 'Chưa có loại kho được công bố.' : 'No storage unit types are currently published.'}
-                </p>
-                <p className="mt-1">
-                  {vi
-                    ? 'NupsBox sẽ hiển thị diện tích, giá và tình trạng sau khi dữ liệu được xác nhận.'
-                    : 'NupsBox will show area, pricing and status after the data has been verified.'}
-                </p>
-              </div>
-            )}
+            {activeTab === 'units' ? (
+              <HomeUnitOptionsPanel units={units} locale={locale} />
+            ) : null}
           </div>
 
           <div
@@ -152,24 +146,9 @@ export function HomeChoiceHub({
             aria-labelledby="choice-tab-use-cases"
             hidden={activeTab !== 'use-cases'}
           >
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {useCases.map(([Icon, title, body, href]) => (
-                <Link
-                  key={title}
-                  href={href}
-                  className="group rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 transition hover:-translate-y-px hover:shadow-[var(--nupsbox-shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2"
-                >
-                  <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-yellow)] text-[var(--nupsbox-navy)]">
-                    <Icon size={19} aria-hidden="true" />
-                  </span>
-                  <h3 className="mt-4 text-lg font-extrabold tracking-[-0.02em] text-[var(--nupsbox-navy)]">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">{body}</p>
-                  <span className="mt-4 inline-flex text-sm font-bold text-[var(--nupsbox-blue)]">
-                    {vi ? 'Xem giải pháp →' : 'View solution →'}
-                  </span>
-                </Link>
-              ))}
-            </div>
+            {activeTab === 'use-cases' ? (
+              <HomeUseCasesPanel locale={locale} />
+            ) : null}
           </div>
         </div>
       </div>
