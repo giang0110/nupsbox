@@ -1,5 +1,6 @@
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
+import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {UnitCompare} from '@/components/units/unit-compare';
@@ -16,25 +17,20 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
 
   return (
     <main>
-      <Section tone="soft" size="compact">
-        <div className="max-w-3xl py-4 sm:py-6">
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--nupsbox-blue)]">{vi ? 'GIÁ & LỰA CHỌN' : 'PRICING & OPTIONS'}</p>
-          <h1 className="mt-4 text-5xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-6xl">{vi ? 'Bảng giá kho mini' : 'Mini storage pricing'}</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--nupsbox-slate)]">
-            {vi
-              ? 'Giá chỉ hiển thị khi đã được NupsBox cập nhật trong hệ thống. Nếu chưa có giá xác thực, website sẽ yêu cầu liên hệ thay vì hiển thị số ước tính.'
-              : 'Prices are shown only after NupsBox has updated them in the system. Unverified pricing is never estimated.'}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ConversionCta locale={rawLocale} intent="finder" placement="pricing-hero" size="lg">
-              {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
-            </ConversionCta>
-            <ConversionCta locale={rawLocale} intent="quote" placement="pricing-hero" variant="secondary" size="lg">
-              {vi ? 'Nhận báo giá' : 'Request quote'}
-            </ConversionCta>
-          </div>
-        </div>
-      </Section>
+      <PageIntro
+        eyebrow={vi ? 'GIÁ & LỰA CHỌN' : 'PRICING & OPTIONS'}
+        title={vi ? 'Bảng giá kho mini' : 'Mini storage pricing'}
+        description={vi
+          ? 'Giá chỉ hiển thị khi đã được NupsBox cập nhật trong hệ thống. Nếu chưa có giá xác thực, website sẽ yêu cầu liên hệ thay vì hiển thị số ước tính.'
+          : 'Prices are shown only after NupsBox has updated them in the system. Unverified pricing is never estimated.'}
+      >
+        <ConversionCta locale={rawLocale} intent="finder" placement="pricing-hero" size="lg">
+          {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
+        </ConversionCta>
+        <ConversionCta locale={rawLocale} intent="quote" placement="pricing-hero" variant="secondary" size="lg">
+          {vi ? 'Nhận báo giá' : 'Request quote'}
+        </ConversionCta>
+      </PageIntro>
 
       <Section>
         <SectionHeading
@@ -50,7 +46,7 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
             : [['Area', 'Larger units may have different pricing from smaller ones.'], ['Unit type', 'Each unit type has its own configuration and use case.'], ['Current confirmed offer', 'Only values maintained by NupsBox are displayed.']]
           ).map(([title, text]) => (
             <article key={title} className="rounded-2xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-5">
-              <h2 className="text-lg font-black text-[var(--nupsbox-navy)]">{title}</h2>
+              <h2 className="text-lg font-bold text-[var(--nupsbox-navy)]">{title}</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">{text}</p>
             </article>
           ))}
@@ -65,7 +61,7 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
             ? 'Các thẻ chỉ hiển thị dữ liệu đang có; giá trống sẽ tiếp tục hiển thị “Liên hệ báo giá”.'
             : 'Cards show only current data; missing prices remain “Contact for pricing”.'}
         />
-        <div className="mt-10"><UnitCompare units={units} locale={rawLocale} /></div>
+        <div className="mt-8"><UnitCompare units={units} locale={rawLocale} /></div>
       </Section>
     </main>
   );

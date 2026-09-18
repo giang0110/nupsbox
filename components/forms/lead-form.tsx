@@ -100,16 +100,16 @@ export function LeadForm({
 
   if (state === 'success') {
     return (
-      <div role="status" className="rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-7 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)]">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">{vi ? 'ĐÃ GỬI' : 'SENT'}</p>
-        <h2 className="mt-2 text-2xl font-black">{vi ? 'Đã nhận yêu cầu.' : 'Request received.'}</h2>
+      <div role="status" className="rounded-3xl border border-[var(--nupsbox-border)] bg-white p-6 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)]">
+        <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-[var(--nupsbox-blue)]">{vi ? 'ĐÃ GỬI' : 'SENT'}</p>
+        <h2 className="mt-2 text-2xl font-extrabold tracking-[-0.025em]">{vi ? 'Đã nhận yêu cầu.' : 'Request received.'}</h2>
         <p className="mt-3 leading-7 text-[var(--nupsbox-slate)]">{appointmentMode ? (vi ? 'NupsBox sẽ liên hệ xác nhận lịch xem kho. Đây chưa phải giữ chỗ.' : 'NupsBox will contact you to confirm the viewing time. This is not a reservation.') : (vi ? 'NupsBox sẽ liên hệ với bạn để xác nhận nhu cầu và bước tiếp theo.' : 'NupsBox will contact you to confirm your needs and the next step.')}</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-5 rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-6 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)] sm:p-8">
+    <form onSubmit={submit} className="grid gap-4.5 rounded-3xl border border-[var(--nupsbox-border)] bg-white p-5 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)] sm:p-7">
       <div className="absolute -left-[10000px]" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <ConversionSummary locale={locale} unitName={unitName} locationName={locationName} appointmentMode={appointmentMode} />
       <LeadFormFields locale={locale} />

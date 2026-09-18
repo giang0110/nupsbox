@@ -11,27 +11,33 @@ export function Hero({locale}: {locale: 'vi' | 'en'}) {
   const vi = locale === 'vi';
 
   return (
-    <section className="relative overflow-hidden bg-[var(--nupsbox-navy)] text-white">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_15%_20%,rgba(8,70,168,.36),transparent_55%)]" />
-      <Container className="relative grid min-h-[650px] items-center gap-12 py-14 lg:grid-cols-[1.04fr_.96fr] lg:py-20">
-        <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3 py-2 text-xs font-extrabold tracking-[0.13em] text-white/82 backdrop-blur">
-            <MapPin size={14} aria-hidden="true" className="text-[var(--nupsbox-yellow)]" />
+    <section
+      aria-labelledby="home-hero-title"
+      className="relative overflow-hidden bg-[var(--nupsbox-navy)] text-white"
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_14%_16%,rgba(8,70,168,.34),transparent_58%)]" />
+      <Container className="relative grid items-center gap-8 py-10 sm:gap-10 sm:py-12 lg:grid-cols-[1.06fr_.94fr] lg:gap-12 lg:py-14">
+        <div className="relative z-10 max-w-[42rem]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3 py-1.5 text-[0.7rem] font-extrabold tracking-[0.13em] text-white/82 backdrop-blur">
+            <MapPin size={13} aria-hidden="true" className="text-[var(--nupsbox-yellow)]" />
             {vi ? 'MINI STORAGE • TP.HCM' : 'MINI STORAGE • HO CHI MINH CITY'}
           </div>
 
-          <h1 className="mt-7 text-5xl font-black leading-[1.01] tracking-[-0.05em] sm:text-6xl lg:text-[4.65rem]">
+          <h1
+            id="home-hero-title"
+            className="mt-5 max-w-[11.5ch] text-[clamp(3rem,4.5vw,4.2rem)] font-extrabold leading-[1.01] tracking-[-0.047em]"
+          >
             {vi ? 'Thêm không gian cho hàng hóa. Không thêm gánh nặng mặt bằng.' : 'More room for what you store. Without another full-size lease.'}
           </h1>
 
-          <p className="mt-7 max-w-2xl text-base leading-7 text-white/72 sm:text-lg">
+          <p className="mt-5 max-w-[39rem] text-base leading-7 text-white/70 sm:text-[1.05rem]">
             {vi
               ? 'Kho mini riêng, linh hoạt cho shop online, doanh nghiệp nhỏ và nhu cầu cá nhân tại TP.HCM. Bắt đầu bằng hai câu hỏi để tìm kích thước phù hợp.'
               : 'Flexible private mini storage for online sellers, small businesses and personal needs in Ho Chi Minh City. Start with two quick questions to find a suitable size.'}
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <ConversionCta locale={locale} intent="finder" placement="hero" size="lg" className="group sm:min-w-52">
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+            <ConversionCta locale={locale} intent="finder" placement="hero" size="lg" className="group sm:min-w-48">
               {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
               <ArrowRight size={18} aria-hidden="true" className="transition group-hover:translate-x-0.5" />
             </ConversionCta>
@@ -43,28 +49,28 @@ export function Hero({locale}: {locale: 'vi' | 'en'}) {
             </Link>
           </div>
 
-          <div className="mt-9 grid max-w-2xl gap-3 text-sm text-white/72 sm:grid-cols-3">
-            <div className="flex items-center gap-2"><Check size={16} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />{vi ? 'Kho riêng' : 'Private units'}</div>
-            <div className="flex items-center gap-2"><ShieldCheck size={16} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />CCTV</div>
-            <div className="flex items-center gap-2"><Check size={16} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />{vi ? 'Thuê linh hoạt' : 'Flexible rental'}</div>
+          <div className="mt-6 flex max-w-[39rem] flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/70">
+            <div className="flex items-center gap-2"><Check size={15} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />{vi ? 'Kho riêng' : 'Private units'}</div>
+            <div className="flex items-center gap-2"><ShieldCheck size={15} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />CCTV</div>
+            <div className="flex items-center gap-2"><Check size={15} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />{vi ? 'Thuê linh hoạt' : 'Flexible rental'}</div>
           </div>
         </div>
 
-        <div className="relative min-h-[410px] overflow-hidden rounded-[2rem] border border-white/10 shadow-[var(--nupsbox-shadow-lg)] sm:min-h-[500px] lg:min-h-[570px]">
+        <div className="relative min-h-[360px] overflow-hidden rounded-[1.65rem] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,.2)] sm:min-h-[420px] lg:h-[clamp(430px,36vw,500px)] lg:min-h-0">
           <Image
             src={facilityImage}
             alt={vi ? 'Hành lang kho mini thực tế tại NupsBox Tân Phú' : 'Real mini storage corridor at NupsBox Tan Phu'}
             fill
             priority
-            sizes="(max-width: 1024px) 100vw, 45vw"
+            sizes="(max-width: 1024px) 100vw, 44vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.86)] via-[rgba(7,26,56,.08)] to-transparent" />
-          <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/14 bg-[rgba(7,26,56,.78)] p-5 backdrop-blur-md sm:inset-x-6 sm:bottom-6">
-            <p className="text-xs font-black tracking-[0.14em] text-[var(--nupsbox-yellow)]">NUPSBOX TÂN PHÚ</p>
-            <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-              <p className="font-bold">{vi ? 'Kho mini từ 1,64 m²' : 'Mini storage from 1.64 m²'}</p>
-              <span className="text-xs text-white/62">{vi ? 'Ảnh cơ sở thực tế' : 'Real facility image'}</span>
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.82)] via-[rgba(7,26,56,.05)] to-transparent" />
+          <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/12 bg-[rgba(7,26,56,.76)] p-4 backdrop-blur-md sm:inset-x-5 sm:bottom-5">
+            <p className="text-[0.68rem] font-extrabold tracking-[0.14em] text-[var(--nupsbox-yellow)]">NUPSBOX TÂN PHÚ</p>
+            <div className="mt-1.5 flex flex-wrap items-end justify-between gap-2">
+              <p className="text-sm font-bold sm:text-base">{vi ? 'Kho mini từ 1,64 m²' : 'Mini storage from 1.64 m²'}</p>
+              <span className="text-[0.7rem] text-white/58">{vi ? 'Ảnh cơ sở thực tế' : 'Real facility image'}</span>
             </div>
           </div>
         </div>

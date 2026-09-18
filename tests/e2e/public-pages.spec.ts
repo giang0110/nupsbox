@@ -32,3 +32,17 @@ test('English pricing route renders localized heading', async ({page}) => {
   await page.goto('/en/pricing');
   await expect(page.getByRole('heading', {level: 1, name: 'Mini storage pricing'})).toBeVisible();
 });
+
+
+for (const route of ['/giai-phap', '/cach-thue', '/ve-nupsbox', '/cau-hoi-thuong-gap']) {
+  test(`${route} keeps its primary heading compact and premium on desktop`, async ({page}) => {
+    await page.setViewportSize({width: 1366, height: 768});
+    await page.goto(route);
+
+    const heading = page.locator('h1:visible');
+    const box = await heading.boundingBox();
+
+    await expect(heading).not.toHaveClass(/font-black/);
+    expect(box?.y ?? 999).toBeLessThan(250);
+  });
+}

@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {MapPin} from 'lucide-react';
+import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {JsonLd} from '@/components/seo/json-ld';
@@ -18,6 +19,7 @@ export async function generateMetadata({params}: {params: Promise<{locale: strin
   const location = await getMarketingLocationBySlug(slug, rawLocale);
   if (!location) notFound();
   const vi = rawLocale === 'vi';
+
   return createLocalizedMetadata({
     route: locationSeoRoute(slug),
     locale: rawLocale,
@@ -34,6 +36,7 @@ export default async function LocationDetailPage({params}: {params: Promise<{loc
   setRequestLocale(rawLocale);
   const location = await getMarketingLocationBySlug(slug, rawLocale);
   if (!location) notFound();
+
   const vi = rawLocale === 'vi';
   const homeRoute = getStaticSeoRoute('home');
   const locationsRoute = getStaticSeoRoute('locations');
@@ -51,26 +54,28 @@ export default async function LocationDetailPage({params}: {params: Promise<{loc
   return (
     <main>
       <JsonLd data={breadcrumb} />
-      <Section tone="navy" size="compact">
-        <div className="max-w-3xl py-4 sm:py-6">
-          <p className="flex items-center gap-2 text-sm text-white/60"><MapPin size={17} aria-hidden="true" />{location.address}</p>
-          <h1 className="mt-4 text-5xl font-black tracking-[-0.045em] text-white sm:text-6xl">{location.name}</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/72">
-            {vi ? 'Kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và nhu cầu lưu trữ cá nhân.' : 'Flexible mini storage for online sellers, small businesses and personal storage needs.'}
-          </p>
-          <div className="mt-8">
-            <ConversionCta
-              locale={rawLocale}
-              intent="viewing"
-              context={{locationSlug: location.slug, locationId: location.id}}
-              placement="location-detail-hero"
-              size="lg"
-            >
-              {vi ? 'Đặt lịch xem kho' : 'Request a viewing'}
-            </ConversionCta>
-          </div>
-        </div>
-      </Section>
+      <PageIntro
+        tone="navy"
+        eyebrow={vi ? 'CƠ SỞ NUPSBOX' : 'NUPSBOX FACILITY'}
+        title={location.name}
+        description={vi
+          ? 'Kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và nhu cầu lưu trữ cá nhân.'
+          : 'Flexible mini storage for online sellers, small businesses and personal storage needs.'}
+      >
+        <p className="flex min-h-11 items-center gap-2 text-sm text-white/68">
+          <MapPin size={17} aria-hidden="true" />
+          {location.address}
+        </p>
+        <ConversionCta
+          locale={rawLocale}
+          intent="viewing"
+          context={{locationSlug: location.slug, locationId: location.id}}
+          placement="location-detail-hero"
+          size="lg"
+        >
+          {vi ? 'Đặt lịch xem kho' : 'Request a viewing'}
+        </ConversionCta>
+      </PageIntro>
 
       <Section>
         <SectionHeading
@@ -80,7 +85,7 @@ export default async function LocationDetailPage({params}: {params: Promise<{loc
             ? 'Tình trạng và giá vẫn cần được NupsBox xác nhận theo thời điểm; các thẻ không phải cam kết giữ chỗ.'
             : 'Pricing and status still require confirmation; these cards do not represent a reservation.'}
         />
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           {location.unitTypes.map((unit) => <UnitCard key={unit.id} unit={unit} locale={rawLocale} />)}
         </div>
       </Section>
