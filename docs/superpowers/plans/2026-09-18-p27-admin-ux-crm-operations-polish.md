@@ -203,6 +203,7 @@ describe('admin navigation', () => {
     expect(isAdminRouteActive('/admin', '/admin')).toBe(true);
     expect(isAdminRouteActive('/admin/leads', '/admin')).toBe(false);
     expect(isAdminRouteActive('/admin/leads/abc', '/admin/leads')).toBe(true);
+    expect(isAdminRouteActive('/admin/content/blog/abc', '/admin/content')).toBe(false);
     expect(isAdminRouteActive('/admin/content/blog/abc', '/admin/content/blog')).toBe(true);
   });
 });
@@ -315,7 +316,9 @@ export function getAdminNavigation(role: AppRole): AdminNavigationGroup[] {
 }
 
 export function isAdminRouteActive(pathname: string, href: string) {
-  if (href === '/admin') return pathname === href;
+  if (href === '/admin' || href === '/admin/catalog' || href === '/admin/content') {
+    return pathname === href;
+  }
   return pathname === href || pathname.startsWith(href + '/');
 }
 ```
