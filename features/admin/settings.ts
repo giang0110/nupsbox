@@ -6,34 +6,37 @@ const allowedPublicSettingKeys = ['public_contact'] as const;
 export type AllowedPublicSettingKey = (typeof allowedPublicSettingKeys)[number];
 
 const nullableTrimmedString = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? null : value),
-  z.string().trim().min(1).nullable()
-);
+  value => (typeof value === 'string' && value.trim() === '' ? null : value),
+  z.union([z.string().trim().min(1), z.null(), z.undefined()])
+).transform(value => value ?? null);
 
 const nullableHttpUrl = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? null : value),
-  z
-    .string()
-    .trim()
-    .url()
-    .refine((value) => /^https?:\/\//i.test(value), 'http_url_required')
-    .nullable()
-);
+  value => (typeof value === 'string' && value.trim() === '' ? null : value),
+  z.union([
+    z.string().trim().url().refine(value => /^https?:\/\//i.test(value), 'http_url_required'),
+    z.null(),
+    z.undefined()
+  ])
+).transform(value => value ?? null);
 
-const PublicContactValueSchema = z
-  .object({
-    phone: nullableTrimmedString,
-    zalo_url: nullableHttpUrl
-  })
-  .strict();
+const nullableEmail = z.preprocess(
+  value => (typeof value === 'string' && value.trim() === '' ? null : value),
+  z.union([z.string().trim().email(), z.null(), z.undefined()])
+).transform(value => value ?? null);
 
-const PublicContactSettingSchema = z
-  .object({
-    key: z.literal('public_contact'),
-    value: PublicContactValueSchema,
-    isPublic: z.boolean()
-  })
-  .strict();
+const PublicContactValueSchema = z.object({
+  phone: nullableTrimmedString,
+  zalo_url: nullableHttpUrl,
+  email: nullableEmail,
+  facebook_url: nullableHttpUrl,
+  opening_hours: z.record(z.string(), z.unknown()).optional().default({})
+}).strict();
+
+const PublicContactSettingSchema = z.object({
+  key: z.literal('public_contact'),
+  value: PublicContactValueSchema,
+  isPublic: z.boolean()
+}).strict();
 
 export type PublicContactValue = z.infer<typeof PublicContactValueSchema>;
 
@@ -42,6 +45,14 @@ export type AdminPublicSetting = {
   value: PublicContactValue;
   isPublic: true;
   updatedAt: string;
+};
+
+const emptyPublicContact: PublicContactValue = {
+  phone: null,
+  zalo_url: null,
+  email: null,
+  facebook_url: null,
+  opening_hours: {}
 };
 
 export function isAllowedPublicSettingKey(value: string): value is AllowedPublicSettingKey {
@@ -67,8 +78,7 @@ export function preparePublicSiteSettingUpdate(role: AppRole, input: unknown) {
 
 function projectPublicContact(value: Json): PublicContactValue {
   const parsed = PublicContactValueSchema.safeParse(value);
-  if (parsed.success) return parsed.data;
-  return {phone: null, zalo_url: null};
+  return parsed.success ? parsed.data : emptyPublicContact;
 }
 
 export async function listAdminSettings(): Promise<AdminPublicSetting[]> {
@@ -82,15 +92,11 @@ export async function listAdminSettings(): Promise<AdminPublicSetting[]> {
 
   if (error) throw error;
 
-  return (data ?? []).flatMap((row) => {
-    if (row.key !== 'public_contact' || row.is_public !== true) return [];
-    return [
-      {
-        key: 'public_contact' as const,
-        value: projectPublicContact(row.value),
-        isPublic: true as const,
-        updatedAt: row.updated_at
-      }
-    ];
-  });
+  const row = (data ?? []).find(item => item.key === 'public_contact' && item.is_public === true);
+  return [{
+    key: 'public_contact',
+    value: row ? projectPublicContact(row.value) : emptyPublicContact,
+    isPublic: true,
+    updatedAt: row?.updated_at ?? ''
+  }];
 }
