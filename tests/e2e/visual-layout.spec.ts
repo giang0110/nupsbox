@@ -48,3 +48,21 @@ test('homepage stays free of horizontal overflow on desktop', async ({page}) => 
 
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
 });
+
+
+test('finder keeps a lighter hierarchy and practical desktop footprint', async ({page}) => {
+  await page.setViewportSize({width: 1366, height: 768});
+  await page.goto('/');
+
+  const finder = page.getByRole('region', {name: /kho nào phù hợp/i});
+  const heading = finder.getByRole('heading', {name: /kho nào phù hợp/i});
+  const finderBox = await finder.boundingBox();
+
+  await expect(heading).not.toHaveClass(/font-black/);
+  expect(finderBox?.height ?? 9999).toBeLessThan(720);
+
+  const firstChoice = finder.getByRole('button', {name: /shop online/i});
+  await firstChoice.focus();
+  await page.keyboard.press('Enter');
+  await expect(firstChoice).toHaveAttribute('aria-pressed', 'true');
+});
