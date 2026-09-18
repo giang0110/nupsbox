@@ -121,7 +121,7 @@ test('mobile sticky chrome does not cover the homepage content', async ({page}) 
 
   const header = page.locator('header').first();
   const heading = page.getByRole('heading', {level: 1});
-  const actionBar = page.getByRole('navigation', {name: /quick actions/i});
+  const actionBar = page.getByRole('navigation', {name: /hành động nhanh|quick actions/i});
 
   const headerBox = await header.boundingBox();
   const headingBox = await heading.boundingBox();

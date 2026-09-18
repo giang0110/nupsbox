@@ -4,7 +4,7 @@ test('mobile visitor gets an honest persistent conversion bar', async ({page}) =
   await page.setViewportSize({width: 390, height: 844});
   await page.goto('/');
 
-  const actions = page.getByRole('navigation', {name: /quick actions/i});
+  const actions = page.getByRole('navigation', {name: /hành động nhanh|quick actions/i});
   await expect(actions).toBeVisible();
   await expect(actions.getByRole('link', {name: /tìm kho/i})).toBeVisible();
   await expect(actions.getByRole('link', {name: /báo giá|liên hệ/i})).toBeVisible();

@@ -1,9 +1,10 @@
 'use client';
 
-import {useEffect, useState, type FormEvent} from 'react';
+import {useEffect, useRef, useState, type FormEvent} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {captureUtm, persistAttribution, readPersistedAttribution} from '@/features/leads/utm';
 import {buildOptionalPublicAppointment} from '@/features/leads/public-booking';
+import {trackEvent} from '@/features/analytics/events';
 import {Button} from '@/components/ui/button';
 import {LeadFormFields} from './lead-form-fields';
 import {ConversionSummary} from './conversion-summary';
@@ -21,6 +22,8 @@ type Props = {
   appointmentMode?: boolean;
 };
 
+type SubmitOutcome = 'success' | 'error' | 'rate_limited' | 'validation_error' | 'network_error';
+
 export function LeadForm({
   locale,
   fallbackPhone,
@@ -37,16 +40,37 @@ export function LeadForm({
   const searchParams = useSearchParams();
   const [state, setState] = useState<'idle' | 'submitting' | 'success' | 'error' | 'rate_limited'>('idle');
   const [wantsViewing, setWantsViewing] = useState(false);
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const captured = captureUtm(searchParams);
     persistAttribution(captured);
   }, [searchParams]);
 
+  useEffect(() => {
+    if (state === 'success' || state === 'error' || state === 'rate_limited') {
+      feedbackRef.current?.focus();
+    }
+  }, [state]);
+
+  function trackSubmission(outcome: SubmitOutcome, appointmentRequested: boolean) {
+    trackEvent('lead_submit', {
+      outcome,
+      locale,
+      mode: appointmentMode ? 'viewing' : 'quote',
+      appointmentRequested,
+      hasLocation: Boolean(locationId),
+      hasUnit: Boolean(unitTypeId),
+      needType,
+      estimatedVolume
+    });
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setState('submitting');
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const attribution = {...readPersistedAttribution(), ...captureUtm(searchParams)};
 
     let appointment;
@@ -57,6 +81,7 @@ export function LeadForm({
         String(form.get('viewingNote') ?? '')
       );
     } catch {
+      trackSubmission('validation_error', appointmentMode && wantsViewing);
       setState('error');
       return;
     }
@@ -84,23 +109,38 @@ export function LeadForm({
         headers: {'content-type': 'application/json'},
         body: JSON.stringify(payload)
       });
+
       if (response.status === 429) {
+        trackSubmission('rate_limited', Boolean(appointment));
         setState('rate_limited');
         return;
       }
-      setState(response.ok ? 'success' : 'error');
-      if (response.ok) {
-        event.currentTarget.reset();
-        setWantsViewing(false);
+
+      if (!response.ok) {
+        trackSubmission('error', Boolean(appointment));
+        setState('error');
+        return;
       }
+
+      trackSubmission('success', Boolean(appointment));
+      setState('success');
+      formElement.reset();
+      setWantsViewing(false);
     } catch {
+      trackSubmission('network_error', Boolean(appointment));
       setState('error');
     }
   }
 
   if (state === 'success') {
     return (
-      <div role="status" className="rounded-3xl border border-[var(--nupsbox-border)] bg-white p-6 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)]">
+      <div
+        ref={feedbackRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        className="rounded-3xl border border-[var(--nupsbox-border)] bg-white p-6 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2"
+      >
         <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-[var(--nupsbox-blue)]">{vi ? 'ĐÃ GỬI' : 'SENT'}</p>
         <h2 className="mt-2 text-2xl font-extrabold tracking-[-0.025em]">{vi ? 'Đã nhận yêu cầu.' : 'Request received.'}</h2>
         <p className="mt-3 leading-7 text-[var(--nupsbox-slate)]">{appointmentMode ? (vi ? 'NupsBox sẽ liên hệ xác nhận lịch xem kho. Đây chưa phải giữ chỗ.' : 'NupsBox will contact you to confirm the viewing time. This is not a reservation.') : (vi ? 'NupsBox sẽ liên hệ với bạn để xác nhận nhu cầu và bước tiếp theo.' : 'NupsBox will contact you to confirm your needs and the next step.')}</p>
@@ -146,7 +186,12 @@ export function LeadForm({
       </Button>
 
       {state === 'error' || state === 'rate_limited' ? (
-        <div role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-800">
+        <div
+          ref={feedbackRef}
+          tabIndex={-1}
+          role="alert"
+          className="rounded-xl bg-red-50 p-4 text-sm text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
+        >
           <p>{state === 'rate_limited' ? (vi ? 'Bạn đã gửi nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau.' : 'Too many requests were sent recently. Please try again later.') : (vi ? 'Không gửi được yêu cầu lúc này. Vui lòng kiểm tra lại thông tin và thời gian xem kho.' : 'We could not submit your request right now. Please check the form and viewing time.')}</p>
           {fallbackPhone || fallbackZalo ? <p className="mt-2">{fallbackPhone ? <a className="font-bold underline" href={`tel:${fallbackPhone}`}>{vi ? 'Gọi NupsBox' : 'Call NupsBox'}</a> : null}{fallbackPhone && fallbackZalo ? ' · ' : null}{fallbackZalo ? <a className="font-bold underline" href={fallbackZalo} target="_blank" rel="noreferrer">Zalo</a> : null}</p> : null}
         </div>
