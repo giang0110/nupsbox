@@ -80,3 +80,20 @@ for (const route of ['/kho-mini', '/bang-gia', '/dia-diem']) {
     expect(box?.y ?? 999).toBeLessThan(250);
   });
 }
+
+
+for (const route of ['/lien-he', '/dat-kho']) {
+  test(`${route} keeps its conversion intro compact on laptop viewports`, async ({page}) => {
+    await page.setViewportSize({width: 1366, height: 768});
+    await page.goto(route);
+
+    const heading = page.locator('h1:visible');
+    const firstField = page.getByLabel(/tên/i);
+    const headingBox = await heading.boundingBox();
+    const fieldBox = await firstField.boundingBox();
+
+    await expect(heading).not.toHaveClass(/font-black/);
+    expect(headingBox?.y ?? 999).toBeLessThan(260);
+    expect(fieldBox?.y ?? 999).toBeLessThan(760);
+  });
+}
