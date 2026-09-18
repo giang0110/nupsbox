@@ -4,6 +4,7 @@ import {AppointmentWorkspace} from '@/components/admin/appointment-workspace';
 import {LeadContactHeader} from '@/components/admin/lead-contact-header';
 import {LeadContextPanels} from '@/components/admin/lead-context-panels';
 import {LeadNoteForm} from '@/components/admin/lead-note-form';
+import {LeadTimeline} from '@/components/admin/lead-timeline';
 import {
   LeadOperationRail,
   type LeadRailAppointment
@@ -177,34 +178,9 @@ export default async function AdminLeadDetailPage({
             </div>
           </AdminPanel>
 
-          <AdminPanel
-            title="Timeline CRM"
-            description="Lịch sử lead, ghi chú nội bộ và thay đổi lịch hẹn theo thứ tự thời gian."
-            className="min-w-0 xl:col-start-1"
-          >
-            <div className="grid gap-3">
-              {timeline.map((entry) => (
-                <article
-                  key={entry.kind + '-' + entry.id}
-                  className="rounded-xl border border-[var(--nupsbox-border)] p-4"
-                >
-                  <p className="font-black text-[var(--nupsbox-navy)]">{entry.title}</p>
-                  {entry.detail ? (
-                    <p className="mt-1 text-sm text-[var(--nupsbox-navy)]">{entry.detail}</p>
-                  ) : null}
-                  <p className="mt-2 text-xs text-[var(--nupsbox-slate)]">
-                    {formatDate(entry.createdAt)}
-                    {entry.actorName ? ' · ' + entry.actorName : ''}
-                  </p>
-                </article>
-              ))}
-              {!timeline.length ? (
-                <p className="py-5 text-center text-sm text-[var(--nupsbox-slate)]">
-                  Chưa có hoạt động CRM được ghi nhận.
-                </p>
-              ) : null}
-            </div>
-          </AdminPanel>
+          <div className="min-w-0 xl:col-start-1">
+            <LeadTimeline items={timeline} />
+          </div>
         </div>
       </Container>
     </main>
