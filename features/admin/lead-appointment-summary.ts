@@ -32,9 +32,20 @@ export function projectLeadAppointmentSummaries(
         now
       );
 
-      return selected
-        ? [[leadId, {...selected, leadId} satisfies AdminLeadAppointmentSummary]]
-        : [];
+      if (!selected) return [];
+      if (selected.status !== 'pending' && selected.status !== 'confirmed') {
+        return [];
+      }
+
+      const summary: AdminLeadAppointmentSummary = {
+        id: selected.id,
+        leadId,
+        status: selected.status,
+        scheduledAt: selected.scheduledAt,
+        overdue: selected.overdue
+      };
+
+      return [[leadId, summary]];
     })
   );
 }
