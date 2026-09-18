@@ -162,7 +162,7 @@
   - `isAdminRouteActive(pathname: string, href: string): boolean`
   - `AdminShell({role, userLabel, groups, children})`
   - `AdminPageHeader({eyebrow, title, description, breadcrumbs?, actions?})`
-  - `AdminPanel`, `AdminStatCard`, `AdminStatusBadge`, `AdminEmptyState`, `AdminFieldGroup`, `AdminActionBar`.
+  - `AdminPanel`, `AdminStatCard`, `AdminStatusBadge`, `AdminEmptyState`, `AdminFieldGroup`, `AdminActionBar`; `AdminFieldGroup` accepts `disabled?: boolean` so existing read-only fieldsets remain semantically disabled.
 
 - [ ] **Step 1: Write navigation and primitive RED tests**
 
@@ -397,8 +397,21 @@ export function AdminEmptyState({title, description, action}: {title: string; de
   );
 }
 
-export function AdminFieldGroup({legend, children}: {legend: string; children: ReactNode}) {
-  return <fieldset className="grid gap-4"><legend className="mb-2 text-sm font-black text-[var(--nupsbox-navy)]">{legend}</legend>{children}</fieldset>;
+export function AdminFieldGroup({
+  legend,
+  disabled = false,
+  children
+}: {
+  legend: string;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <fieldset disabled={disabled} className="grid gap-4">
+      <legend className="mb-2 text-sm font-black text-[var(--nupsbox-navy)]">{legend}</legend>
+      {children}
+    </fieldset>
+  );
 }
 
 export function AdminActionBar({children}: {children: ReactNode}) {
@@ -2128,21 +2141,54 @@ Each desktop wrapper must carry `data-admin-desktop-table`; each mobile wrapper 
 
 - [ ] **Step 4: Migrate Catalog edit pages/forms without changing actions**
 
-For Locations, Unit Types, and Pricing pages, replace each page intro with `AdminPageHeader`. In each existing form component, keep the current action and props but wrap fields by purpose:
+For Locations, Unit Types, and Pricing pages, replace each bespoke page intro with `AdminPageHeader`. Keep each current action function, hidden id/slug inputs, and permission prop unchanged.
+
+Use this outer structure in `LocationForm` while preserving the current `action = editing ? updateLocation : createLocation`:
 
 ```tsx
-<AdminPanel title={editing ? 'Chỉnh sửa' : 'Tạo mới'}>
-  <form action={existingAction} className="grid gap-5">
-    <AdminFieldGroup legend="Thông tin chính">
-      <div className="grid gap-4 md:grid-cols-2">{/* existing primary fields */}</div>
+<AdminPanel
+  title={editing ? location!.nameVi : 'Thêm địa điểm'}
+  description={location?.publishedAt ? 'Đã từng xuất bản — slug được khóa.' : undefined}
+  actions={location && canPublish ? publicationForm : undefined}
+>
+  <form action={action} className="grid gap-5">
+    {location ? <input type="hidden" name="id" value={location.id} /> : null}
+    {slugLocked && location ? <input type="hidden" name="slug" value={location.slug} /> : null}
+
+    <AdminFieldGroup legend="Thông tin chính" disabled={!canMutate}>
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Move the current slug, district, nameVi, nameEn, addressVi, addressEn and city labels here unchanged. */}
+      </div>
     </AdminFieldGroup>
-    <AdminFieldGroup legend="Hiển thị & vận hành">
-      <div className="grid gap-4 md:grid-cols-2">{/* existing status/publish fields */}</div>
+
+    <AdminFieldGroup legend="Vị trí & liên hệ" disabled={!canMutate}>
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Move the current latitude, longitude, phone and zaloUrl labels here unchanged. */}
+      </div>
     </AdminFieldGroup>
-    {/* existing permission-gated submit/publish controls */}
+
+    <AdminFieldGroup legend="Hiển thị & vận hành" disabled={!canMutate}>
+      {/* Move the current openingHours, sortOrder and isFeatured controls here unchanged. */}
+    </AdminFieldGroup>
+
+    {canMutate ? submitButton : readOnlyMessage}
   </form>
 </AdminPanel>
 ```
+
+The identifiers in the snippet are existing local values/elements: define `publicationForm`, `submitButton`, and `readOnlyMessage` immediately above the return from the exact JSX currently rendered by the component; do not create new actions or change input names.
+
+Apply the same grouping rule to `UnitTypeForm` with these exact fields:
+- **Thông tin chính:** `slug`, `areaM2`, `nameVi`, `nameEn`;
+- **Nội dung tư vấn:** `recommendedForVi`, `recommendedForEn`, `capacityNoteVi`, `capacityNoteEn`;
+- **Hiển thị & vận hành:** `sortOrder`.
+
+Apply it to `PricingForm` with:
+- **Phạm vi áp dụng:** `locationId`, `unitTypeId`;
+- **Giá:** `monthlyPrice`, `promoPrice`, `depositAmount`;
+- **Hiển thị & vận hành:** `availabilityStatus`, `availableCount`, `featured`.
+
+For all three forms, `AdminFieldGroup disabled={!canMutate}` replaces the old outer disabled fieldset, so read-only behavior remains native HTML behavior.
 
 Do not rename form field names, action imports, permission props, publication rules, or slug-lock behavior. Do not add bulk actions or import flows.
 
@@ -2152,7 +2198,7 @@ Run:
 npm run test:run -- tests/unit/admin-catalog.test.ts tests/unit/admin-catalog-mutations.test.ts
 ```
 
-Expected: PASS before continuing to Content.
+Expected: PASS before continuing.
 
 - [ ] **Step 5: Migrate Content pages/forms**
 
