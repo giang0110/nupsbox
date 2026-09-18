@@ -2,15 +2,18 @@ import Image from 'next/image';
 import {ImageOff} from 'lucide-react';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
+import {TrackedContactLink} from '@/components/marketing/tracked-contact-link';
 import type {PublicLocation} from '@/features/catalog/types';
 import {getFacilityMedia} from '@/features/content/facility-media';
 
 export function Gallery({
   locale,
-  location
+  location,
+  facebookUrl
 }: {
   locale: 'vi' | 'en';
   location: PublicLocation | null;
+  facebookUrl?: string | null;
 }) {
   const vi = locale === 'vi';
   const facilityMedia = location ? getFacilityMedia(location.slug) : null;
@@ -37,8 +40,18 @@ export function Gallery({
                 className="object-cover"
               />
             </div>
-            <figcaption className="px-5 py-3.5 text-sm text-[var(--nupsbox-slate)]">
-              {location.name} · {vi ? 'asset được gắn theo cơ sở' : 'location-scoped facility asset'}
+            <figcaption className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 text-sm text-[var(--nupsbox-slate)]">
+              <span>{location.name} · {vi ? 'asset được gắn theo cơ sở' : 'location-scoped facility asset'}</span>
+              {facebookUrl ? (
+                <TrackedContactLink
+                  href={facebookUrl}
+                  label={vi ? 'Xem thêm trên Facebook' : 'More on Facebook'}
+                  kind="facebook"
+                  placement="about-gallery"
+                  showIcon={false}
+                  className="font-bold text-[var(--nupsbox-blue)] hover:underline"
+                />
+              ) : null}
             </figcaption>
           </figure>
         ) : (
@@ -60,6 +73,15 @@ export function Gallery({
                   ? 'Thông tin hình ảnh sẽ chỉ xuất hiện khi nguồn media và cơ sở được liên kết rõ ràng.'
                   : 'Facility imagery appears only when the media source and facility are explicitly linked.'}
               </p>
+              {facebookUrl ? (
+                <TrackedContactLink
+                  href={facebookUrl}
+                  label={vi ? 'Xem nguồn hình ảnh trên Facebook' : 'View the Facebook media source'}
+                  kind="facebook"
+                  placement="about-gallery-empty"
+                  className="mx-auto mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white"
+                />
+              ) : null}
             </div>
           </div>
         )}

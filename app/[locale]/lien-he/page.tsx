@@ -4,6 +4,7 @@ import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {MapPin} from 'lucide-react';
 import {Section} from '@/components/ui/section';
+import {TrackedContactLink} from '@/components/marketing/tracked-contact-link';
 import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingFeaturedLocation, getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
@@ -39,7 +40,7 @@ export default async function Page({
     getMarketingFeaturedLocation(locale),
     query.location ? getMarketingLocationBySlug(query.location, locale) : Promise.resolve(null),
     query.unit ? getMarketingUnitBySlug(query.unit, locale) : Promise.resolve(null),
-    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, openingHours: {}}))
+    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, facebookUrl: null, openingHours: {}}))
   ]);
 
   const location = requestedLocation ?? featuredLocation;
@@ -85,6 +86,26 @@ export default async function Page({
                 </p>
               </aside>
             )}
+
+            {settings.facebookUrl ? (
+              <aside className="mt-4 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 shadow-[var(--nupsbox-shadow-sm)]">
+                <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">
+                  {vi ? 'KÊNH FACEBOOK' : 'FACEBOOK SOURCE'}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">
+                  {vi
+                    ? 'Mở nguồn Facebook công khai đang được NupsBox liên kết trên website.'
+                    : 'Open the public Facebook source currently linked by NupsBox.'}
+                </p>
+                <TrackedContactLink
+                  href={settings.facebookUrl}
+                  label={vi ? 'Mở Facebook NupsBox' : 'Open NupsBox Facebook'}
+                  kind="facebook"
+                  placement="contact-page"
+                  className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white"
+                />
+              </aside>
+            ) : null}
           </div>
 
           <div id="lead-request">
@@ -103,6 +124,7 @@ export default async function Page({
                 locale={locale}
                 fallbackPhone={settings.phone}
                 fallbackZalo={settings.zaloUrl}
+                fallbackFacebook={settings.facebookUrl}
                 unitTypeId={requestedUnit?.id}
                 unitName={requestedUnit?.name}
                 locationId={requestedLocation?.id}

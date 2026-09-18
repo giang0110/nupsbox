@@ -8,6 +8,7 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
+import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
@@ -28,7 +29,10 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const vi = locale === 'vi';
-  const location = await getMarketingFeaturedLocation(locale);
+  const [location, settings] = await Promise.all([
+    getMarketingFeaturedLocation(locale),
+    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, facebookUrl: null, openingHours: {}}))
+  ]);
 
   return (
     <main>
@@ -51,7 +55,7 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
         />
       </Section>
 
-      <Gallery locale={locale} location={location} />
+      <Gallery locale={locale} location={location} facebookUrl={settings.facebookUrl} />
       <FinalCta locale={locale}/>
     </main>
   );

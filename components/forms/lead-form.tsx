@@ -6,6 +6,7 @@ import {captureUtm, persistAttribution, readPersistedAttribution} from '@/featur
 import {buildOptionalPublicAppointment} from '@/features/leads/public-booking';
 import {trackEvent} from '@/features/analytics/events';
 import {Button} from '@/components/ui/button';
+import {TrackedContactLink} from '@/components/marketing/tracked-contact-link';
 import {LeadFormFields} from './lead-form-fields';
 import {ConversionSummary} from './conversion-summary';
 
@@ -13,6 +14,7 @@ type Props = {
   locale: 'vi' | 'en';
   fallbackPhone?: string | null;
   fallbackZalo?: string | null;
+  fallbackFacebook?: string | null;
   locationId?: string;
   unitTypeId?: string;
   unitName?: string | null;
@@ -28,6 +30,7 @@ export function LeadForm({
   locale,
   fallbackPhone,
   fallbackZalo,
+  fallbackFacebook,
   locationId,
   unitTypeId,
   unitName,
@@ -193,7 +196,40 @@ export function LeadForm({
           className="rounded-xl bg-red-50 p-4 text-sm text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
         >
           <p>{state === 'rate_limited' ? (vi ? 'Bạn đã gửi nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau.' : 'Too many requests were sent recently. Please try again later.') : (vi ? 'Không gửi được yêu cầu lúc này. Vui lòng kiểm tra lại thông tin và thời gian xem kho.' : 'We could not submit your request right now. Please check the form and viewing time.')}</p>
-          {fallbackPhone || fallbackZalo ? <p className="mt-2">{fallbackPhone ? <a className="font-bold underline" href={`tel:${fallbackPhone}`}>{vi ? 'Gọi NupsBox' : 'Call NupsBox'}</a> : null}{fallbackPhone && fallbackZalo ? ' · ' : null}{fallbackZalo ? <a className="font-bold underline" href={fallbackZalo} target="_blank" rel="noreferrer">Zalo</a> : null}</p> : null}
+          {fallbackPhone || fallbackZalo || fallbackFacebook ? (
+            <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+              {fallbackPhone ? (
+                <TrackedContactLink
+                  href={`tel:${fallbackPhone}`}
+                  label={vi ? 'Gọi NupsBox' : 'Call NupsBox'}
+                  kind="phone"
+                  placement="lead-form-error"
+                  showIcon={false}
+                  className="font-bold underline"
+                />
+              ) : null}
+              {fallbackZalo ? (
+                <TrackedContactLink
+                  href={fallbackZalo}
+                  label="Zalo"
+                  kind="zalo"
+                  placement="lead-form-error"
+                  showIcon={false}
+                  className="font-bold underline"
+                />
+              ) : null}
+              {fallbackFacebook ? (
+                <TrackedContactLink
+                  href={fallbackFacebook}
+                  label="Facebook"
+                  kind="facebook"
+                  placement="lead-form-error"
+                  showIcon={false}
+                  className="font-bold underline"
+                />
+              ) : null}
+            </p>
+          ) : null}
         </div>
       ) : null}
       <p className="text-xs leading-5 text-[var(--nupsbox-slate)]">{vi ? 'Thông tin này chỉ được dùng để NupsBox phản hồi yêu cầu thuê kho của bạn.' : 'This information is used only to respond to your storage enquiry.'}</p>
