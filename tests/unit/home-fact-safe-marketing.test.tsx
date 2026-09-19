@@ -53,7 +53,7 @@ describe('fact-safe adaptive homepage marketing', () => {
   it('renders a neutral hero when no published location exists', () => {
     render(<Hero locale="vi" location={null} units={[]} />);
 
-    expect(screen.getByText('Thông tin cơ sở sẽ xuất hiện sau khi được công bố.')).toBeInTheDocument();
+    expect(screen.getByText('Không gian kho được cập nhật theo từng cơ sở.')).toBeInTheDocument();
     expect(screen.queryByText(/Tân Phú/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/CCTV/i)).not.toBeInTheDocument();
   });
@@ -62,13 +62,14 @@ describe('fact-safe adaptive homepage marketing', () => {
     render(<Hero locale="vi" location={location} units={[unit]} />);
 
     expect(screen.getByText('NupsBox Central')).toBeInTheDocument();
-    expect(screen.getByText(/Đang công bố loại kho từ 2.50 m²/)).toBeInTheDocument();
+    expect(screen.getByText('Approved address')).toBeInTheDocument();
+    expect(screen.getByText('2.50 m²+')).toBeInTheDocument();
   });
 
   it('does not invent facility security claims in the proof bento', () => {
     render(<HomeProofBento locale="vi" location={null} units={[]} />);
 
-    expect(screen.getByText('Chưa có cơ sở được công bố thì không hiển thị facility facts.')).toBeInTheDocument();
+    expect(screen.getByText('Thông tin cơ sở được hiển thị khi đã có dữ liệu.')).toBeInTheDocument();
     expect(screen.queryByText('CCTV')).not.toBeInTheDocument();
     expect(screen.queryByText(/Keypad/i)).not.toBeInTheDocument();
   });
@@ -76,7 +77,7 @@ describe('fact-safe adaptive homepage marketing', () => {
   it('summarizes published location and unit ranges from props', () => {
     render(<HomeProofBento locale="vi" location={location} units={[unit]} />);
 
-    expect(screen.getAllByText('NupsBox Central').length).toBeGreaterThan(0);
-    expect(screen.getByText('1 loại kho đang hiển thị, từ 2.50 đến 2.50 m².')).toBeInTheDocument();
+    expect(screen.getByText('Cơ sở đang hiển thị tại District X, Ho Chi Minh City.')).toBeInTheDocument();
+    expect(screen.getByText('Các loại kho đang hiển thị từ 2.50 đến 2.50 m².')).toBeInTheDocument();
   });
 });
