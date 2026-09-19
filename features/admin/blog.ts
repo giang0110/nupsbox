@@ -79,6 +79,46 @@ function statusValue(value: string): BlogStatus {
   throw new Error('invalid_blog_status');
 }
 
+export type BlogPublicationState = 'draft' | 'scheduled' | 'published' | 'archived';
+
+export function getBlogPublicationState(
+  blog: Pick<AdminBlog, 'status' | 'publishedAt'>,
+  now = new Date()
+): BlogPublicationState {
+  if (blog.status === 'draft' || blog.status === 'archived') return blog.status;
+  if (!blog.publishedAt) return 'published';
+
+  const publishedAt = new Date(blog.publishedAt);
+  if (Number.isNaN(publishedAt.getTime())) return 'published';
+  return publishedAt.getTime() > now.getTime() ? 'scheduled' : 'published';
+}
+
+export function hcmDateTimeLocalToIso(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!match) throw new Error('invalid_schedule_time');
+
+  const [, yearRaw, monthRaw, dayRaw, hourRaw, minuteRaw] = match;
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+
+  const utc = new Date(Date.UTC(year, month - 1, day, hour - 7, minute, 0, 0));
+  const hcm = new Date(utc.getTime() + 7 * 60 * 60 * 1000);
+  if (
+    hcm.getUTCFullYear() !== year ||
+    hcm.getUTCMonth() !== month - 1 ||
+    hcm.getUTCDate() !== day ||
+    hcm.getUTCHours() !== hour ||
+    hcm.getUTCMinutes() !== minute
+  ) {
+    throw new Error('invalid_schedule_time');
+  }
+
+  return utc.toISOString();
+}
+
 function translationFromInput(locale: BlogLocale, input: BlogInput): PreparedBlogTranslation {
   const vi = locale === 'vi';
   return {
@@ -164,6 +204,69 @@ export function prepareBlogStatusChange(
 
   if (currentStatus !== 'published') throw new Error('invalid_blog_transition');
   return {id: blogId, changes: {status: 'archived' as const}};
+}
+
+export function prepareBlogSchedule(
+  role: AppRole,
+  id: string,
+  currentStatus: BlogStatus,
+  currentInput: unknown,
+  scheduledAtIso: string,
+  nowIso = new Date().toISOString()
+) {
+  requirePermission(role, 'content:publish');
+  const blogId = idSchema.parse(id);
+  if (currentStatus !== 'draft') throw new Error('invalid_blog_transition');
+  if (!publishable(currentInput)) throw new Error('blog_not_publishable');
+
+  const scheduledAt = new Date(scheduledAtIso);
+  const now = new Date(nowIso);
+  if (
+    Number.isNaN(scheduledAt.getTime()) ||
+    Number.isNaN(now.getTime()) ||
+    scheduledAt.getTime() <= now.getTime()
+  ) {
+    throw new Error('schedule_must_be_future');
+  }
+
+  return {
+    id: blogId,
+    changes: {
+      status: 'published' as const,
+      published_at: scheduledAt.toISOString()
+    }
+  };
+}
+
+export function prepareBlogScheduleCancellation(
+  role: AppRole,
+  id: string,
+  currentStatus: BlogStatus,
+  publishedAt: string | null,
+  nowIso = new Date().toISOString()
+) {
+  requirePermission(role, 'content:publish');
+  const blogId = idSchema.parse(id);
+  const scheduled = publishedAt ? new Date(publishedAt) : null;
+  const now = new Date(nowIso);
+
+  if (
+    currentStatus !== 'published' ||
+    !scheduled ||
+    Number.isNaN(scheduled.getTime()) ||
+    Number.isNaN(now.getTime()) ||
+    scheduled.getTime() <= now.getTime()
+  ) {
+    throw new Error('blog_not_scheduled');
+  }
+
+  return {
+    id: blogId,
+    changes: {
+      status: 'draft' as const,
+      published_at: null
+    }
+  };
 }
 
 function emptyTranslation(locale: BlogLocale): AdminBlogTranslation {

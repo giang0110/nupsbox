@@ -45,6 +45,7 @@ const navigation: AdminNavigationGroup[] = [
       {href: '/admin/content', label: 'Tổng quan nội dung', action: 'content:read'},
       {href: '/admin/content/faq', label: 'FAQ', action: 'content:read'},
       {href: '/admin/content/blog', label: 'Blog', action: 'content:read'},
+      {href: '/admin/content/calendar', label: 'Lịch nội dung', action: 'content:read'},
       {href: '/admin/content/media', label: 'Media', action: 'media:read'},
       {href: '/admin/content/settings', label: 'Settings', action: 'settings:read'}
     ]

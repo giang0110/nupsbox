@@ -1,5 +1,7 @@
 import {
+  cancelScheduledBlogPublication,
   createBlogPost,
+  scheduleBlogPublication,
   setBlogStatus,
   updateBlogPost
 } from '@/app/admin/content/blog/actions';
@@ -9,7 +11,7 @@ import {
   AdminPanel,
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
-import type {AdminBlog} from '@/features/admin/blog';
+import {getBlogPublicationState, type AdminBlog} from '@/features/admin/blog';
 
 type MediaOption = {id: string; label: string};
 type Props = {
@@ -22,6 +24,12 @@ type Props = {
 
 const inputClass =
   'mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm disabled:bg-slate-50';
+
+const publicationDateTime = new Intl.DateTimeFormat('vi-VN', {
+  timeZone: 'Asia/Ho_Chi_Minh',
+  dateStyle: 'short',
+  timeStyle: 'short'
+});
 
 function bodyText(value: Record<string, unknown> | undefined) {
   return JSON.stringify(value ?? {}, null, 2);
@@ -37,25 +45,37 @@ export function BlogForm({
   const editing = Boolean(blog);
   const canEdit = editing ? canUpdate : canCreate;
   const slugLocked = Boolean(blog?.publishedAt);
+  const publicationState = blog ? getBlogPublicationState(blog) : null;
   const statusLabel = !blog
     ? 'Mới'
-    : blog.status === 'published'
-      ? 'Đã xuất bản'
-      : blog.status === 'archived'
-        ? 'Đã lưu trữ'
-        : 'Bản nháp';
+    : publicationState === 'scheduled'
+      ? 'Đã lên lịch'
+      : publicationState === 'published'
+        ? 'Đã xuất bản'
+        : publicationState === 'archived'
+          ? 'Đã lưu trữ'
+          : 'Bản nháp';
+  const publishedAtLabel = blog?.publishedAt
+    ? publicationDateTime.format(new Date(blog.publishedAt))
+    : null;
 
   return (
     <AdminPanel
       title={blog?.vi.title || blog?.en.title || 'Tạo bài blog'}
-      description={blog?.publishedAt ? 'Đã từng xuất bản — slug được khóa vĩnh viễn trong Phase 2.' : undefined}
+      description={
+        publicationState === 'scheduled'
+          ? `Đã lên lịch lúc ${publishedAtLabel} (giờ TP.HCM). Bài chưa public trước thời điểm này; slug được khóa sau khi lên lịch.`
+          : blog?.publishedAt
+            ? 'Đã từng xuất bản — slug được khóa theo publication contract.'
+            : undefined
+      }
       actions={
         <AdminActionBar>
           <AdminStatusBadge
             label={statusLabel}
-            tone={blog?.status === 'published' ? 'success' : 'neutral'}
+            tone={publicationState === 'published' ? 'success' : publicationState === 'scheduled' ? 'warning' : 'neutral'}
           />
-          {blog?.status === 'published' ? (
+          {publicationState === 'published' ? (
             <>
               <a
                 href={'/blog/' + blog.slug}
@@ -85,16 +105,46 @@ export function BlogForm({
               Mở link giới thiệu ↗
             </a>
           ) : null}
-          {blog && canPublish && blog.status !== 'archived' ? (
+          {blog && canPublish && publicationState === 'draft' ? (
+            <>
+              <form action={setBlogStatus}>
+                <input type="hidden" name="id" value={blog.id} />
+                <input type="hidden" name="target" value="published" />
+                <button className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]">
+                  Xuất bản ngay
+                </button>
+              </form>
+              <form action={scheduleBlogPublication} className="flex flex-wrap items-end gap-2">
+                <input type="hidden" name="id" value={blog.id} />
+                <label className="text-xs font-bold text-[var(--nupsbox-slate)]">
+                  Hẹn giờ TP.HCM
+                  <input
+                    className="mt-1 min-h-11 rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm text-[var(--nupsbox-navy)]"
+                    type="datetime-local"
+                    name="scheduledAt"
+                    required
+                  />
+                </label>
+                <button className="min-h-11 rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white">
+                  Lên lịch
+                </button>
+              </form>
+            </>
+          ) : null}
+          {blog && canPublish && publicationState === 'scheduled' ? (
+            <form action={cancelScheduledBlogPublication}>
+              <input type="hidden" name="id" value={blog.id} />
+              <button className="min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-sm font-bold text-amber-900">
+                Hủy lịch
+              </button>
+            </form>
+          ) : null}
+          {blog && canPublish && publicationState === 'published' ? (
             <form action={setBlogStatus}>
               <input type="hidden" name="id" value={blog.id} />
-              <input
-                type="hidden"
-                name="target"
-                value={blog.status === 'draft' ? 'published' : 'archived'}
-              />
+              <input type="hidden" name="target" value="archived" />
               <button className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]">
-                {blog.status === 'draft' ? 'Xuất bản' : 'Lưu trữ'}
+                Lưu trữ
               </button>
             </form>
           ) : null}

@@ -3,7 +3,10 @@
 import {revalidatePath} from 'next/cache';
 import {
   getAdminBlog,
+  hcmDateTimeLocalToIso,
   prepareBlogCreate,
+  prepareBlogSchedule,
+  prepareBlogScheduleCancellation,
   prepareBlogStatusChange,
   prepareBlogUpdate,
   type AdminBlog,
@@ -131,6 +134,52 @@ export async function updateBlogPost(formData: FormData) {
   revalidatePath(`/admin/content/blog/${prepared.id}`);
 }
 
+export async function scheduleBlogPublication(formData: FormData) {
+  const session = await requireAdminUser();
+  const id = String(formData.get('id') ?? '');
+  const current = await getAdminBlog(id);
+  if (!current) throw new Error('blog_not_found');
+
+  const scheduledAtIso = hcmDateTimeLocalToIso(String(formData.get('scheduledAt') ?? ''));
+  const command = prepareBlogSchedule(
+    session.role,
+    id,
+    current.status,
+    blogInput(current),
+    scheduledAtIso
+  );
+
+  const supabase = await createSupabaseServerClient();
+  const {error} = await supabase.from('blog_posts').update(command.changes).eq('id', command.id);
+  throwBlogError(error);
+  revalidateBlogs();
+  revalidatePath('/admin/content/calendar');
+  revalidatePath('/admin/seo');
+  revalidatePath(`/admin/content/blog/${command.id}`);
+}
+
+export async function cancelScheduledBlogPublication(formData: FormData) {
+  const session = await requireAdminUser();
+  const id = String(formData.get('id') ?? '');
+  const current = await getAdminBlog(id);
+  if (!current) throw new Error('blog_not_found');
+
+  const command = prepareBlogScheduleCancellation(
+    session.role,
+    id,
+    current.status,
+    current.publishedAt
+  );
+
+  const supabase = await createSupabaseServerClient();
+  const {error} = await supabase.from('blog_posts').update(command.changes).eq('id', command.id);
+  throwBlogError(error);
+  revalidateBlogs();
+  revalidatePath('/admin/content/calendar');
+  revalidatePath('/admin/seo');
+  revalidatePath(`/admin/content/blog/${command.id}`);
+}
+
 export async function setBlogStatus(formData: FormData) {
   const session = await requireAdminUser();
   const id = String(formData.get('id') ?? '');
@@ -153,5 +202,7 @@ export async function setBlogStatus(formData: FormData) {
   const {error} = await supabase.from('blog_posts').update(command.changes).eq('id', command.id);
   throwBlogError(error);
   revalidateBlogs();
+  revalidatePath('/admin/content/calendar');
+  revalidatePath('/admin/seo');
   revalidatePath(`/admin/content/blog/${command.id}`);
 }

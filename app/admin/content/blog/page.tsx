@@ -8,14 +8,16 @@ import {
 } from '@/components/admin/admin-primitives';
 import {BlogForm} from '@/components/admin/blog-form';
 import {Container} from '@/components/ui/container';
-import {listAdminBlogs} from '@/features/admin/blog';
+import {getBlogPublicationState, listAdminBlogs, type AdminBlog} from '@/features/admin/blog';
 import {listAdminMedia} from '@/features/admin/media';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 
-function blogStatusLabel(status: 'draft' | 'published' | 'archived') {
-  if (status === 'published') return 'Đã xuất bản';
-  if (status === 'archived') return 'Đã lưu trữ';
+function blogStatusLabel(blog: AdminBlog) {
+  const state = getBlogPublicationState(blog);
+  if (state === 'scheduled') return 'Đã lên lịch';
+  if (state === 'published') return 'Đã xuất bản';
+  if (state === 'archived') return 'Đã lưu trữ';
   return 'Bản nháp';
 }
 
@@ -33,7 +35,15 @@ export default async function AdminBlogPage() {
         <AdminPageHeader
           eyebrow="BLOG CMS"
           title="Blog song ngữ"
-          description="Bài mới luôn là draft. Chỉnh nội dung và thay đổi trạng thái là hai thao tác tách biệt; slug bị khóa sau lần xuất bản đầu tiên."
+          description="Bài mới luôn là draft. Có thể xuất bản ngay hoặc hẹn giờ theo giờ TP.HCM; public page và sitemap chỉ nhận bài khi đến thời điểm published_at."
+          actions={
+            <Link
+              href="/admin/content/calendar"
+              className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] bg-white px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
+            >
+              Lịch nội dung
+            </Link>
+          }
         />
 
         {canCreate ? (
@@ -63,8 +73,8 @@ export default async function AdminBlogPage() {
                     </p>
                   </div>
                   <AdminStatusBadge
-                    label={blogStatusLabel(blog.status)}
-                    tone={blog.status === 'published' ? 'success' : 'neutral'}
+                    label={blogStatusLabel(blog)}
+                    tone={getBlogPublicationState(blog) === 'published' ? 'success' : getBlogPublicationState(blog) === 'scheduled' ? 'warning' : 'neutral'}
                   />
                 </Link>
               ))}
