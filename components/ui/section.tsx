@@ -16,7 +16,7 @@ export function Section({
   return (
     <section
       className={clsx(
-        size === 'compact' ? 'py-12 sm:py-14 lg:py-16' : 'py-16 sm:py-20 lg:py-22',
+        size === 'compact' ? 'py-12 sm:py-14 lg:py-16' : 'py-14 sm:py-16 lg:py-18',
         tone === 'white' && 'bg-white text-[var(--nupsbox-ink)]',
         tone === 'soft' && 'bg-[var(--nupsbox-surface)] text-[var(--nupsbox-ink)]',
         tone === 'navy' && 'bg-[var(--nupsbox-navy)] text-white',

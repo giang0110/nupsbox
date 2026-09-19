@@ -6,6 +6,7 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {UnitCompare} from '@/components/units/unit-compare';
 import {ConversionCta} from '@/components/marketing/conversion-cta';
+import {FinalCta} from '@/components/marketing/final-cta';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
@@ -78,6 +79,8 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
         />
         <div className="mt-8"><UnitCompare units={units} locale={rawLocale} /></div>
       </Section>
+
+      <FinalCta locale={rawLocale} />
     </main>
   );
 }

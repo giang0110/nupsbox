@@ -50,15 +50,16 @@ export default async function SolutionsPage({params}: {params: Promise<{locale: 
           title={vi ? 'Một nhu cầu rõ ràng giúp chọn kho nhanh hơn.' : 'A clear use case makes the next choice easier.'}
         />
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {items.map(([href, title, body]) => (
+          {items.map(([href, title, body], index) => (
             <Link
               key={href}
               href={href}
-              className="group rounded-2xl border border-[var(--nupsbox-border)] bg-white p-6 transition hover:-translate-y-px hover:border-[var(--nupsbox-blue)] hover:shadow-[var(--nupsbox-shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2"
+              className="group relative overflow-hidden rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-6 transition hover:-translate-y-0.5 hover:border-[rgba(8,70,168,.28)] hover:shadow-[0_18px_46px_rgba(7,26,56,.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 sm:p-7"
             >
+              <span className="absolute right-5 top-4 text-5xl font-black tracking-[-0.08em] text-[var(--nupsbox-navy)]/[0.05]">0{index + 1}</span>
               <h2 className="text-xl font-extrabold tracking-[-0.025em] text-[var(--nupsbox-navy)] sm:text-2xl">{title}</h2>
               <p className="mt-2.5 text-sm leading-6 text-[var(--nupsbox-slate)]">{body}</p>
-              <span className="mt-4 inline-flex text-sm font-bold text-[var(--nupsbox-blue)]">
+              <span className="mt-5 inline-flex text-sm font-black text-[var(--nupsbox-blue)]">
                 {vi ? 'Xem giải pháp →' : 'View solution →'}
               </span>
             </Link>
