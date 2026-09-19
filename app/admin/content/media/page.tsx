@@ -48,7 +48,7 @@ export default async function AdminMediaPage() {
             <div>
               <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">THƯ VIỆN MEDIA</p>
               <h2 id="media-library-title" className="mt-1 text-xl font-black tracking-[-0.03em] text-[var(--nupsbox-navy)]">
-                ${mediaRows.length} ảnh
+                {mediaRows.length} ảnh
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-[var(--nupsbox-slate)]">
