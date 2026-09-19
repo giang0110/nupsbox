@@ -19,7 +19,7 @@ describe('Facebook source integration', () => {
 
   it('threads Facebook through footer, mobile actions, contact and About media', () => {
     expect(source('app/[locale]/layout.tsx')).toContain('facebookUrl={settings.facebookUrl}');
-    expect(source('components/marketing/mobile-action-bar.tsx')).toContain("kind: 'facebook' as const");
+    expect(source('components/marketing/mobile-action-bar.tsx')).toContain('kind="facebook"');
     expect(source('components/marketing/site-footer.tsx')).toContain('kind="facebook"');
     expect(source('app/[locale]/lien-he/page.tsx')).toContain('placement="contact-page"');
     expect(source('components/marketing/gallery.tsx')).toContain('placement="about-gallery');
