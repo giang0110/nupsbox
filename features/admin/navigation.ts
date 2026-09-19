@@ -23,7 +23,10 @@ const navigation: AdminNavigationGroup[] = [
   },
   {
     label: 'Vận hành',
-    items: [{href: '/admin/quality', label: 'Vận hành & QA', action: 'dashboard:read'}]
+    items: [
+      {href: '/admin/quality', label: 'Vận hành & QA', action: 'dashboard:read'},
+      {href: '/admin/audit', label: 'Audit log', action: 'audit:read'}
+    ]
   },
   {
     label: 'Catalog',

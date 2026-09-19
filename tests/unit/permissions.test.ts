@@ -13,6 +13,7 @@ describe('phase2 permission matrix', () => {
     expect(can('admin', 'leads:assign')).toBe(true);
     expect(can('admin', 'leads:note')).toBe(true);
     expect(can('admin', 'leads:export')).toBe(true);
+    expect(can('admin', 'audit:read')).toBe(true);
     expect(can('admin', 'settings:update')).toBe(true);
   });
 
@@ -28,6 +29,7 @@ describe('phase2 permission matrix', () => {
     expect(can('staff', 'leads:assign')).toBe(true);
     expect(can('staff', 'leads:note')).toBe(true);
     expect(can('staff', 'leads:export')).toBe(false);
+    expect(can('staff', 'audit:read')).toBe(false);
     expect(can('staff', 'settings:update')).toBe(false);
   });
 
@@ -43,5 +45,6 @@ describe('phase2 permission matrix', () => {
     expect(can('viewer', 'leads:update')).toBe(false);
     expect(can('viewer', 'leads:note')).toBe(false);
     expect(can('viewer', 'leads:export')).toBe(false);
+    expect(can('viewer', 'audit:read')).toBe(false);
   });
 });

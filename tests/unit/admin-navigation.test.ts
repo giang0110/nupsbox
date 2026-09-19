@@ -27,6 +27,15 @@ describe('admin navigation', () => {
     ]);
   });
 
+  it('adds Audit Log only for admin while staff keeps the operational QA surface', () => {
+    const adminHrefs = getAdminNavigation('admin').flatMap(group => group.items.map(item => item.href));
+    const staffHrefs = getAdminNavigation('staff').flatMap(group => group.items.map(item => item.href));
+
+    expect(adminHrefs).toContain('/admin/audit');
+    expect(staffHrefs).not.toContain('/admin/audit');
+    expect(staffHrefs).toContain('/admin/quality');
+  });
+
   it('treats section overviews as exact while keeping nested routes active', () => {
     expect(isAdminRouteActive('/admin', '/admin')).toBe(true);
     expect(isAdminRouteActive('/admin/leads', '/admin')).toBe(false);
