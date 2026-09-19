@@ -55,6 +55,16 @@ export function BlogForm({
             label={statusLabel}
             tone={blog?.status === 'published' ? 'success' : 'neutral'}
           />
+          {blog?.sourceUrl ? (
+            <a
+              href={blog.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
+            >
+              Mở link giới thiệu ↗
+            </a>
+          ) : null}
           {blog && canPublish && blog.status !== 'archived' ? (
             <form action={setBlogStatus}>
               <input type="hidden" name="id" value={blog.id} />
@@ -95,6 +105,19 @@ export function BlogForm({
                   <option key={option.id} value={option.id}>{option.label}</option>
                 ))}
               </select>
+            </label>
+            <label className="text-sm font-semibold md:col-span-2">
+              Link bài viết / nguồn giới thiệu
+              <input
+                className={inputClass}
+                name="sourceUrl"
+                type="url"
+                defaultValue={blog?.sourceUrl ?? ''}
+                placeholder="https://www.facebook.com/... hoặc https://..."
+              />
+              <span className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
+                Tùy chọn. Dùng khi bài giới thiệu nằm trên Facebook, báo chí hoặc landing page bên ngoài.
+              </span>
             </label>
           </div>
         </AdminFieldGroup>
