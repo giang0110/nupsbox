@@ -57,8 +57,9 @@ export async function updateUnitType(formData: FormData) {
     inputFromFormData(formData)
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('unit_types').update(changes).eq('id', id);
+  const {data, error} = await supabase.from('unit_types').update(changes).eq('id', id).select('id').single();
   throwUnitError(error);
+  if (!data) throw new Error('unit_type_update_noop');
   revalidateUnits();
 }
 
@@ -70,7 +71,8 @@ export async function setUnitTypePublication(formData: FormData) {
     String(formData.get('publish') ?? '') === 'true'
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('unit_types').update({active}).eq('id', id);
+  const {data, error} = await supabase.from('unit_types').update({active}).eq('id', id).select('id').single();
   throwUnitError(error);
+  if (!data) throw new Error('unit_type_publication_noop');
   revalidateUnits();
 }
