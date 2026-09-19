@@ -95,7 +95,7 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
     <div
       className="min-h-screen bg-[var(--nupsbox-surface)] lg:grid"
       style={{
-        gridTemplateColumns: collapsed ? '5.5rem minmax(0, 1fr)' : '18rem minmax(0, 1fr)'
+        gridTemplateColumns: collapsed ? '5.25rem minmax(0, 1fr)' : '17rem minmax(0, 1fr)'
       }}
     >
       <div className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-[var(--nupsbox-border)] bg-white px-4 lg:hidden">
@@ -107,7 +107,10 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
         >
           ☰
         </button>
-        <strong className="tracking-[-0.03em] text-[var(--nupsbox-navy)]">NUPSBOX ADMIN</strong>
+        <div className="flex items-center gap-2">
+          <span className="grid size-8 place-items-center rounded-lg bg-[var(--nupsbox-yellow)] text-xs font-black tracking-[-0.08em] text-[var(--nupsbox-navy)]">NB</span>
+          <strong className="tracking-[-0.03em] text-[var(--nupsbox-navy)]">ADMIN</strong>
+        </div>
         <span className="rounded-full bg-[var(--nupsbox-surface)] px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[var(--nupsbox-slate)]">
           {role}
         </span>
@@ -116,14 +119,13 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
       <aside className="hidden min-h-screen flex-col border-r border-[var(--nupsbox-border)] bg-white lg:flex">
         <div className="sticky top-0 flex min-h-screen flex-col">
           <div className="flex min-h-20 items-center justify-between gap-3 border-b border-[var(--nupsbox-border)] px-4">
-            <strong
-              className={clsx(
-                'truncate tracking-[-0.03em] text-[var(--nupsbox-navy)]',
-                collapsed && 'sr-only'
-              )}
-            >
-              NUPSBOX ADMIN
-            </strong>
+            <div className={clsx('flex min-w-0 items-center gap-2.5', collapsed && 'sr-only')}>
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--nupsbox-yellow)] text-xs font-black tracking-[-0.08em] text-[var(--nupsbox-navy)]">NB</span>
+              <div className="min-w-0">
+                <strong className="block truncate tracking-[-0.03em] text-[var(--nupsbox-navy)]">NUPSBOX</strong>
+                <span className="block text-[0.62rem] font-black uppercase tracking-[0.14em] text-[var(--nupsbox-slate)]">Operations</span>
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => setCollapsed((value) => !value)}
