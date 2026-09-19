@@ -53,14 +53,21 @@ export function Hero({
               {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
               <ArrowRight size={18} aria-hidden="true" className="transition group-hover:translate-x-0.5" />
             </ConversionCta>
-            <Link
-              href={hasGallery ? '#warehouse-gallery' : '/bang-gia'}
-              className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/18 hover:bg-white/10'})}
-            >
-              {hasGallery
-                ? (vi ? 'Xem kho thực tế' : 'See the real space')
-                : (vi ? 'Xem bảng giá' : 'View pricing')}
-            </Link>
+            {hasGallery ? (
+              <a
+                href="#warehouse-gallery"
+                className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/18 hover:bg-white/10'})}
+              >
+                {vi ? 'Xem kho thực tế' : 'See the real space'}
+              </a>
+            ) : (
+              <Link
+                href="/bang-gia"
+                className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/18 hover:bg-white/10'})}
+              >
+                {vi ? 'Xem bảng giá' : 'View pricing'}
+              </Link>
+            )}
           </div>
 
           <div className="home-hero-trust mt-6 flex max-w-[39rem] flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/70">
