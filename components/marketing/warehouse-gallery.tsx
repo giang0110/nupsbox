@@ -68,7 +68,7 @@ export function WarehouseGallery({locale, items}: {locale: 'vi' | 'en'; items: P
                 <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">{active.category}</p>
                 <p className="mt-1.5 max-w-2xl text-base font-bold leading-6 sm:text-xl">{active.alt}</p>
                 <p className="mt-2 text-xs text-white/55">
-                  {vi ? activeIndex + 1 + ' / ' + items.length + ' ảnh đã công bố' : activeIndex + 1 + ' / ' + items.length + ' published images'}
+                  {vi ? items.length + ' ảnh đã được công bố' : items.length + ' published images'}
                 </p>
               </div>
               {items.length > 1 ? (
