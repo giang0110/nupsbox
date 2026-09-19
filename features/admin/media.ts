@@ -75,6 +75,11 @@ function toMediaMutation(input: MediaMetadataInput) {
   };
 }
 
+export function prepareMediaDelete(role: AppRole, id: string) {
+  requirePermission(role, 'media:delete');
+  return {id: idSchema.parse(id)};
+}
+
 export function prepareMediaMetadataUpdate(role: AppRole, id: string, input: unknown) {
   requirePermission(role, 'media:update');
   const mediaId = idSchema.parse(id);

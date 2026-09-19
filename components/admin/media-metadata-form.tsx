@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import {updateMediaMetadata} from '@/app/admin/content/media/actions';
+import {MediaDeleteForm} from '@/components/admin/media-delete-form';
 import {
   AdminFieldGroup,
   AdminPanel,
@@ -11,6 +12,7 @@ type Option = {id: string; label: string};
 type Props = {
   media: AdminMedia;
   canEdit: boolean;
+  canDelete: boolean;
   locationOptions: Option[];
   unitOptions: Option[];
 };
@@ -21,6 +23,7 @@ const inputClass =
 export function MediaMetadataForm({
   media,
   canEdit,
+  canDelete,
   locationOptions,
   unitOptions
 }: Props) {
@@ -115,6 +118,16 @@ export function MediaMetadataForm({
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
       </form>
+
+      {canDelete ? (
+        <div className="mt-6 border-t border-red-100 pt-5">
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.12em] text-red-700">Vùng nguy hiểm</p>
+          <MediaDeleteForm
+            mediaId={media.id}
+            label={media.altVi || media.altEn || media.storagePath}
+          />
+        </div>
+      ) : null}
     </AdminPanel>
   );
 }

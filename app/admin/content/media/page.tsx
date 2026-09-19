@@ -22,6 +22,7 @@ export default async function AdminMediaPage() {
   ]);
   const canEdit = can(session.role, 'media:update');
   const canCreate = can(session.role, 'media:create');
+  const canDelete = can(session.role, 'media:delete');
   const locationOptions = locations.map((location) => ({id: location.id, label: location.nameVi}));
   const unitOptions = units.map((unit) => ({id: unit.id, label: unit.nameVi + ' · ' + unit.areaM2 + ' m²'}));
 
@@ -49,6 +50,7 @@ export default async function AdminMediaPage() {
                 key={media.id}
                 media={media}
                 canEdit={canEdit}
+                canDelete={canDelete}
                 locationOptions={locationOptions}
                 unitOptions={unitOptions}
               />
