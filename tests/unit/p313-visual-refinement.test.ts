@@ -9,8 +9,8 @@ function source(path: string) {
 describe('P3.13 premium visual refinement', () => {
   it('places real warehouse imagery before the choice hub', () => {
     const home = source('app/[locale]/page.tsx');
-    expect(home.indexOf('<WarehouseGallery')).toBeGreaterThan(home.indexOf('<Hero'));
-    expect(home.indexOf('<WarehouseGallery')).toBeLessThan(home.indexOf('<HomeChoiceHub'));
+    expect(home.indexOf('      <WarehouseGallery')).toBeGreaterThan(home.indexOf('      <Hero'));
+    expect(home.indexOf('      <WarehouseGallery')).toBeLessThan(home.indexOf('      <HomeChoiceHub'));
   });
 
   it('keeps the mobile bar at two primary columns with a contact sheet', () => {
