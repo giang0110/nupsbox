@@ -1,15 +1,18 @@
 import type {MetadataRoute} from 'next';
-import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
+import {getMarketingLocationSlugs, getMarketingUnits} from '@/features/catalog/public-catalog';
+import {getPublishedBlogSlugs} from '@/features/content/blog';
 import {absoluteUrl, buildSeoRoutePairs} from '@/features/seo/routes';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [units, location] = await Promise.all([
+  const [units, locationSlugs, blogSlugs] = await Promise.all([
     getMarketingUnits('vi'),
-    getMarketingFeaturedLocation('vi')
+    getMarketingLocationSlugs(),
+    getPublishedBlogSlugs()
   ]);
   const routes = buildSeoRoutePairs({
     unitSlugs: units.map((unit) => unit.slug),
-    locationSlugs: location ? [location.slug] : []
+    locationSlugs,
+    blogSlugs
   });
 
   return routes.flatMap((route) => {

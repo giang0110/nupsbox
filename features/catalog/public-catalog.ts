@@ -4,7 +4,13 @@ import type {AppLocale} from '@/i18n/routing';
 import {selectHomepageUnits} from '@/features/home/content';
 import {isCatalogFixtureMode} from './public-catalog-mode';
 import type {PublicLocation, PublicUnitType} from './types';
-import {getActiveUnitTypes, getFeaturedLocation, getLocationBySlug, getUnitTypeBySlug} from './queries';
+import {
+  getActiveLocationSlugs,
+  getActiveUnitTypes,
+  getFeaturedLocation,
+  getLocationBySlug,
+  getUnitTypeBySlug
+} from './queries';
 
 const fallbackUnits: PublicUnitType[] = [
   {
@@ -88,6 +94,16 @@ export async function getMarketingUnitBySlug(slug: string, locale: AppLocale): P
     return await getUnitTypeBySlug(slug, locale);
   } catch {
     return null;
+  }
+}
+
+export async function getMarketingLocationSlugs(): Promise<string[]> {
+  if (isCatalogFixtureMode()) return ['tan-phu'];
+
+  try {
+    return await getActiveLocationSlugs();
+  } catch {
+    return [];
   }
 }
 

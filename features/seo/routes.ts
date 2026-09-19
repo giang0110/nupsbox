@@ -11,6 +11,7 @@ export type SeoRoutePair = {
 type DynamicRouteInput = {
   unitSlugs?: string[];
   locationSlugs?: string[];
+  blogSlugs?: string[];
 };
 
 const staticRoutes: SeoRoutePair[] = [
@@ -44,6 +45,11 @@ export function locationSeoRoute(slug: string): SeoRoutePair {
   return {key: `location:${slug}`, vi: `/dia-diem/${encoded}`, en: `/en/locations/${encoded}`};
 }
 
+export function blogSeoRoute(slug: string): SeoRoutePair {
+  const encoded = encodeURIComponent(slug);
+  return {key: `blog:${slug}`, vi: `/blog/${encoded}`, en: `/en/blog/${encoded}`};
+}
+
 export function getStaticSeoRoute(key: string): SeoRoutePair {
   const route = staticRoutes.find((item) => item.key === key);
   if (!route) throw new Error(`unknown_seo_route:${key}`);
@@ -53,7 +59,8 @@ export function getStaticSeoRoute(key: string): SeoRoutePair {
 export function buildSeoRoutePairs(input: DynamicRouteInput = {}): SeoRoutePair[] {
   const unitRoutes = uniqueSlugs(input.unitSlugs).map(unitSeoRoute);
   const locationRoutes = uniqueSlugs(input.locationSlugs).map(locationSeoRoute);
-  return [...staticRoutes, ...unitRoutes, ...locationRoutes];
+  const blogRoutes = uniqueSlugs(input.blogSlugs).map(blogSeoRoute);
+  return [...staticRoutes, ...unitRoutes, ...locationRoutes, ...blogRoutes];
 }
 
 export function absoluteUrl(pathname: string): string {

@@ -16,6 +16,17 @@ export async function readFeaturedLocationRow() {
   return data;
 }
 
+export async function readActiveLocationSlugs() {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase
+    .from('locations')
+    .select('slug')
+    .eq('status', 'active')
+    .order('sort_order');
+  if (error) throw error;
+  return (data ?? []).map((row) => row.slug);
+}
+
 export async function readLocationRowBySlug(slug: string) {
   const supabase = await createSupabaseServerClient();
   const {data, error} = await supabase

@@ -15,6 +15,7 @@ describe('admin navigation', () => {
       '/admin',
       '/admin/leads',
       '/admin/quality',
+      '/admin/seo',
       '/admin/catalog',
       '/admin/catalog/locations',
       '/admin/catalog/unit-types',
@@ -34,6 +35,8 @@ describe('admin navigation', () => {
     expect(adminHrefs).toContain('/admin/audit');
     expect(staffHrefs).not.toContain('/admin/audit');
     expect(staffHrefs).toContain('/admin/quality');
+    expect(staffHrefs).toContain('/admin/seo');
+    expect(adminHrefs).toContain('/admin/seo');
   });
 
   it('treats section overviews as exact while keeping nested routes active', () => {

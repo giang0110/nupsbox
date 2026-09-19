@@ -72,6 +72,9 @@ export default async function AdminDashboardPage() {
     can(session.role, 'content:create')
       ? {label: 'Viết blog', detail: 'Bài VI/EN & nguồn', href: '/admin/content/blog'}
       : null,
+    can(session.role, 'content:read')
+      ? {label: 'SEO & Publish', detail: 'Metadata · sitemap · preview', href: '/admin/seo'}
+      : null,
     can(session.role, 'settings:update')
       ? {label: 'Cập nhật liên hệ', detail: 'Phone · Zalo · Facebook', href: '/admin/content/settings'}
       : null
