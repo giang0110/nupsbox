@@ -75,6 +75,9 @@ export default async function AdminDashboardPage() {
     can(session.role, 'content:read')
       ? {label: 'Lịch nội dung', detail: 'Draft · schedule · published', href: '/admin/content/calendar'}
       : null,
+    can(session.role, 'dashboard:read')
+      ? {label: 'Việc cần làm', detail: 'CRM · content · QA theo ưu tiên', href: '/admin/action-center'}
+      : null,
     can(session.role, 'leads:read')
       ? {label: 'Lead Analytics', detail: 'Nguồn · funnel · landing page', href: '/admin/analytics'}
       : null,
