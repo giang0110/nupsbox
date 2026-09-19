@@ -49,7 +49,8 @@ export async function updatePricing(formData: FormData) {
     inputFromFormData(formData)
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('location_unit_types').update(changes).eq('id', id);
+  const {data, error} = await supabase.from('location_unit_types').update(changes).eq('id', id).select('id').single();
   throwPricingError(error);
+  if (!data) throw new Error('pricing_update_noop');
   revalidatePricing();
 }
