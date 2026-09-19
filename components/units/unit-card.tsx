@@ -34,13 +34,14 @@ export function UnitCard({
   const price = formatMonthlyPrice(unit.promoPrice ?? unit.monthlyPrice, locale);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)] transition duration-200 hover:-translate-y-px hover:shadow-[var(--nupsbox-shadow)]">
-      <div className="relative bg-[linear-gradient(145deg,var(--nupsbox-navy),#0c326d)] p-5 text-white sm:p-6">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white shadow-[0_12px_36px_rgba(7,26,56,.06)] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(8,70,168,.28)] hover:shadow-[0_22px_52px_rgba(7,26,56,.10)]">
+      <div className="relative overflow-hidden bg-[var(--nupsbox-navy)] p-5 text-white sm:p-6">
+        <div aria-hidden="true" className="absolute -right-12 -top-16 size-44 rounded-full border border-white/8 bg-white/[0.03]" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[0.68rem] font-extrabold tracking-[0.14em] text-[var(--nupsbox-yellow)]">MINI STORAGE</p>
             <h2 className="mt-2.5 text-2xl font-extrabold tracking-[-0.03em] sm:text-[1.75rem]">{unit.name}</h2>
-            <p className="mt-1 text-base text-white/68">{unit.areaM2.toFixed(2)} m²</p>
+            <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-white">{unit.areaM2.toFixed(2)}<span className="ml-1 text-base font-bold tracking-normal text-white/60">m²</span></p>
           </div>
           <span className="max-w-36 rounded-full border border-white/12 bg-white/8 px-3 py-1 text-right text-[0.7rem] font-semibold leading-4 text-white/76">
             {availabilityLabel(unit.availabilityStatus, locale)}
@@ -49,13 +50,13 @@ export function UnitCard({
       </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <p className="text-sm leading-6 text-[var(--nupsbox-slate)]">{unit.recommendedFor}</p>
+        <p className="min-h-12 text-sm leading-6 text-[var(--nupsbox-slate)]">{unit.recommendedFor}</p>
 
         <div className="mt-5 border-t border-[var(--nupsbox-border)] pt-4">
           <p className="text-[0.7rem] font-bold uppercase tracking-[0.11em] text-[var(--nupsbox-muted)]">
             {vi ? 'Giá thuê tháng' : 'Monthly price'}
           </p>
-          <p className="mt-1 text-lg font-extrabold text-[var(--nupsbox-navy)]">
+          <p className="mt-1 text-xl font-black tracking-[-0.02em] text-[var(--nupsbox-navy)]">
             {price ?? (vi ? 'Liên hệ báo giá' : 'Contact for pricing')}
           </p>
         </div>
