@@ -11,6 +11,7 @@ import {
   AdminPanel,
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
+import {JsonTextarea} from '@/components/admin/json-textarea';
 import {getBlogPublicationState, type AdminBlog} from '@/features/admin/blog';
 
 type MediaOption = {id: string; label: string};
@@ -165,7 +166,14 @@ export function BlogForm({
                 required
                 disabled={!canEdit || slugLocked}
                 defaultValue={blog?.slug ?? ''}
+                autoCapitalize="none"
+                spellCheck={false}
               />
+              {!slugLocked ? (
+                <span className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
+                  Có thể nhập tiêu đề có dấu; hệ thống sẽ tự chuẩn hoá thành slug URL-safe.
+                </span>
+              ) : null}
             </label>
             <label className="text-sm font-semibold">
               Cover media
@@ -204,7 +212,13 @@ export function BlogForm({
             </label>
             <label className="text-sm font-semibold md:col-span-2">
               Body VI (JSON)
-              <textarea className={inputClass + ' font-mono'} name="bodyVi" rows={10} defaultValue={bodyText(blog?.vi.body)} />
+              <JsonTextarea
+                className={inputClass + ' font-mono'}
+                name="bodyVi"
+                rows={10}
+                label="Body VI"
+                defaultValue={bodyText(blog?.vi.body)}
+              />
             </label>
             <label className="text-sm font-semibold">
               SEO title VI
@@ -229,7 +243,13 @@ export function BlogForm({
             </label>
             <label className="text-sm font-semibold md:col-span-2">
               Body EN (JSON)
-              <textarea className={inputClass + ' font-mono'} name="bodyEn" rows={10} defaultValue={bodyText(blog?.en.body)} />
+              <JsonTextarea
+                className={inputClass + ' font-mono'}
+                name="bodyEn"
+                rows={10}
+                label="Body EN"
+                defaultValue={bodyText(blog?.en.body)}
+              />
             </label>
             <label className="text-sm font-semibold">
               SEO title EN
