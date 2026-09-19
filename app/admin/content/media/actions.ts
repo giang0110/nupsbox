@@ -5,6 +5,7 @@ import {revalidatePath} from 'next/cache';
 import {
   MEDIA_BUCKET,
   prepareMediaBulkUpdate,
+  prepareMediaDelete,
   prepareMediaMetadataUpdate,
   prepareMediaUpload
 } from '@/features/admin/media';
@@ -102,4 +103,91 @@ export async function updateMediaMetadata(formData: FormData) {
   const {error} = await supabase.from('media_assets').update(changes).eq('id', id);
   if (error) throw error;
   revalidateMedia();
+}
+
+
+export type DeleteMediaState = {
+  status: 'idle' | 'error';
+  message?: string;
+};
+
+export async function deleteMediaAsset(
+  _previousState: DeleteMediaState,
+  formData: FormData
+): Promise<DeleteMediaState> {
+  try {
+    const session = await requireAdminUser();
+    const {id} = prepareMediaDelete(session.role, String(formData.get('id') ?? ''));
+    const supabase = await createSupabaseServerClient();
+
+    const {data: media, error: mediaError} = await supabase
+      .from('media_assets')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (mediaError || !media) {
+      return {status: 'error', message: 'Không tìm thấy ảnh hoặc bạn không có quyền truy cập ảnh này.'};
+    }
+
+    const {data: blogReferences, error: blogReferenceError} = await supabase
+      .from('blog_posts')
+      .select('id, slug')
+      .eq('cover_media_id', id)
+      .limit(1);
+
+    if (blogReferenceError) {
+      return {status: 'error', message: 'Chưa thể kiểm tra ảnh đang được sử dụng. Vui lòng thử lại.'};
+    }
+
+    if ((blogReferences ?? []).length > 0) {
+      return {
+        status: 'error',
+        message: 'Ảnh đang được dùng làm cover Blog. Hãy đổi hoặc gỡ cover khỏi bài viết trước khi xoá ảnh.'
+      };
+    }
+
+    const {error: deleteMetadataError} = await supabase
+      .from('media_assets')
+      .delete()
+      .eq('id', id);
+
+    if (deleteMetadataError) {
+      return {
+        status: 'error',
+        message: 'Không thể xoá metadata ảnh. Ảnh chưa bị thay đổi.'
+      };
+    }
+
+    const {error: storageError} = await supabase.storage
+      .from(MEDIA_BUCKET)
+      .remove([media.storage_path]);
+
+    if (storageError) {
+      const {error: rollbackError} = await supabase.from('media_assets').insert(media);
+      if (rollbackError) {
+        console.error('media_delete_rollback_failed', {
+          mediaId: id,
+          storagePath: media.storage_path,
+          storageError: storageError.message,
+          rollbackError: rollbackError.message
+        });
+      }
+      return {
+        status: 'error',
+        message: rollbackError
+          ? 'Xoá file Storage thất bại và khôi phục metadata cũng không thành công. Vui lòng kiểm tra Supabase ngay.'
+          : 'Xoá file Storage thất bại nên metadata đã được khôi phục. Vui lòng thử lại.'
+      };
+    }
+
+    revalidateMedia();
+    return {status: 'idle'};
+  } catch (error) {
+    console.error('media_delete_failed', error);
+    return {
+      status: 'error',
+      message: 'Không thể xoá ảnh lúc này. Vui lòng kiểm tra quyền Admin và thử lại.'
+    };
+  }
 }
