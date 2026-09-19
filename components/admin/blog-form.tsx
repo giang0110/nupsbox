@@ -75,7 +75,7 @@ export function BlogForm({
             label={statusLabel}
             tone={publicationState === 'published' ? 'success' : publicationState === 'scheduled' ? 'warning' : 'neutral'}
           />
-          {publicationState === 'published' ? (
+          {blog && publicationState === 'published' ? (
             <>
               <a
                 href={'/blog/' + blog.slug}
