@@ -101,6 +101,26 @@ describe('admin quality rules', () => {
     ]);
   });
 
+  it('marks blog drafts for review when cover or source metadata is incomplete', () => {
+    const issues = buildAdminQualityIssues(snapshot({
+      blog: {
+        drafts: 2,
+        published: 1,
+        draftWithoutCover: 1,
+        draftWithoutSource: 2
+      }
+    }));
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({
+      id: 'blog-drafts',
+      tone: 'warning',
+      count: 2
+    });
+    expect(issues[0].detail).toContain('1 thiếu cover');
+    expect(issues[0].detail).toContain('2 chưa có source URL');
+  });
+
   it('surfaces media quality defects only when media exists', () => {
     const issues = buildAdminQualityIssues(snapshot({
       media: {
