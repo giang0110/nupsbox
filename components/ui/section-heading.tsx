@@ -19,14 +19,14 @@ export function SectionHeading({
     <div className={clsx('max-w-3xl', align === 'center' && 'mx-auto text-center')}>
       {eyebrow ? (
         <p className={clsx(
-          'text-[0.68rem] font-black uppercase tracking-[0.15em]',
+          'text-[0.68rem] font-extrabold uppercase tracking-[0.15em]',
           dark ? 'text-[var(--nupsbox-yellow)]' : 'text-[var(--nupsbox-blue)]'
         )}>
           {eyebrow}
         </p>
       ) : null}
       <h2 className={clsx(
-        'mt-3 max-w-3xl text-[clamp(1.9rem,3.7vw,3.2rem)] font-black leading-[1.02] tracking-[-0.045em] text-balance',
+        'mt-3 max-w-3xl text-[clamp(1.9rem,3.7vw,3.2rem)] font-extrabold leading-[1.02] tracking-[-0.045em] text-balance',
         dark ? 'text-white' : 'text-[var(--nupsbox-navy)]'
       )}>
         {title}
