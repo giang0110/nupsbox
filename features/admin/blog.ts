@@ -22,6 +22,7 @@ export type BlogPostDbRow = {
   status: string;
   published_at: string | null;
   cover_media_id: string | null;
+  source_url: string | null;
   author_id: string | null;
   created_at: string;
   updated_at: string;
@@ -55,6 +56,7 @@ export type AdminBlog = {
   status: BlogStatus;
   publishedAt: string | null;
   coverMediaId: string | null;
+  sourceUrl: string | null;
   authorId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -100,7 +102,8 @@ export function prepareBlogCreate(role: AppRole, input: unknown) {
     post: {
       slug: parsed.slug,
       status: 'draft' as const,
-      cover_media_id: parsed.coverMediaId ?? null
+      cover_media_id: parsed.coverMediaId ?? null,
+      source_url: parsed.sourceUrl ?? null
     },
     translations: translationsFromInput(parsed)
   };
@@ -122,7 +125,8 @@ export function prepareBlogUpdate(
     id: blogId,
     postChanges: {
       slug: parsed.slug,
-      cover_media_id: parsed.coverMediaId ?? null
+      cover_media_id: parsed.coverMediaId ?? null,
+      source_url: parsed.sourceUrl ?? null
     },
     translations: translationsFromInput(parsed)
   };
@@ -194,6 +198,7 @@ function assembleBlog(post: BlogPostDbRow, rows: BlogTranslationDbRow[]): AdminB
     status: statusValue(post.status),
     publishedAt: post.published_at,
     coverMediaId: post.cover_media_id,
+    sourceUrl: post.source_url ?? null,
     authorId: post.author_id,
     createdAt: post.created_at,
     updatedAt: post.updated_at,
@@ -215,7 +220,8 @@ export function adminBlogToInput(blog: AdminBlog): BlogInput {
     seoTitleEn: blog.en.seoTitle,
     seoDescriptionVi: blog.vi.seoDescription,
     seoDescriptionEn: blog.en.seoDescription,
-    coverMediaId: blog.coverMediaId
+    coverMediaId: blog.coverMediaId,
+    sourceUrl: blog.sourceUrl
   });
 }
 

@@ -1,7 +1,12 @@
 'use server';
 
+import {randomUUID} from 'node:crypto';
 import {revalidatePath} from 'next/cache';
-import {prepareMediaMetadataUpdate} from '@/features/admin/media';
+import {
+  MEDIA_BUCKET,
+  prepareMediaMetadataUpdate,
+  prepareMediaUpload
+} from '@/features/admin/media';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -21,6 +26,46 @@ function revalidateMedia() {
   revalidatePath('/admin/content');
   revalidatePath('/admin/content/media');
   revalidatePath('/');
+  revalidatePath('/ve-nupsbox');
+}
+
+export async function uploadMediaAsset(formData: FormData) {
+  const session = await requireAdminUser();
+  const file = formData.get('file');
+  if (!(file instanceof File)) throw new Error('media_file_required');
+
+  const prepared = prepareMediaUpload(session.role, inputFromFormData(formData), {
+    name: file.name,
+    type: file.type,
+    size: file.size
+  });
+
+  const scope = prepared.metadata.location_id ?? 'general';
+  const storagePath = `${scope}/${randomUUID()}.${prepared.extension}`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const supabase = await createSupabaseServerClient();
+
+  const {error: uploadError} = await supabase.storage
+    .from(MEDIA_BUCKET)
+    .upload(storagePath, bytes, {
+      contentType: file.type,
+      cacheControl: '31536000',
+      upsert: false
+    });
+
+  if (uploadError) throw uploadError;
+
+  const {error: metadataError} = await supabase.from('media_assets').insert({
+    storage_path: storagePath,
+    ...prepared.metadata
+  });
+
+  if (metadataError) {
+    await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
+    throw metadataError;
+  }
+
+  revalidateMedia();
 }
 
 export async function updateMediaMetadata(formData: FormData) {

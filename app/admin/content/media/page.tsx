@@ -2,6 +2,7 @@ import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {AdminEmptyState} from '@/components/admin/admin-primitives';
 import {MediaMetadataForm} from '@/components/admin/media-metadata-form';
+import {MediaUploadForm} from '@/components/admin/media-upload-form';
 import {Container} from '@/components/ui/container';
 import {listAdminLocations} from '@/features/admin/locations';
 import {listAdminMedia} from '@/features/admin/media';
@@ -19,6 +20,7 @@ export default async function AdminMediaPage() {
     listAdminUnitTypes()
   ]);
   const canEdit = can(session.role, 'media:update');
+  const canCreate = can(session.role, 'media:create');
   const locationOptions = locations.map((location) => ({id: location.id, label: location.nameVi}));
   const unitOptions = units.map((unit) => ({id: unit.id, label: unit.nameVi + ' · ' + unit.areaM2 + ' m²'}));
 
@@ -27,9 +29,13 @@ export default async function AdminMediaPage() {
       <Container className="grid gap-6">
         <AdminPageHeader
           eyebrow="MEDIA CMS"
-          title="Media metadata"
-          description="Chỉnh alt text song ngữ, category, thứ tự, trạng thái public và liên kết catalog. Không thêm upload, thay file hoặc hard-delete."
+          title="Hình ảnh kho & media"
+          description="Upload ảnh, xem preview, quản lý alt text song ngữ, category, thứ tự, trạng thái public và liên kết đúng địa điểm/loại kho."
         />
+
+        {canCreate ? (
+          <MediaUploadForm locationOptions={locationOptions} unitOptions={unitOptions} />
+        ) : null}
 
         <div className="grid gap-5">
           {mediaRows.length ? (

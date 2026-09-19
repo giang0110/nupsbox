@@ -36,7 +36,8 @@ function inputFromFormData(formData: FormData) {
     seoTitleEn: String(formData.get('seoTitleEn') ?? ''),
     seoDescriptionVi: String(formData.get('seoDescriptionVi') ?? ''),
     seoDescriptionEn: String(formData.get('seoDescriptionEn') ?? ''),
-    coverMediaId: String(formData.get('coverMediaId') ?? '')
+    coverMediaId: String(formData.get('coverMediaId') ?? ''),
+    sourceUrl: String(formData.get('sourceUrl') ?? '')
   };
 }
 
@@ -53,7 +54,8 @@ function blogInput(blog: AdminBlog) {
     seoTitleEn: blog.en.seoTitle,
     seoDescriptionVi: blog.vi.seoDescription,
     seoDescriptionEn: blog.en.seoDescription,
-    coverMediaId: blog.coverMediaId
+    coverMediaId: blog.coverMediaId,
+    sourceUrl: blog.sourceUrl
   };
 }
 

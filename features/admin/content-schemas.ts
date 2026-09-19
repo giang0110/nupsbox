@@ -13,6 +13,15 @@ const nullableUuid = z.preprocess(
   z.string().uuid().nullable()
 );
 
+const blankToNullHttpUrl = z.preprocess(
+  value => (typeof value === 'string' && value.trim() === '' ? null : value),
+  z.union([
+    z.string().trim().url().refine(value => /^https?:\/\//i.test(value), 'http_url_required'),
+    z.null(),
+    z.undefined()
+  ])
+).transform(value => value ?? null);
+
 export const FaqInputSchema = z
   .object({
     questionVi: z.string().trim().min(1),
@@ -36,7 +45,8 @@ export const BlogInputSchema = z
     seoTitleEn: blankToNullString,
     seoDescriptionVi: blankToNullString,
     seoDescriptionEn: blankToNullString,
-    coverMediaId: nullableUuid.optional().default(null)
+    coverMediaId: nullableUuid.optional().default(null),
+    sourceUrl: blankToNullHttpUrl
   })
   .strict();
 

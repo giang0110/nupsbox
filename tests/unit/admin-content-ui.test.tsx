@@ -35,6 +35,7 @@ const blog: AdminBlog = {
   status: 'published',
   publishedAt: '2026-09-15T03:00:00.000Z',
   coverMediaId: null,
+  sourceUrl: null,
   authorId: null,
   createdAt: '2026-09-15T03:00:00.000Z',
   updatedAt: '2026-09-15T03:00:00.000Z',
