@@ -19,6 +19,7 @@ export type AppAction =
   | 'media:read'
   | 'media:create'
   | 'media:update'
+  | 'media:delete'
   | 'settings:read'
   | 'settings:update'
   | 'roles:update';
@@ -43,6 +44,7 @@ const permissions: Record<AppRole, ReadonlySet<AppAction>> = {
     'media:read',
     'media:create',
     'media:update',
+    'media:delete',
     'settings:read',
     'settings:update',
     'roles:update'
