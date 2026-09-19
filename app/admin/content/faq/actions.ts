@@ -42,8 +42,9 @@ export async function updateFaq(formData: FormData) {
     inputFromFormData(formData)
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('faqs').update(changes).eq('id', id);
+  const {data, error} = await supabase.from('faqs').update(changes).eq('id', id).select('id').single();
   if (error) throw error;
+  if (!data) throw new Error('faq_update_noop');
   revalidateFaqs();
 }
 
@@ -71,7 +72,8 @@ export async function setFaqPublication(formData: FormData) {
   }
 
   const command = prepareFaqPublication(session.role, id, publish, currentInput);
-  const {error} = await supabase.from('faqs').update({active: command.active}).eq('id', command.id);
+  const {data, error} = await supabase.from('faqs').update({active: command.active}).eq('id', command.id).select('id').single();
   if (error) throw error;
+  if (!data) throw new Error('faq_publication_noop');
   revalidateFaqs();
 }
