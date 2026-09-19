@@ -7,6 +7,7 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {LocationCard} from '@/components/locations/location-card';
 import {WarehouseGallery} from '@/components/marketing/warehouse-gallery';
+import {FinalCta} from '@/components/marketing/final-cta';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {getPublicLocationGallery} from '@/features/content/public-media';
 import {isSupportedLocale} from '@/i18n/routing';
@@ -90,6 +91,8 @@ export default async function LocationsPage({params}: {params: Promise<{locale: 
           </div>
         </Section>
       )}
+
+      <FinalCta locale={rawLocale} />
     </main>
   );
 }
