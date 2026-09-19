@@ -15,7 +15,7 @@ for (const viewport of desktopViewports) {
     const header = page.locator('header').first();
     const heading = hero.getByRole('heading', {level: 1});
     const primary = hero.getByRole('link', {name: /tìm kho phù hợp/i});
-    const secondary = hero.getByRole('link', {name: /xem bảng giá/i});
+    const secondary = hero.getByRole('link', {name: /xem bảng giá|xem kho thực tế|view pricing|see the real space/i});
     const trust = hero.getByText(/gợi ý theo nhu cầu|need-based guidance/i);
 
     const headerBox = await header.boundingBox();
@@ -152,7 +152,7 @@ test('homepage hero stays complete in a low-height desktop viewport', async ({pa
   const heading = hero.getByRole('heading', {level: 1});
   const description = hero.locator('p').filter({hasText: /Kho mini linh hoạt|Flexible mini storage/i}).first();
   const primary = hero.getByRole('link', {name: /tìm kho phù hợp/i});
-  const secondary = hero.getByRole('link', {name: /xem bảng giá/i});
+  const secondary = hero.getByRole('link', {name: /xem bảng giá|xem kho thực tế|view pricing|see the real space/i});
   const trust = hero.getByText(/gợi ý theo nhu cầu|need-based guidance/i);
 
   const headingBox = await heading.boundingBox();
