@@ -43,25 +43,41 @@ export default async function AdminMediaPage() {
           <MediaBulkManager media={mediaRows} locationOptions={locationOptions} />
         ) : null}
 
-        <div className="grid gap-5">
-          {mediaRows.length ? (
-            mediaRows.map((media) => (
-              <MediaMetadataForm
-                key={media.id}
-                media={media}
-                canEdit={canEdit}
-                canDelete={canDelete}
-                locationOptions={locationOptions}
-                unitOptions={unitOptions}
-              />
-            ))
-          ) : (
-            <AdminEmptyState
-              title="Chưa có media"
-              description="Không có media metadata trong phạm vi hiện tại."
-            />
-          )}
-        </div>
+        <section aria-labelledby="media-library-title">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">THƯ VIỆN MEDIA</p>
+              <h2 id="media-library-title" className="mt-1 text-xl font-black tracking-[-0.03em] text-[var(--nupsbox-navy)]">
+                ${mediaRows.length} ảnh
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-[var(--nupsbox-slate)]">
+              Xem nhanh bằng card; chỉ mở “Chỉnh metadata” khi cần sửa nội dung, liên kết hoặc xoá ảnh.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            {mediaRows.length ? (
+              mediaRows.map((media) => (
+                <MediaMetadataForm
+                  key={media.id}
+                  media={media}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                  locationOptions={locationOptions}
+                  unitOptions={unitOptions}
+                />
+              ))
+            ) : (
+              <div className="md:col-span-2 2xl:col-span-3">
+                <AdminEmptyState
+                  title="Chưa có media"
+                  description="Không có media metadata trong phạm vi hiện tại."
+                />
+              </div>
+            )}
+          </div>
+        </section>
       </Container>
     </main>
   );
