@@ -15,6 +15,7 @@ describe('admin navigation', () => {
       '/admin',
       '/admin/leads',
       '/admin/quality',
+      '/admin/analytics',
       '/admin/seo',
       '/admin/catalog',
       '/admin/catalog/locations',
@@ -35,6 +36,7 @@ describe('admin navigation', () => {
     expect(adminHrefs).toContain('/admin/audit');
     expect(staffHrefs).not.toContain('/admin/audit');
     expect(staffHrefs).toContain('/admin/quality');
+    expect(staffHrefs).toContain('/admin/analytics');
     expect(staffHrefs).toContain('/admin/seo');
     expect(adminHrefs).toContain('/admin/seo');
   });

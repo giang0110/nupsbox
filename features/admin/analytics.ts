@@ -63,6 +63,14 @@ export function normalizeAnalyticsDays(value: unknown): AnalyticsWindowDays {
   return 30;
 }
 
+export function hcmWindowStart(now: Date, days: AnalyticsWindowDays): Date {
+  const hcmOffsetMs = 7 * 60 * 60 * 1000;
+  const shifted = new Date(now.getTime() + hcmOffsetMs);
+  shifted.setUTCDate(shifted.getUTCDate() - (days - 1));
+  shifted.setUTCHours(0, 0, 0, 0);
+  return new Date(shifted.getTime() - hcmOffsetMs);
+}
+
 function hcmDateKey(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
@@ -178,9 +186,7 @@ export async function getAdminLeadAnalytics(
   now = new Date()
 ): Promise<AdminLeadAnalytics> {
   const supabase = await createSupabaseServerClient();
-  const from = new Date(now.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
-  from.setUTCHours(0, 0, 0, 0);
-  const fromIso = from.toISOString();
+  const fromIso = hcmWindowStart(now, days).toISOString();
 
   const statusResults = await Promise.all(
     operationalLeadStatuses.map(status =>
