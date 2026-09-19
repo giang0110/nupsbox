@@ -24,6 +24,7 @@ describe('admin navigation', () => {
       '/admin/content',
       '/admin/content/faq',
       '/admin/content/blog',
+      '/admin/content/calendar',
       '/admin/content/media',
       '/admin/content/settings'
     ]);
@@ -38,6 +39,7 @@ describe('admin navigation', () => {
     expect(staffHrefs).toContain('/admin/quality');
     expect(staffHrefs).toContain('/admin/analytics');
     expect(staffHrefs).toContain('/admin/seo');
+    expect(staffHrefs).toContain('/admin/content/calendar');
     expect(adminHrefs).toContain('/admin/seo');
   });
 

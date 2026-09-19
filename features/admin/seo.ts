@@ -1,5 +1,5 @@
 import {buildSeoRoutePairs, SITE_ORIGIN} from '@/features/seo/routes';
-import type {AdminBlog} from '@/features/admin/blog';
+import {getBlogPublicationState, type AdminBlog} from '@/features/admin/blog';
 import type {AdminLocation} from '@/features/admin/locations';
 import type {AdminMedia} from '@/features/admin/media';
 import type {AdminUnitType} from '@/features/admin/unit-types';
@@ -21,6 +21,7 @@ export type AdminSeoSnapshot = {
   activeLocations: number;
   activeUnitTypes: number;
   publishedBlogs: number;
+  scheduledBlogs: number;
   publicMedia: number;
   blogs: AdminBlog[];
   issues: AdminSeoIssue[];
@@ -49,11 +50,15 @@ function lengthIssue(
 
 export function buildAdminSeoIssues(
   blogs: AdminBlog[],
-  media: AdminMedia[]
+  media: AdminMedia[],
+  now = new Date()
 ): AdminSeoIssue[] {
   const issues: AdminSeoIssue[] = [];
 
-  for (const blog of blogs.filter(item => item.status === 'published')) {
+  for (const blog of blogs.filter(item => {
+    const state = getBlogPublicationState(item, now);
+    return state === 'published' || state === 'scheduled';
+  })) {
     const href = '/admin/content/blog/' + blog.id;
     const label = blog.vi.title || blog.en.title || blog.slug;
 
@@ -129,7 +134,7 @@ export function buildAdminSeoIssues(
   });
 }
 
-export async function getAdminSeoSnapshot(): Promise<AdminSeoSnapshot> {
+export async function getAdminSeoSnapshot(now = new Date()): Promise<AdminSeoSnapshot> {
   const [
     {listAdminBlogs},
     {listAdminLocations},
@@ -151,7 +156,12 @@ export async function getAdminSeoSnapshot(): Promise<AdminSeoSnapshot> {
 
   const activeLocations = locations.filter((item: AdminLocation) => item.status === 'active');
   const activeUnits = units.filter((item: AdminUnitType) => item.active);
-  const publishedBlogs = blogs.filter((item: AdminBlog) => item.status === 'published');
+  const publishedBlogs = blogs.filter(
+    (item: AdminBlog) => getBlogPublicationState(item, now) === 'published'
+  );
+  const scheduledBlogs = blogs.filter(
+    (item: AdminBlog) => getBlogPublicationState(item, now) === 'scheduled'
+  );
   const publicMedia = media.filter((item: AdminMedia) => item.isPublic);
 
   const routes = buildSeoRoutePairs({
@@ -167,8 +177,9 @@ export async function getAdminSeoSnapshot(): Promise<AdminSeoSnapshot> {
     activeLocations: activeLocations.length,
     activeUnitTypes: activeUnits.length,
     publishedBlogs: publishedBlogs.length,
+    scheduledBlogs: scheduledBlogs.length,
     publicMedia: publicMedia.length,
     blogs,
-    issues: buildAdminSeoIssues(blogs, media)
+    issues: buildAdminSeoIssues(blogs, media, now)
   };
 }

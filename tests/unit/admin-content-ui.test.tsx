@@ -12,7 +12,9 @@ vi.mock('@/app/admin/content/faq/actions', () => ({
 }));
 
 vi.mock('@/app/admin/content/blog/actions', () => ({
+  cancelScheduledBlogPublication: vi.fn(),
   createBlogPost: vi.fn(),
+  scheduleBlogPublication: vi.fn(),
   updateBlogPost: vi.fn(),
   setBlogStatus: vi.fn()
 }));
