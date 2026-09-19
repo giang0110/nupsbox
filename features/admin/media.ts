@@ -5,6 +5,18 @@ import type {AppRole, MediaCategory} from '@/types/database';
 
 const idSchema = z.string().uuid();
 
+export const MEDIA_BUCKET = 'nupsbox-media';
+export const MAX_MEDIA_FILE_BYTES = 8 * 1024 * 1024;
+
+const mediaExtensionByMime = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/avif': 'avif'
+} as const;
+
+export type AllowedMediaMime = keyof typeof mediaExtensionByMime;
+
 export type MediaDbRow = {
   id: string;
   storage_path: string;
@@ -22,6 +34,7 @@ export type MediaDbRow = {
 export type AdminMedia = {
   id: string;
   storagePath: string;
+  publicUrl: string;
   altVi: string;
   altEn: string;
   locationId: string | null;
@@ -33,10 +46,11 @@ export type AdminMedia = {
   updatedAt: string;
 };
 
-export function mapAdminMedia(row: MediaDbRow): AdminMedia {
+export function mapAdminMedia(row: MediaDbRow, publicUrl = ''): AdminMedia {
   return {
     id: row.id,
     storagePath: row.storage_path,
+    publicUrl,
     altVi: row.alt_vi,
     altEn: row.alt_en,
     locationId: row.location_id,
@@ -68,6 +82,24 @@ export function prepareMediaMetadataUpdate(role: AppRole, id: string, input: unk
   return {id: mediaId, changes: toMediaMutation(parsed)};
 }
 
+export function prepareMediaUpload(
+  role: AppRole,
+  input: unknown,
+  file: {name: string; type: string; size: number}
+) {
+  requirePermission(role, 'media:create');
+  const parsed = MediaMetadataInputSchema.parse(input);
+
+  if (!file.name || file.size <= 0) throw new Error('media_file_required');
+  if (file.size > MAX_MEDIA_FILE_BYTES) throw new Error('media_file_too_large');
+  if (!(file.type in mediaExtensionByMime)) throw new Error('media_type_not_allowed');
+
+  return {
+    metadata: toMediaMutation(parsed),
+    extension: mediaExtensionByMime[file.type as AllowedMediaMime]
+  };
+}
+
 export async function listAdminMedia(): Promise<AdminMedia[]> {
   const {createSupabaseServerClient} = await import('@/lib/supabase/server');
   const supabase = await createSupabaseServerClient();
@@ -78,5 +110,10 @@ export async function listAdminMedia(): Promise<AdminMedia[]> {
     .order('created_at', {ascending: true});
 
   if (error) throw error;
-  return (data ?? []).map((row) => mapAdminMedia(row as MediaDbRow));
+
+  return (data ?? []).map((row) => {
+    const mapped = row as MediaDbRow;
+    const {data: publicData} = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(mapped.storage_path);
+    return mapAdminMedia(mapped, publicData.publicUrl);
+  });
 }
