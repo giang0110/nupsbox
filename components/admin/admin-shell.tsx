@@ -5,10 +5,50 @@ import {usePathname} from 'next/navigation';
 import {useEffect, useRef, useState, type ReactNode} from 'react';
 import clsx from 'clsx';
 import {
+  BarChart3,
+  Boxes,
+  CalendarDays,
+  CircleGauge,
+  ClipboardCheck,
+  FileText,
+  HelpCircle,
+  ImageIcon,
+  LayoutDashboard,
+  MapPin,
+  NotebookTabs,
+  ReceiptText,
+  SearchCheck,
+  Settings,
+  ShieldCheck,
+  Users
+} from 'lucide-react';
+import {
   isAdminRouteActive,
   type AdminNavigationGroup
 } from '@/features/admin/navigation';
 import type {AppRole} from '@/types/database';
+
+function NavigationIcon({href}: {href: string}) {
+  const iconClass = "size-[17px]";
+  if (href === '/admin') return <LayoutDashboard className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/action-center') return <ClipboardCheck className={iconClass} aria-hidden="true" />;
+  if (href.startsWith('/admin/leads')) return <Users className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/quality') return <ShieldCheck className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/analytics') return <BarChart3 className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/seo') return <SearchCheck className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/audit') return <FileText className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/catalog') return <CircleGauge className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/catalog/locations') return <MapPin className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/catalog/unit-types') return <Boxes className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/catalog/pricing') return <ReceiptText className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/content') return <NotebookTabs className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/content/faq') return <HelpCircle className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/content/blog') return <FileText className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/content/calendar') return <CalendarDays className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/content/media') return <ImageIcon className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/content/settings') return <Settings className={iconClass} aria-hidden="true" />;
+  return <FileText className={iconClass} aria-hidden="true" />;
+}
 
 type AdminShellProps = {
   role: AppRole;
@@ -58,10 +98,16 @@ function Navigation({
                     collapsed && 'justify-center px-2'
                   )}
                 >
-                  <span aria-hidden className={clsx('text-xs font-black', !collapsed && 'mr-3')}>
-                    {item.label.slice(0, 1)}
+                  <span
+                    className={clsx(
+                      'grid size-8 shrink-0 place-items-center rounded-lg transition',
+                      active ? 'bg-white text-[var(--nupsbox-blue)] shadow-sm' : 'bg-[var(--nupsbox-surface)] text-[var(--nupsbox-slate)]',
+                      !collapsed && 'mr-3'
+                    )}
+                  >
+                    <NavigationIcon href={item.href} />
                   </span>
-                  <span className={clsx(collapsed && 'sr-only')}>{item.label}</span>
+                  <span className={clsx('truncate', collapsed && 'sr-only')}>{item.label}</span>
                 </Link>
               );
             })}
