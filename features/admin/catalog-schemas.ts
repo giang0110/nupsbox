@@ -10,6 +10,8 @@ export function normalizeCatalogSlug(value: unknown): unknown {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
+    .replace(/²/g, '2')
+    .replace(/³/g, '3')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
