@@ -5,10 +5,12 @@ import {ExternalLink} from 'lucide-react';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {BlogBody} from '@/components/marketing/blog-body';
+import {FinalCta} from '@/components/marketing/final-cta';
+import {JsonLd} from '@/components/seo/json-ld';
 import {Container} from '@/components/ui/container';
 import {getPublishedBlogBySlug} from '@/features/content/blog';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
-import {blogSeoRoute} from '@/features/seo/routes';
+import {absoluteUrl, blogSeoRoute, getStaticSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
 
 const dateFormatVi = new Intl.DateTimeFormat('vi-VN', {dateStyle: 'long'});
@@ -43,9 +45,22 @@ export default async function BlogArticlePage({params}: {params: Params}) {
 
   const vi = locale === 'vi';
   const blogHref = vi ? '/blog' : '/en/blog';
+  const homeRoute = getStaticSeoRoute('home');
+  const blogRoute = getStaticSeoRoute('blog');
+  const articleRoute = blogSeoRoute(slug);
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {'@type': 'ListItem', position: 1, name: vi ? 'Trang chủ' : 'Home', item: absoluteUrl(homeRoute[locale])},
+      {'@type': 'ListItem', position: 2, name: 'Blog', item: absoluteUrl(blogRoute[locale])},
+      {'@type': 'ListItem', position: 3, name: article.title, item: absoluteUrl(articleRoute[locale])}
+    ]
+  };
 
   return (
     <main>
+      <JsonLd data={breadcrumb} />
       <article className="py-12 sm:py-16">
         <Container>
           <div className="mx-auto max-w-4xl">
@@ -57,7 +72,7 @@ export default async function BlogArticlePage({params}: {params: Params}) {
               <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">
                 NUPSBOX BLOG
               </p>
-              <h1 className="mt-3 text-4xl font-black tracking-[-0.05em] text-[var(--nupsbox-navy)] sm:text-5xl">
+              <h1 className="mt-3 text-[clamp(2.5rem,5vw,4.25rem)] font-extrabold leading-[1.02] tracking-[-0.05em] text-[var(--nupsbox-navy)] text-balance">
                 {article.title}
               </h1>
               {article.excerpt ? (
@@ -88,7 +103,7 @@ export default async function BlogArticlePage({params}: {params: Params}) {
               </div>
             ) : null}
 
-            <div className="mt-9 rounded-3xl border border-[var(--nupsbox-border)] bg-white p-6 shadow-[var(--nupsbox-shadow-sm)] sm:p-8">
+            <div className="mt-9 rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-6 shadow-[0_16px_44px_rgba(7,26,56,.06)] sm:p-9">
               <BlogBody body={article.body} fallback={article.excerpt} />
             </div>
 
@@ -111,6 +126,8 @@ export default async function BlogArticlePage({params}: {params: Params}) {
           </div>
         </Container>
       </article>
+
+      <FinalCta locale={locale} />
     </main>
   );
 }
