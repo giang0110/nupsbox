@@ -24,12 +24,15 @@ async function performLeadStatusUpdate(
 ) {
   const prepared = prepareLeadStatusUpdate(role, leadId, rawStatus);
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase
+  const {data, error} = await supabase
     .from('leads')
     .update({status: prepared.status})
-    .eq('id', prepared.leadId);
+    .eq('id', prepared.leadId)
+    .select('id')
+    .single();
 
   if (error) throw error;
+  if (!data) throw new Error('lead_status_update_noop');
   revalidateLeadWorkspace(prepared.leadId);
 }
 
@@ -40,12 +43,15 @@ async function performLeadAssignment(
 ) {
   const prepared = prepareLeadAssignment(role, leadId, rawAssigneeId);
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase
+  const {data, error} = await supabase
     .from('leads')
     .update({assigned_to: prepared.assigneeId})
-    .eq('id', prepared.leadId);
+    .eq('id', prepared.leadId)
+    .select('id')
+    .single();
 
   if (error) throw error;
+  if (!data) throw new Error('lead_assignment_noop');
   revalidateLeadWorkspace(prepared.leadId);
 }
 
