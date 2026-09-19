@@ -3,12 +3,13 @@ import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 describe('compact homepage composition', () => {
-  it('uses six primary blocks instead of the previous stacked marketing sections', () => {
+  it('uses seven compact primary blocks including the CMS warehouse gallery', () => {
     const source = readFileSync(join(process.cwd(), 'app/[locale]/page.tsx'), 'utf8');
 
     expect(source).toContain('<Hero locale={locale} location={location} units={featuredUnits} />');
     expect(source).toContain('<HomeChoiceHub');
     expect(source).toContain('<HomeProofBento');
+    expect(source).toContain('<WarehouseGallery');
     expect(source).toContain('<HomeLocationJourney');
     expect(source).toContain('<HomeFaq');
     expect(source).toContain('<FinalCta');

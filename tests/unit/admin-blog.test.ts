@@ -20,7 +20,8 @@ const validBlogInput = {
   seoTitleEn: 'Mini storage rental guide',
   seoDescriptionVi: 'Thông tin thuê kho mini NupsBox.',
   seoDescriptionEn: 'Information about NupsBox mini storage.',
-  coverMediaId: null
+  coverMediaId: null,
+  sourceUrl: null
 };
 
 describe('bilingual blog CMS contracts', () => {
@@ -29,7 +30,8 @@ describe('bilingual blog CMS contracts', () => {
     expect(created.post).toEqual({
       slug: validBlogInput.slug,
       status: 'draft',
-      cover_media_id: null
+      cover_media_id: null,
+      source_url: null
     });
     expect(created.translations.map((translation) => translation.locale)).toEqual(['vi', 'en']);
   });

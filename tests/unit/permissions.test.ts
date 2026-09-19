@@ -8,6 +8,7 @@ describe('phase2 permission matrix', () => {
     expect(can('admin', 'content:create')).toBe(true);
     expect(can('admin', 'content:publish')).toBe(true);
     expect(can('admin', 'media:read')).toBe(true);
+    expect(can('admin', 'media:create')).toBe(true);
     expect(can('admin', 'media:update')).toBe(true);
     expect(can('admin', 'leads:assign')).toBe(true);
     expect(can('admin', 'leads:note')).toBe(true);
@@ -21,6 +22,7 @@ describe('phase2 permission matrix', () => {
     expect(can('staff', 'content:create')).toBe(true);
     expect(can('staff', 'content:publish')).toBe(true);
     expect(can('staff', 'media:read')).toBe(true);
+    expect(can('staff', 'media:create')).toBe(true);
     expect(can('staff', 'media:update')).toBe(true);
     expect(can('staff', 'leads:update')).toBe(true);
     expect(can('staff', 'leads:assign')).toBe(true);
@@ -34,6 +36,7 @@ describe('phase2 permission matrix', () => {
     expect(can('viewer', 'catalog:read')).toBe(true);
     expect(can('viewer', 'content:read')).toBe(true);
     expect(can('viewer', 'media:read')).toBe(true);
+    expect(can('viewer', 'media:create')).toBe(false);
     expect(can('viewer', 'settings:read')).toBe(true);
     expect(can('viewer', 'leads:read')).toBe(true);
     expect(can('viewer', 'catalog:update')).toBe(false);
