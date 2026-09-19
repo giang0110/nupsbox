@@ -1,6 +1,7 @@
 'use client';
 
 import {useMemo, useState} from 'react';
+import {ChevronDown, Layers3} from 'lucide-react';
 import {bulkUpdateMediaAssets} from '@/app/admin/content/media/actions';
 import type {AdminMedia} from '@/features/admin/media';
 
@@ -34,20 +35,24 @@ export function MediaBulkManager({
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--nupsbox-border)] bg-white shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--nupsbox-border)] px-5 py-4">
-        <div>
-          <h2 className="text-lg font-black text-[var(--nupsbox-navy)]">Bulk media</h2>
-          <p className="mt-1 text-sm leading-6 text-[var(--nupsbox-slate)]">
-            Chọn nhiều ảnh để đổi visibility, category hoặc location trong một lần.
-          </p>
+    <details className="group rounded-2xl border border-[var(--nupsbox-border)] bg-white shadow-sm">
+      <summary className="flex min-h-16 cursor-pointer list-none flex-wrap items-center justify-between gap-3 px-5 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--nupsbox-blue)]">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-surface)] text-[var(--nupsbox-navy)]">
+            <Layers3 size={18} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="text-base font-black text-[var(--nupsbox-navy)]">Chỉnh nhiều ảnh</h2>
+            <p className="mt-0.5 text-xs text-[var(--nupsbox-slate)]">Visibility · category · location</p>
+          </div>
         </div>
-        <span className="rounded-full bg-[var(--nupsbox-surface)] px-3 py-2 text-xs font-black text-[var(--nupsbox-navy)]">
-          {selectedLabel}
+        <span className="flex items-center gap-3">
+          <span className="rounded-full bg-[var(--nupsbox-surface)] px-3 py-2 text-xs font-black text-[var(--nupsbox-navy)]">{selectedLabel}</span>
+          <ChevronDown size={18} className="text-[var(--nupsbox-slate)] transition group-open:rotate-180" aria-hidden="true" />
         </span>
-      </div>
+      </summary>
 
-      <form action={bulkUpdateMediaAssets} className="grid gap-4 p-5">
+      <form action={bulkUpdateMediaAssets} className="grid gap-4 border-t border-[var(--nupsbox-border)] p-5">
         <div className="max-h-64 overflow-y-auto rounded-xl border border-[var(--nupsbox-border)]">
           <div className="sticky top-0 flex items-center gap-3 border-b border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] px-3 py-2">
             <input
@@ -122,6 +127,6 @@ export function MediaBulkManager({
           Áp dụng cho ảnh đã chọn
         </button>
       </form>
-    </section>
+    </details>
   );
 }
