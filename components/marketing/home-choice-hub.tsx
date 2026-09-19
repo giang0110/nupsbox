@@ -2,11 +2,7 @@
 
 import {useState, type KeyboardEvent} from 'react';
 import dynamic from 'next/dynamic';
-import {
-  Boxes,
-  BriefcaseBusiness,
-  Sparkles
-} from 'lucide-react';
+import {ArrowRight} from 'lucide-react';
 import {StorageFinder} from '@/components/storage-finder/storage-finder';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
@@ -53,10 +49,10 @@ export function HomeChoiceHub({
   const vi = locale === 'vi';
   const [activeTab, setActiveTab] = useState<ChoiceTab>('finder');
 
-  const tabs: Array<{id: ChoiceTab; label: string; icon: typeof Sparkles}> = [
-    {id: 'finder', label: vi ? 'Tìm nhanh' : 'Quick finder', icon: Sparkles},
-    {id: 'units', label: vi ? 'Loại kho' : 'Unit types', icon: Boxes},
-    {id: 'use-cases', label: vi ? 'Theo nhu cầu' : 'By need', icon: BriefcaseBusiness}
+  const tabs: Array<{id: ChoiceTab; label: string; index: string}> = [
+    {id: 'finder', label: vi ? 'Tìm nhanh' : 'Quick finder', index: '01'},
+    {id: 'units', label: vi ? 'Loại kho' : 'Unit types', index: '02'},
+    {id: 'use-cases', label: vi ? 'Theo nhu cầu' : 'By need', index: '03'}
   ];
 
   function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, currentId: ChoiceTab) {
@@ -84,7 +80,7 @@ export function HomeChoiceHub({
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <SectionHeading
             eyebrow={vi ? 'CHỌN KHO PHÙ HỢP' : 'CHOOSE WHAT FITS'}
-            title={vi ? 'Một nơi để bắt đầu, ba cách để tìm.' : 'One place to start, three ways to explore.'}
+            title={vi ? 'Bắt đầu từ điều bạn biết.' : 'Start with what you know.'}
             description={vi
               ? 'Dùng gợi ý nhanh, xem loại kho hoặc bắt đầu từ tình huống gần với nhu cầu của bạn.'
               : 'Use the quick finder, browse unit types, or start from the situation closest to your needs.'}
@@ -93,9 +89,9 @@ export function HomeChoiceHub({
           <div
             role="tablist"
             aria-label={vi ? 'Cách chọn kho' : 'Ways to choose storage'}
-            className="inline-flex w-full gap-1 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-1.5 shadow-[var(--nupsbox-shadow-sm)] lg:w-auto"
+            className="grid w-full grid-cols-3 border-y border-[var(--nupsbox-border)] bg-transparent lg:w-auto lg:min-w-[31rem]"
           >
-            {tabs.map(({id, label, icon: Icon}) => (
+            {tabs.map(({id, label, index}) => (
               <button
                 key={id}
                 id={`choice-tab-${id}`}
@@ -106,14 +102,15 @@ export function HomeChoiceHub({
                 tabIndex={activeTab === id ? 0 : -1}
                 onClick={() => setActiveTab(id)}
                 onKeyDown={(event) => handleTabKeyDown(event, id)}
-                className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 lg:flex-none ${
+                className={`group inline-flex min-h-14 items-center justify-center gap-2 border-b-2 px-3 text-sm font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2 ${
                   activeTab === id
-                    ? 'bg-[var(--nupsbox-navy)] text-white shadow-sm'
-                    : 'text-[var(--nupsbox-slate)] hover:bg-[var(--nupsbox-surface)] hover:text-[var(--nupsbox-navy)]'
+                    ? 'border-[var(--nupsbox-navy)] text-[var(--nupsbox-navy)]'
+                    : 'border-transparent text-[var(--nupsbox-slate)] hover:text-[var(--nupsbox-navy)]'
                 }`}
               >
-                <Icon size={17} aria-hidden="true" />
+                <span className="text-[0.64rem] tracking-[0.12em] text-[var(--nupsbox-muted)]">{index}</span>
                 {label}
+                {activeTab === id ? <ArrowRight size={14} aria-hidden="true" /> : null}
               </button>
             ))}
           </div>
