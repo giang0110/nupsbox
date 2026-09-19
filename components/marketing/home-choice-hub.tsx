@@ -108,7 +108,7 @@ export function HomeChoiceHub({
                     : 'border-transparent text-[var(--nupsbox-slate)] hover:text-[var(--nupsbox-navy)]'
                 }`}
               >
-                <span className="text-[0.64rem] tracking-[0.12em] text-[var(--nupsbox-muted)]">{index}</span>
+                <span aria-hidden="true" className="text-[0.64rem] tracking-[0.12em] text-[var(--nupsbox-muted)]">{index}</span>
                 {label}
                 {activeTab === id ? <ArrowRight size={14} aria-hidden="true" /> : null}
               </button>
