@@ -1,6 +1,7 @@
 import {ChevronDown, UploadCloud} from 'lucide-react';
 import {uploadMediaAsset} from '@/app/admin/content/media/actions';
 import {AdminFieldGroup} from '@/components/admin/admin-primitives';
+import {MediaFileInput} from '@/components/admin/media-file-input';
 
 type Option = {id: string; label: string};
 
@@ -35,13 +36,7 @@ export function MediaUploadForm({
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold md:col-span-2">
                 Hình ảnh
-                <input
-                  className={inputClass + ' py-2'}
-                  name="file"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/avif"
-                  required
-                />
+                <MediaFileInput className={inputClass + ' py-2'} />
               </label>
               <label className="text-sm font-semibold">
                 Alt VI
