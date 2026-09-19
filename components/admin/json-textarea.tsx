@@ -46,7 +46,7 @@ export function JsonTextarea({
         }}
       />
       <span id={hintId} className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
-        Phải là object JSON hợp lệ, ví dụ {"{"}"key":"value"{"}"}.
+        Phải là object JSON hợp lệ, ví dụ {'{"key":"value"}'}.
       </span>
     </>
   );
