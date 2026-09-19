@@ -22,6 +22,10 @@ const navigation: AdminNavigationGroup[] = [
     items: [{href: '/admin/leads', label: 'Khách hàng', action: 'leads:read'}]
   },
   {
+    label: 'Vận hành',
+    items: [{href: '/admin/quality', label: 'Vận hành & QA', action: 'dashboard:read'}]
+  },
+  {
     label: 'Catalog',
     items: [
       {href: '/admin/catalog', label: 'Tổng quan catalog', action: 'catalog:read'},
