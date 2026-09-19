@@ -9,6 +9,7 @@ import {
   AdminPanel,
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
+import {JsonTextarea} from '@/components/admin/json-textarea';
 import type {AdminLocation} from '@/features/admin/locations';
 
 type Props = {
@@ -132,9 +133,11 @@ export function LocationForm({location, canMutate, canPublish}: Props) {
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-semibold md:col-span-2">
               Giờ mở cửa (JSON)
-              <textarea
+              <JsonTextarea
                 className={inputClass + ' min-h-24 font-mono'}
                 name="openingHours"
+                rows={6}
+                label="Giờ mở cửa"
                 defaultValue={JSON.stringify(location?.openingHours ?? {}, null, 2)}
               />
             </label>

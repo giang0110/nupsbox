@@ -76,8 +76,9 @@ export async function updateLocation(formData: FormData) {
     inputFromFormData(formData)
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('locations').update(changes).eq('id', id);
+  const {data, error} = await supabase.from('locations').update(changes).eq('id', id).select('id').single();
   throwCmsError(error);
+  if (!data) throw new Error('location_update_noop');
   revalidateLocations();
 }
 
@@ -89,7 +90,8 @@ export async function setLocationPublication(formData: FormData) {
     String(formData.get('publish') ?? '') === 'true'
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('locations').update({status}).eq('id', id);
+  const {data, error} = await supabase.from('locations').update({status}).eq('id', id).select('id').single();
   throwCmsError(error);
+  if (!data) throw new Error('location_publication_noop');
   revalidateLocations();
 }

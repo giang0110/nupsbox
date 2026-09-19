@@ -1,6 +1,19 @@
 import {z} from 'zod';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function normalizeContentSlug(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 const secretLikeKeyPattern = /(secret|token|service[_-]?role|api[_-]?key|password|salt)/i;
 
 const blankToNullString = z.preprocess(
@@ -34,7 +47,10 @@ export const FaqInputSchema = z
 
 export const BlogInputSchema = z
   .object({
-    slug: z.string().trim().min(1).regex(slugPattern),
+    slug: z.preprocess(
+      normalizeContentSlug,
+      z.string().trim().min(1).regex(slugPattern)
+    ),
     titleVi: z.string().trim().min(1),
     titleEn: z.string().trim().min(1),
     excerptVi: blankToNullString,

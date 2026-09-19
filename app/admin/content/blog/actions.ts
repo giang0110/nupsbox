@@ -118,11 +118,14 @@ export async function updateBlogPost(formData: FormData) {
     publishedAt: current.publishedAt
   });
   const supabase = await createSupabaseServerClient();
-  const {error: postError} = await supabase
+  const {data: updatedPost, error: postError} = await supabase
     .from('blog_posts')
     .update(prepared.postChanges)
-    .eq('id', prepared.id);
+    .eq('id', prepared.id)
+    .select('id')
+    .single();
   throwBlogError(postError);
+  if (!updatedPost) throw new Error('blog_update_noop');
 
   const {error: translationError} = await supabase
     .from('blog_translations')
@@ -150,8 +153,14 @@ export async function scheduleBlogPublication(formData: FormData) {
   );
 
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('blog_posts').update(command.changes).eq('id', command.id);
+  const {data, error} = await supabase
+    .from('blog_posts')
+    .update(command.changes)
+    .eq('id', command.id)
+    .select('id')
+    .single();
   throwBlogError(error);
+  if (!data) throw new Error('blog_status_update_noop');
   revalidateBlogs();
   revalidatePath('/admin/content/calendar');
   revalidatePath('/admin/seo');
@@ -172,8 +181,14 @@ export async function cancelScheduledBlogPublication(formData: FormData) {
   );
 
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('blog_posts').update(command.changes).eq('id', command.id);
+  const {data, error} = await supabase
+    .from('blog_posts')
+    .update(command.changes)
+    .eq('id', command.id)
+    .select('id')
+    .single();
   throwBlogError(error);
+  if (!data) throw new Error('blog_status_update_noop');
   revalidateBlogs();
   revalidatePath('/admin/content/calendar');
   revalidatePath('/admin/seo');
@@ -199,8 +214,14 @@ export async function setBlogStatus(formData: FormData) {
     current.publishedAt
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('blog_posts').update(command.changes).eq('id', command.id);
+  const {data, error} = await supabase
+    .from('blog_posts')
+    .update(command.changes)
+    .eq('id', command.id)
+    .select('id')
+    .single();
   throwBlogError(error);
+  if (!data) throw new Error('blog_status_update_noop');
   revalidateBlogs();
   revalidatePath('/admin/content/calendar');
   revalidatePath('/admin/seo');

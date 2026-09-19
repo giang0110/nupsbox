@@ -1,3 +1,5 @@
+'use client';
+
 import {createPricing, updatePricing} from '@/app/admin/catalog/pricing/actions';
 import {
   AdminFieldGroup,
@@ -22,7 +24,24 @@ export function PricingForm({pricing, locations, units, canMutate}: Props) {
 
   return (
     <AdminPanel title={editing ? 'Cập nhật bảng giá' : 'Thêm cấu hình giá'}>
-      <form action={editing ? updatePricing : createPricing} className="grid gap-6">
+      <form
+        action={editing ? updatePricing : createPricing}
+        className="grid gap-6"
+        onSubmit={(event) => {
+          const form = event.currentTarget;
+          const monthly = form.elements.namedItem('monthlyPrice') as HTMLInputElement | null;
+          const promo = form.elements.namedItem('promoPrice') as HTMLInputElement | null;
+          const monthlyValue = monthly?.value.trim() ? Number(monthly.value) : null;
+          const promoValue = promo?.value.trim() ? Number(promo.value) : null;
+
+          promo?.setCustomValidity('');
+          if (monthlyValue !== null && promoValue !== null && promoValue > monthlyValue) {
+            promo?.setCustomValidity('Giá ưu đãi không được lớn hơn giá tháng.');
+            event.preventDefault();
+            promo?.reportValidity();
+          }
+        }}
+      >
         {pricing ? <input type="hidden" name="id" value={pricing.id} /> : null}
 
         <AdminFieldGroup legend="Phạm vi áp dụng" disabled={!canMutate}>
