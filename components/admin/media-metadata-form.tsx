@@ -157,17 +157,18 @@ export function MediaMetadataForm({
               )}
             </form>
 
-            {canDelete ? (
-              <div className="mt-5 border-t border-red-100 pt-4">
-                <p className="mb-3 text-xs font-black uppercase tracking-[0.12em] text-red-700">Vùng nguy hiểm</p>
-                <MediaDeleteForm
-                  mediaId={media.id}
-                  label={media.altVi || media.altEn || media.storagePath}
-                />
-              </div>
-            ) : null}
           </div>
         </details>
+
+        {canDelete ? (
+          <div className="mt-4 border-t border-red-100 pt-4">
+            <p className="mb-2 text-[0.68rem] font-black uppercase tracking-[0.12em] text-red-700">Vùng nguy hiểm</p>
+            <MediaDeleteForm
+              mediaId={media.id}
+              label={media.altVi || media.altEn || media.storagePath}
+            />
+          </div>
+        ) : null}
       </div>
     </article>
   );

@@ -147,15 +147,21 @@ export async function deleteMediaAsset(
       };
     }
 
-    const {error: deleteMetadataError} = await supabase
+    const {data: deletedRows, error: deleteMetadataError} = await supabase
       .from('media_assets')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select('id');
 
-    if (deleteMetadataError) {
+    if (deleteMetadataError || !deletedRows || deletedRows.length !== 1) {
+      console.error('media_delete_metadata_failed', {
+        mediaId: id,
+        error: deleteMetadataError?.message ?? null,
+        deletedCount: deletedRows?.length ?? 0
+      });
       return {
         status: 'error',
-        message: 'Không thể xoá metadata ảnh. Ảnh chưa bị thay đổi.'
+        message: 'Không thể xoá metadata ảnh. Quyền xoá hoặc RLS có thể đang chặn thao tác.'
       };
     }
 
