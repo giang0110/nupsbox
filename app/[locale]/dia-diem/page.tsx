@@ -6,7 +6,9 @@ import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {LocationCard} from '@/components/locations/location-card';
+import {WarehouseGallery} from '@/components/marketing/warehouse-gallery';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
+import {getPublicLocationGallery} from '@/features/content/public-media';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
@@ -28,6 +30,7 @@ export default async function LocationsPage({params}: {params: Promise<{locale: 
   if (!isSupportedLocale(rawLocale)) notFound();
   setRequestLocale(rawLocale);
   const location = await getMarketingFeaturedLocation(rawLocale);
+  const galleryItems = location ? await getPublicLocationGallery(location.id, rawLocale) : [];
   const vi = rawLocale === 'vi';
 
   return (
@@ -44,8 +47,12 @@ export default async function LocationsPage({params}: {params: Promise<{locale: 
               : 'Facility details appear only after NupsBox has verified and published them.')}
       />
 
+      {galleryItems.length ? (
+        <WarehouseGallery locale={rawLocale} items={galleryItems} />
+      ) : null}
+
       {location ? (
-        <Section>
+        <Section tone={galleryItems.length ? 'soft' : 'white'}>
           <div className="grid items-start gap-8 lg:grid-cols-[.8fr_1.2fr] lg:gap-12">
             <SectionHeading
               eyebrow={vi ? 'CƠ SỞ HIỆN TẠI' : 'CURRENT FACILITY'}
