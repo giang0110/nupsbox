@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import {updateMediaMetadata} from '@/app/admin/content/media/actions';
 import {
   AdminFieldGroup,
@@ -26,7 +27,7 @@ export function MediaMetadataForm({
   return (
     <AdminPanel
       title={media.storagePath}
-      description="Chỉ chỉnh metadata; không upload, thay thế hay xóa file."
+      description="Ảnh được lưu trong Supabase Storage; chỉnh metadata ở đây không thay file gốc."
       actions={
         <AdminStatusBadge
           label={media.isPublic ? 'Công khai' : 'Nội bộ'}
@@ -34,6 +35,20 @@ export function MediaMetadataForm({
         />
       }
     >
+      {media.publicUrl ? (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)]">
+          <div className="relative aspect-[16/7] min-h-44">
+            <Image
+              src={media.publicUrl}
+              alt={media.altVi || media.altEn || media.storagePath}
+              fill
+              sizes="(max-width: 1024px) 100vw, 900px"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      ) : null}
+
       <form action={updateMediaMetadata} className="grid gap-6">
         <input type="hidden" name="id" value={media.id} />
 
