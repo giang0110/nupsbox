@@ -20,7 +20,7 @@ export async function MobileActionBar({phoneUrl, zaloUrl, facebookUrl, mode = 'd
   return (
     <nav
       aria-label={locale === 'vi' ? 'Hành động nhanh' : 'Quick actions'}
-      className="fixed inset-x-2.5 bottom-[max(.6rem,env(safe-area-inset-bottom))] z-[60] grid grid-cols-2 gap-1.5 rounded-[1.15rem] border border-black/10 bg-white/96 p-1.5 shadow-[0_16px_48px_rgba(7,26,56,0.22)] backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-3 bottom-[max(.65rem,env(safe-area-inset-bottom))] z-[60] grid grid-cols-2 gap-1 rounded-2xl border border-black/8 bg-white/94 p-1 shadow-[0_10px_30px_rgba(7,26,56,0.14)] backdrop-blur-xl lg:hidden"
     >
       <ConversionCta locale={locale} intent="finder" placement="mobile-action-bar" size="md" className="min-h-12 rounded-[0.9rem] gap-1.5 px-3 text-xs sm:text-sm">
         <Search aria-hidden="true" size={17} />
