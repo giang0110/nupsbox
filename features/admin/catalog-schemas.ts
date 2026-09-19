@@ -54,7 +54,10 @@ export const LocationInputSchema = z
 
 export const UnitTypeInputSchema = z
   .object({
-    slug: z.string().trim().min(1).regex(slugPattern),
+    slug: z.preprocess(
+      normalizeCatalogSlug,
+      z.string().trim().min(1).regex(slugPattern)
+    ),
     nameVi: z.string().trim().min(1),
     nameEn: z.string().trim().min(1),
     areaM2: z.coerce.number().positive(),
