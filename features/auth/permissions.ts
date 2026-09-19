@@ -2,6 +2,7 @@ import type {AppRole} from '@/types/database';
 
 export type AppAction =
   | 'dashboard:read'
+  | 'audit:read'
   | 'leads:read'
   | 'leads:update'
   | 'leads:assign'
@@ -25,6 +26,7 @@ export type AppAction =
 const permissions: Record<AppRole, ReadonlySet<AppAction>> = {
   admin: new Set<AppAction>([
     'dashboard:read',
+    'audit:read',
     'leads:read',
     'leads:update',
     'leads:assign',
