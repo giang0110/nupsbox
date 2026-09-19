@@ -1,6 +1,7 @@
 import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {AdminEmptyState} from '@/components/admin/admin-primitives';
+import {MediaBulkManager} from '@/components/admin/media-bulk-manager';
 import {MediaMetadataForm} from '@/components/admin/media-metadata-form';
 import {MediaUploadForm} from '@/components/admin/media-upload-form';
 import {Container} from '@/components/ui/container';
@@ -35,6 +36,10 @@ export default async function AdminMediaPage() {
 
         {canCreate ? (
           <MediaUploadForm locationOptions={locationOptions} unitOptions={unitOptions} />
+        ) : null}
+
+        {canEdit && mediaRows.length ? (
+          <MediaBulkManager media={mediaRows} locationOptions={locationOptions} />
         ) : null}
 
         <div className="grid gap-5">

@@ -4,6 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {revalidatePath} from 'next/cache';
 import {
   MEDIA_BUCKET,
+  prepareMediaBulkUpdate,
   prepareMediaMetadataUpdate,
   prepareMediaUpload
 } from '@/features/admin/media';
@@ -65,6 +66,28 @@ export async function uploadMediaAsset(formData: FormData) {
     throw metadataError;
   }
 
+  revalidateMedia();
+}
+
+export async function bulkUpdateMediaAssets(formData: FormData) {
+  const session = await requireAdminUser();
+  const command = prepareMediaBulkUpdate(
+    session.role,
+    formData.getAll('mediaIds').map(value => String(value)),
+    {
+      visibility: formData.get('bulkVisibility'),
+      category: formData.get('bulkCategory'),
+      locationId: formData.get('bulkLocationId')
+    }
+  );
+
+  const supabase = await createSupabaseServerClient();
+  const {error} = await supabase
+    .from('media_assets')
+    .update(command.changes)
+    .in('id', command.ids);
+
+  if (error) throw error;
   revalidateMedia();
 }
 

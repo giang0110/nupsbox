@@ -82,6 +82,44 @@ export function prepareMediaMetadataUpdate(role: AppRole, id: string, input: unk
   return {id: mediaId, changes: toMediaMutation(parsed)};
 }
 
+const bulkCategorySchema = z.union([
+  z.literal('keep'),
+  z.enum(['hero', 'location', 'unit', 'security', 'exterior', 'lifestyle', 'blog'])
+]);
+const bulkVisibilitySchema = z.enum(['keep', 'public', 'private']);
+
+export function prepareMediaBulkUpdate(
+  role: AppRole,
+  rawIds: string[],
+  input: {visibility?: unknown; category?: unknown; locationId?: unknown}
+) {
+  requirePermission(role, 'media:update');
+
+  const ids = z.array(idSchema).min(1).max(100).parse([...new Set(rawIds)]);
+  const visibility = bulkVisibilitySchema.parse(input.visibility ?? 'keep');
+  const category = bulkCategorySchema.parse(input.category ?? 'keep');
+  const locationValue = typeof input.locationId === 'string' ? input.locationId : '__keep__';
+
+  const changes: {
+    is_public?: boolean;
+    category?: MediaCategory;
+    location_id?: string | null;
+  } = {};
+
+  if (visibility === 'public') changes.is_public = true;
+  if (visibility === 'private') changes.is_public = false;
+  if (category !== 'keep') changes.category = category;
+
+  if (locationValue === '__clear__') {
+    changes.location_id = null;
+  } else if (locationValue !== '__keep__') {
+    changes.location_id = idSchema.parse(locationValue);
+  }
+
+  if (Object.keys(changes).length === 0) throw new Error('bulk_media_no_changes');
+  return {ids, changes};
+}
+
 export function prepareMediaUpload(
   role: AppRole,
   input: unknown,
