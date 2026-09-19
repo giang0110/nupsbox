@@ -11,7 +11,7 @@ select policies_are('public', 'lead_status_history', array['lead_status_history_
 select policies_are('public', 'locations', array['locations_authenticated_read_all', 'locations_public_read', 'locations_staff_insert', 'locations_staff_update'], 'locations use explicit Phase 2 CMS policies');
 select policies_are('public', 'unit_types', array['unit_types_authenticated_read_all', 'unit_types_public_read', 'unit_types_staff_insert', 'unit_types_staff_update'], 'unit types use explicit Phase 2 CMS policies');
 select policies_are('public', 'location_unit_types', array['location_unit_types_authenticated_read_all', 'location_unit_types_public_read', 'location_unit_types_staff_insert', 'location_unit_types_staff_update'], 'pricing uses explicit Phase 2 CMS policies');
-select policies_are('public', 'media_assets', array['media_assets_authenticated_read_all', 'media_assets_public_read', 'media_assets_staff_insert', 'media_assets_staff_update'], 'media uses explicit Phase 2 CMS policies');
+select policies_are('public', 'media_assets', array['media_assets_admin_delete', 'media_assets_authenticated_read_all', 'media_assets_public_read', 'media_assets_staff_insert', 'media_assets_staff_update'], 'media uses explicit CMS policies including admin-only delete');
 select policies_are('public', 'faqs', array['faqs_authenticated_read_all', 'faqs_public_read', 'faqs_staff_insert', 'faqs_staff_update'], 'faqs use explicit Phase 2 CMS policies');
 select policies_are('public', 'blog_posts', array['blog_posts_authenticated_read_all', 'blog_posts_public_read', 'blog_posts_staff_insert', 'blog_posts_staff_update'], 'blog posts use explicit Phase 2 CMS policies');
 select policies_are('public', 'blog_translations', array['blog_translations_authenticated_read_all', 'blog_translations_public_read', 'blog_translations_staff_insert', 'blog_translations_staff_update'], 'blog translations use explicit Phase 2 CMS policies');
@@ -42,8 +42,8 @@ select is(
       and cmd = 'DELETE'
       and 'authenticated' = any(roles)
   ),
-  0,
-  'authenticated CMS tables expose no DELETE policy'
+  1,
+  'media assets are the only authenticated CMS table exposing DELETE'
 );
 select is(
   (
