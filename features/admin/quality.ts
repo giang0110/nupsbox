@@ -181,14 +181,16 @@ export function buildAdminQualityIssues(snapshot: AdminQualitySnapshot): AdminQu
   }
 
   if (snapshot.blog.drafts > 0) {
-    const missingAssets = snapshot.blog.draftWithoutCover;
+    const missingCover = snapshot.blog.draftWithoutCover;
+    const missingSource = snapshot.blog.draftWithoutSource;
+    const incomplete = missingCover > 0 || missingSource > 0;
     issues.push({
       id: 'blog-drafts',
       area: 'content',
-      tone: missingAssets > 0 ? 'warning' : 'info',
+      tone: incomplete ? 'warning' : 'info',
       title: 'Có bài blog đang ở trạng thái draft',
-      detail: missingAssets > 0
-        ? 'Một số draft chưa có cover; rà nội dung, cover và nguồn giới thiệu trước khi publish.'
+      detail: incomplete
+        ? `Draft cần rà trước khi publish: ${missingCover} thiếu cover · ${missingSource} chưa có source URL (source là tùy chọn nhưng hữu ích cho bài giới thiệu).`
         : 'Rà nội dung song ngữ và publish khi đã sẵn sàng.',
       href: '/admin/content/blog',
       count: snapshot.blog.drafts
