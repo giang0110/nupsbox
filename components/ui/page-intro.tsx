@@ -38,7 +38,7 @@ export function PageIntro({
       <div className="max-w-4xl py-2 sm:py-3">
         {eyebrow ? (
           <p className={clsx(
-            'inline-flex rounded-full border px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.14em]',
+            'inline-flex rounded-full border px-3 py-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.14em]',
             dark
               ? 'border-white/12 bg-white/5 text-[var(--nupsbox-yellow)]'
               : 'border-[var(--nupsbox-border)] bg-white/80 text-[var(--nupsbox-blue)]'
@@ -47,7 +47,7 @@ export function PageIntro({
           </p>
         ) : null}
         <h1 className={clsx(
-          'mt-4 max-w-4xl text-[clamp(2.45rem,5vw,4.5rem)] font-black leading-[.98] tracking-[-0.052em] text-balance',
+          'mt-4 max-w-4xl text-[clamp(2.45rem,5vw,4.5rem)] font-extrabold leading-[.98] tracking-[-0.052em] text-balance',
           dark ? 'text-white' : 'text-[var(--nupsbox-navy)]'
         )}>
           {title}
