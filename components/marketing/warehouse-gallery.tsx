@@ -38,17 +38,17 @@ export function WarehouseGallery({locale, items}: {locale: 'vi' | 'en'; items: P
             eyebrow={vi ? 'KHÔNG GIAN THỰC TẾ' : 'REAL STORAGE SPACE'}
             title={vi ? 'Xem kho thật trước khi chọn.' : 'See the real space before you choose.'}
             description={vi
-              ? 'Ảnh được lấy từ Media CMS và chỉ xuất hiện khi đã gắn đúng cơ sở, có mô tả và được công khai.'
-              : 'Images come from the Media CMS and appear only when mapped to the correct facility, described and published.'}
+              ? 'Xem các góc kho thực tế để hình dung không gian trước khi chọn diện tích.'
+              : 'Explore real facility views to understand the space before choosing a unit size.'}
           />
           <p className="max-w-xl text-sm leading-6 text-[var(--nupsbox-slate)] lg:justify-self-end lg:text-right">
             {vi
-              ? 'Chạm vào ảnh để xem toàn màn hình. Dùng thumbnail hoặc phím mũi tên để chuyển nhanh giữa các góc kho.'
-              : 'Open any image full screen. Use thumbnails or arrow keys to move quickly between warehouse views.'}
+              ? 'Mở ảnh toàn màn hình để xem kỹ hơn từng khu vực của cơ sở.'
+              : 'Open images full screen for a closer look at each part of the facility.'}
           </p>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-[2rem] bg-[var(--nupsbox-navy)] shadow-[0_28px_72px_rgba(7,26,56,.18)]">
+        <div className="mt-6 overflow-hidden rounded-[2rem] bg-[var(--nupsbox-navy)] shadow-[0_24px_64px_rgba(7,26,56,.14)]">
           <div className="relative aspect-[16/10] min-h-72 sm:aspect-[2/1] lg:min-h-[420px]">
             <button
               type="button"

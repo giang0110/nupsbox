@@ -26,12 +26,18 @@ export async function SiteFooter({
       <Container>
         <div className="grid gap-10 border-b border-white/10 pb-10 lg:grid-cols-[1.1fr_.8fr_.8fr]">
           <div>
-            <p className="text-xl font-extrabold tracking-[-0.035em]">NUPSBOX</p>
-            <p className="mt-4 max-w-md text-sm leading-6 text-white/65">{brand('tagline')}</p>
-            <p className="mt-6 max-w-sm text-sm leading-6 text-white/55">
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-yellow)] text-sm font-black tracking-[-0.08em] text-[var(--nupsbox-navy)]">NB</span>
+              <div>
+                <p className="text-xl font-extrabold tracking-[-0.04em]">NUPSBOX</p>
+                <p className="mt-0.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/38">Mini Storage · TP.HCM</p>
+              </div>
+            </div>
+            <p className="mt-5 max-w-md text-sm leading-6 text-white/66">{brand('tagline')}</p>
+            <p className="mt-5 max-w-sm text-sm leading-6 text-white/50">
               {vi
-                ? 'Kho mini linh hoạt cho nhu cầu kinh doanh và cá nhân tại TP.HCM.'
-                : 'Flexible mini storage for business and personal needs in Ho Chi Minh City.'}
+                ? 'Kho mini linh hoạt cho hàng hóa kinh doanh và nhu cầu cá nhân tại TP.HCM.'
+                : 'Flexible mini storage for business inventory and personal needs in Ho Chi Minh City.'}
             </p>
           </div>
 
@@ -81,7 +87,10 @@ export async function SiteFooter({
             {!phone && !email && !zaloUrl && !facebookUrl ? <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link> : null}
           </div>
         </div>
-        <p className="pt-6 text-xs text-white/45">© {new Date().getFullYear()} NupsBox. All rights reserved.</p>
+        <div className="flex flex-col gap-2 pt-6 text-xs text-white/42 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} NupsBox. All rights reserved.</p>
+          <p>{vi ? 'Thông tin giá và tình trạng được xác nhận tại thời điểm liên hệ.' : 'Pricing and availability are confirmed at enquiry time.'}</p>
+        </div>
       </Container>
     </footer>
   );

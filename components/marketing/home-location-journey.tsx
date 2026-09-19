@@ -1,5 +1,6 @@
-import {Boxes, MapPin, MessageCircleMore} from 'lucide-react';
-import {LocationCard} from '@/components/locations/location-card';
+import {ArrowRight, MapPin} from 'lucide-react';
+import {Link} from '@/i18n/navigation';
+import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import type {PublicLocation} from '@/features/catalog/types';
@@ -12,89 +13,78 @@ export function HomeLocationJourney({
   locale: 'vi' | 'en';
 }) {
   const vi = locale === 'vi';
-
   const steps = vi
     ? [
-        ['01', 'Tìm lựa chọn phù hợp', 'Dùng Finder, xem loại kho hoặc bắt đầu từ nhu cầu của bạn.'],
-        ['02', 'Nhận báo giá hoặc đề xuất lịch xem', 'Chọn bước tiếp theo mà không phải điền nhiều hơn mức cần thiết.'],
-        ['03', 'NupsBox xác nhận', 'Giá, tình trạng và lịch xem được xác nhận trước khi bạn quyết định thuê.']
+        ['01', 'Chọn nhu cầu', 'Dùng Finder hoặc xem loại kho phù hợp.'],
+        ['02', 'Gửi yêu cầu', 'Chọn báo giá hoặc đề xuất lịch xem kho.'],
+        ['03', 'Nhận xác nhận', 'NupsBox xác nhận giá, tình trạng và bước tiếp theo.']
       ]
     : [
-        ['01', 'Find a suitable option', 'Use Finder, browse unit types or start from your specific need.'],
-        ['02', 'Request a quote or viewing', 'Choose the next step without unnecessary form friction.'],
-        ['03', 'NupsBox confirms', 'Pricing, status and viewing time are confirmed before you decide to rent.']
+        ['01', 'Choose your need', 'Use Finder or browse suitable unit types.'],
+        ['02', 'Send your request', 'Request pricing or suggest a viewing time.'],
+        ['03', 'Get confirmation', 'NupsBox confirms pricing, availability and the next step.']
       ];
-
-  const proof = vi
-    ? [
-        [MapPin, 'Địa điểm rõ ràng', 'Chỉ hiển thị thông tin cơ sở đã được công bố.'],
-        [Boxes, 'Kích thước cụ thể', 'Diện tích và gợi ý sử dụng theo dữ liệu đang có.'],
-        [MessageCircleMore, 'Xác nhận trước khi thuê', 'Giá và tình trạng được xác nhận qua kênh tư vấn.']
-      ] as const
-    : [
-        [MapPin, 'Clear location data', 'Only published facility information is displayed.'],
-        [Boxes, 'Specific unit sizes', 'Area and use guidance reflect the data currently available.'],
-        [MessageCircleMore, 'Confirm before renting', 'Pricing and status are reconfirmed through the enquiry channel.']
-      ] as const;
 
   return (
     <Section tone="soft" size="compact">
-      <div className="grid gap-7 lg:grid-cols-[.88fr_1.12fr] lg:items-start">
+      <div className="grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-start">
         <div>
           <SectionHeading
-            eyebrow={vi ? 'TỪ NHU CẦU ĐẾN BƯỚC TIẾP THEO' : 'FROM NEED TO NEXT STEP'}
-            title={vi ? 'Ba bước rõ ràng, không tạo cảm giác đặt chỗ tức thời.' : 'Three clear steps without pretending it is an instant reservation.'}
+            eyebrow={vi ? 'ĐỊA ĐIỂM & TRẢI NGHIỆM THUÊ' : 'LOCATION & RENTAL JOURNEY'}
+            title={vi ? 'Biết nơi bạn sẽ đến. Biết bước tiếp theo là gì.' : 'Know where you are going. Know what happens next.'}
             description={vi
-              ? 'Bạn hiểu loại kho trước, sau đó mới chuyển sang báo giá hoặc xem kho.'
-              : 'Understand the storage option first, then move into quote or viewing intent.'}
+              ? 'Thông tin cơ sở và quy trình thuê được trình bày gọn để bạn dễ quyết định.'
+              : 'Facility information and the rental journey are kept simple so you can decide with confidence.'}
           />
 
           {location ? (
-            <div className="mt-6">
-              <LocationCard location={location} locale={locale} />
+            <div className="mt-7 border-l-2 border-[var(--nupsbox-yellow)] pl-5 sm:pl-6">
+              <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">
+                <MapPin size={15} aria-hidden="true" />
+                {vi ? 'CƠ SỞ ĐANG HIỂN THỊ' : 'FEATURED FACILITY'}
+              </p>
+              <h3 className="mt-3 text-2xl font-extrabold tracking-[-0.03em] text-[var(--nupsbox-navy)]">{location.name}</h3>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--nupsbox-slate)]">{location.address}</p>
+              <p className="mt-3 text-sm font-semibold text-[var(--nupsbox-blue)]">
+                {location.unitTypes.length} {vi ? 'loại kho đang hiển thị' : 'unit types listed'}
+              </p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-4">
+                <ConversionCta
+                  locale={locale}
+                  intent="viewing"
+                  context={{locationSlug: location.slug, locationId: location.id}}
+                  placement="home-location-journey"
+                >
+                  {vi ? 'Đề xuất lịch xem kho' : 'Request a viewing'}
+                </ConversionCta>
+                <Link
+                  href={{pathname: '/dia-diem/[slug]', params: {slug: location.slug}}}
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[var(--nupsbox-blue)] hover:underline"
+                >
+                  {vi ? 'Xem chi tiết cơ sở' : 'View location details'}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              </div>
             </div>
           ) : (
-            <div className="mt-6 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 text-sm leading-6 text-[var(--nupsbox-slate)]" role="status">
-              <p className="font-extrabold text-[var(--nupsbox-navy)]">
-                {vi ? 'Thông tin cơ sở đang được cập nhật.' : 'Facility information is being updated.'}
-              </p>
-              <p className="mt-1">
-                {vi
-                  ? 'Địa chỉ chỉ xuất hiện sau khi được NupsBox xác nhận và công bố.'
-                  : 'An address appears only after NupsBox has verified and published it.'}
-              </p>
-            </div>
+            <p className="mt-7 max-w-xl border-l-2 border-[var(--nupsbox-border)] pl-5 text-sm leading-6 text-[var(--nupsbox-slate)]">
+              {vi ? 'Thông tin cơ sở đang được cập nhật.' : 'Facility information is being updated.'}
+            </p>
           )}
         </div>
 
-        <div>
-          <ol className="grid gap-3">
-            {steps.map(([number, title, body]) => (
-              <li
-                key={number}
-                className="grid grid-cols-[auto_1fr] gap-4 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-4 sm:p-5"
-              >
-                <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-navy)] text-sm font-extrabold text-[var(--nupsbox-yellow)]">
-                  {number}
-                </span>
-                <div>
-                  <h3 className="font-extrabold text-[var(--nupsbox-navy)]">{title}</h3>
-                  <p className="mt-1.5 text-sm leading-6 text-[var(--nupsbox-slate)]">{body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            {proof.map(([Icon, title, body]) => (
-              <article key={title} className="rounded-2xl bg-[var(--nupsbox-navy)] p-4 text-white">
-                <Icon size={19} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />
-                <h3 className="mt-3 text-sm font-extrabold">{title}</h3>
-                <p className="mt-1.5 text-xs leading-5 text-white/64">{body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
+        <ol className="border-t border-[var(--nupsbox-border)]">
+          {steps.map(([number, title, body]) => (
+            <li key={number} className="grid grid-cols-[3rem_1fr] gap-4 border-b border-[var(--nupsbox-border)] py-5 sm:py-6">
+              <span className="text-sm font-extrabold text-[var(--nupsbox-blue)]">{number}</span>
+              <div>
+                <h3 className="font-extrabold text-[var(--nupsbox-navy)]">{title}</h3>
+                <p className="mt-1.5 text-sm leading-6 text-[var(--nupsbox-slate)]">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </Section>
   );

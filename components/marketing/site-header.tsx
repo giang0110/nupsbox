@@ -18,10 +18,10 @@ export async function SiteHeader() {
   const locale = rawLocale === 'en' ? 'en' : 'vi';
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/8 bg-[rgba(7,26,56,0.95)] text-white shadow-[0_10px_28px_rgba(7,26,56,0.1)] backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/8 bg-[rgba(7,26,56,0.92)] text-white backdrop-blur-xl">
       <Container className="flex min-h-16 items-center justify-between gap-3">
         <Link href="/" className="group flex min-h-11 shrink-0 items-center gap-2.5" aria-label={locale === 'vi' ? 'Trang chủ NupsBox' : 'NupsBox home'}>
-          <span className="grid size-9 place-items-center rounded-[0.7rem] bg-[var(--nupsbox-yellow)] text-sm font-black tracking-[-0.08em] text-[var(--nupsbox-navy)] shadow-[0_7px_24px_rgba(255,211,26,0.16)]">
+          <span className="grid size-9 place-items-center rounded-[0.7rem] bg-[var(--nupsbox-yellow)] text-sm font-black tracking-[-0.08em] text-[var(--nupsbox-navy)]">
             NB
           </span>
           <span className="text-[1.05rem] font-extrabold tracking-[-0.035em]">NUPSBOX</span>
@@ -32,7 +32,7 @@ export async function SiteHeader() {
             <Link
               key={key}
               href={href}
-              className="inline-flex min-h-11 items-center rounded-full px-3 py-2 text-[0.86rem] font-semibold text-white/72 transition hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+              className="inline-flex min-h-11 items-center border-b border-transparent px-3 py-2 text-[0.86rem] font-semibold text-white/68 transition hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             >
               {t(key)}
             </Link>
