@@ -83,12 +83,14 @@ export async function bulkUpdateMediaAssets(formData: FormData) {
   );
 
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase
+  const {data, error} = await supabase
     .from('media_assets')
     .update(command.changes)
-    .in('id', command.ids);
+    .in('id', command.ids)
+    .select('id');
 
   if (error) throw error;
+  if (!data || data.length !== command.ids.length) throw new Error('media_bulk_update_noop');
   revalidateMedia();
 }
 
@@ -100,8 +102,9 @@ export async function updateMediaMetadata(formData: FormData) {
     inputFromFormData(formData)
   );
   const supabase = await createSupabaseServerClient();
-  const {error} = await supabase.from('media_assets').update(changes).eq('id', id);
+  const {data, error} = await supabase.from('media_assets').update(changes).eq('id', id).select('id').single();
   if (error) throw error;
+  if (!data) throw new Error('media_metadata_update_noop');
   revalidateMedia();
 }
 
