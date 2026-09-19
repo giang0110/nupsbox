@@ -3,6 +3,7 @@ import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {AdminEmptyState, AdminPanel, AdminStatCard, AdminStatusBadge} from '@/components/admin/admin-primitives';
 import {Container} from '@/components/ui/container';
+import {getBlogPublicationState} from '@/features/admin/blog';
 import {getAdminSeoSnapshot} from '@/features/admin/seo';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
@@ -11,8 +12,11 @@ export default async function AdminSeoPage() {
   const session = await requireAdminUser();
   if (!can(session.role, 'content:read')) redirect('/admin');
 
-  const snapshot = await getAdminSeoSnapshot();
-  const publishedBlogs = snapshot.blogs.filter(blog => blog.status === 'published');
+  const now = new Date();
+  const snapshot = await getAdminSeoSnapshot(now);
+  const publishedBlogs = snapshot.blogs.filter(
+    blog => getBlogPublicationState(blog, now) === 'published'
+  );
 
   return (
     <main className="py-8 sm:py-10">
@@ -36,7 +40,12 @@ export default async function AdminSeoPage() {
           <AdminStatCard label="URL indexable" value={snapshot.indexableUrls} />
           <AdminStatCard label="Location pages" value={snapshot.activeLocations} href="/admin/catalog/locations" />
           <AdminStatCard label="Unit pages" value={snapshot.activeUnitTypes} href="/admin/catalog/unit-types" />
-          <AdminStatCard label="Blog articles" value={snapshot.publishedBlogs} href="/admin/content/blog" />
+          <AdminStatCard
+            label="Blog articles"
+            value={snapshot.publishedBlogs}
+            detail={snapshot.scheduledBlogs ? snapshot.scheduledBlogs + ' bài đã lên lịch' : undefined}
+            href="/admin/content/blog"
+          />
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[.85fr_1.15fr]">
@@ -65,7 +74,7 @@ export default async function AdminSeoPage() {
                 </a>
               </div>
               <p className="text-xs leading-5 text-[var(--nupsbox-slate)]">
-                Sitemap tự lấy toàn bộ location active, unit active và blog published; không còn giới hạn ở một featured location.
+                Sitemap chỉ lấy location active, unit active và blog đã đến thời điểm xuất bản; bài hẹn giờ chưa vào sitemap trước giờ.
               </p>
             </div>
           </AdminPanel>

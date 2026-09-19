@@ -1,6 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {
+  getBlogPublicationState,
+  hcmDateTimeLocalToIso,
   prepareBlogCreate,
+  prepareBlogSchedule,
+  prepareBlogScheduleCancellation,
   prepareBlogStatusChange,
   prepareBlogUpdate
 } from '@/features/admin/blog';
@@ -78,6 +82,89 @@ describe('bilingual blog CMS contracts', () => {
         now
       )
     ).toThrow('blog_not_publishable');
+  });
+
+  it('converts datetime-local from Ho Chi Minh City to UTC', () => {
+    expect(hcmDateTimeLocalToIso('2026-09-20T09:30')).toBe('2026-09-20T02:30:00.000Z');
+    expect(() => hcmDateTimeLocalToIso('2026-02-31T09:30')).toThrow('invalid_schedule_time');
+  });
+
+  it('schedules a publish time in the future and allows cancellation before it goes live', () => {
+    const scheduledAt = '2026-09-20T02:30:00.000Z';
+
+    expect(
+      prepareBlogSchedule(
+        'staff',
+        blogId,
+        'draft',
+        validBlogInput,
+        scheduledAt,
+        '2026-09-19T05:00:00.000Z'
+      )
+    ).toEqual({
+      id: blogId,
+      changes: {
+        status: 'published',
+        published_at: scheduledAt
+      }
+    });
+
+    expect(
+      getBlogPublicationState(
+        {status: 'published', publishedAt: scheduledAt},
+        new Date('2026-09-19T05:00:00.000Z')
+      )
+    ).toBe('scheduled');
+
+    expect(
+      prepareBlogScheduleCancellation(
+        'staff',
+        blogId,
+        'published',
+        scheduledAt,
+        '2026-09-19T05:00:00.000Z'
+      )
+    ).toEqual({
+      id: blogId,
+      changes: {
+        status: 'draft',
+        published_at: null
+      }
+    });
+  });
+
+  it('rejects past schedules, incomplete content and cancellation after publication time', () => {
+    expect(() =>
+      prepareBlogSchedule(
+        'staff',
+        blogId,
+        'draft',
+        validBlogInput,
+        '2026-09-18T02:30:00.000Z',
+        '2026-09-19T05:00:00.000Z'
+      )
+    ).toThrow('schedule_must_be_future');
+
+    expect(() =>
+      prepareBlogSchedule(
+        'staff',
+        blogId,
+        'draft',
+        {...validBlogInput, bodyEn: {}},
+        '2026-09-20T02:30:00.000Z',
+        '2026-09-19T05:00:00.000Z'
+      )
+    ).toThrow('blog_not_publishable');
+
+    expect(() =>
+      prepareBlogScheduleCancellation(
+        'staff',
+        blogId,
+        'published',
+        '2026-09-19T04:00:00.000Z',
+        '2026-09-19T05:00:00.000Z'
+      )
+    ).toThrow('blog_not_scheduled');
   });
 
   it('enforces draft to published to archived lifecycle and preserves first publication time', () => {
