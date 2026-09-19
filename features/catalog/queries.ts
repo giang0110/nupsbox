@@ -3,6 +3,7 @@ import 'server-only';
 import type {AppLocale} from '@/i18n/routing';
 import type {PublicLocation, PublicUnitType} from './types';
 import {
+  readActiveLocationSlugs,
   readActiveUnitRowBySlug,
   readActiveUnitRows,
   readFeaturedLocationRow,
@@ -49,6 +50,10 @@ async function hydrateLocation(row: LocationRow, locale: AppLocale): Promise<Pub
     openingHours: (row.opening_hours ?? {}) as Record<string, unknown>,
     unitTypes: unitRows.map((unit) => localizeUnit(unit, pricingByUnit.get(unit.id), locale))
   };
+}
+
+export async function getActiveLocationSlugs(): Promise<string[]> {
+  return readActiveLocationSlugs();
 }
 
 export async function getFeaturedLocation(locale: AppLocale): Promise<PublicLocation | null> {

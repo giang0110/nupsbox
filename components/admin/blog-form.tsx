@@ -55,6 +55,26 @@ export function BlogForm({
             label={statusLabel}
             tone={blog?.status === 'published' ? 'success' : 'neutral'}
           />
+          {blog?.status === 'published' ? (
+            <>
+              <a
+                href={'/blog/' + blog.slug}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
+              >
+                Xem bài VI ↗
+              </a>
+              <a
+                href={'/en/blog/' + blog.slug}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
+              >
+                View EN ↗
+              </a>
+            </>
+          ) : null}
           {blog?.sourceUrl ? (
             <a
               href={blog.sourceUrl}
