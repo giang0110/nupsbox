@@ -13,6 +13,7 @@ describe('admin navigation', () => {
     ]);
     expect(groups.flatMap((group) => group.items.map((item) => item.href))).toEqual([
       '/admin',
+      '/admin/action-center',
       '/admin/leads',
       '/admin/quality',
       '/admin/analytics',
@@ -36,6 +37,7 @@ describe('admin navigation', () => {
 
     expect(adminHrefs).toContain('/admin/audit');
     expect(staffHrefs).not.toContain('/admin/audit');
+    expect(staffHrefs).toContain('/admin/action-center');
     expect(staffHrefs).toContain('/admin/quality');
     expect(staffHrefs).toContain('/admin/analytics');
     expect(staffHrefs).toContain('/admin/seo');

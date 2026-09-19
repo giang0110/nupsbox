@@ -1,4 +1,4 @@
-const configuredSiteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nupsbox.vercel.app';
+const configuredSiteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nupsbox.vn';
 
 export const SITE_ORIGIN = new URL(configuredSiteOrigin).origin;
 

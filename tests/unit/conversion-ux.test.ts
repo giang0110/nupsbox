@@ -10,8 +10,10 @@ describe('compact conversion UX', () => {
   it('keeps the mobile quick-action bar on one row when contact is available', () => {
     const bar = source('components/marketing/mobile-action-bar.tsx');
 
-    expect(bar).toContain("contactAction ? 'grid-cols-3' : 'grid-cols-2'");
-    expect(bar).not.toContain('col-span-2');
+    expect(bar).toContain('grid grid-cols-2');
+    expect(bar).toContain('hasDirectContact');
+    expect(bar).toContain('mobile-contact-sheet');
+    expect(bar).not.toContain('grid-cols-3');
     expect(bar).toContain("'Hành động nhanh'");
     expect(bar).toContain("'Quick actions'");
   });

@@ -15,7 +15,10 @@ export type AdminNavigationGroup = {
 const navigation: AdminNavigationGroup[] = [
   {
     label: 'Tổng quan',
-    items: [{href: '/admin', label: 'Dashboard', action: 'dashboard:read'}]
+    items: [
+      {href: '/admin', label: 'Dashboard', action: 'dashboard:read'},
+      {href: '/admin/action-center', label: 'Việc cần làm', action: 'dashboard:read'}
+    ]
   },
   {
     label: 'CRM',

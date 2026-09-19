@@ -6,7 +6,8 @@ describe('compact homepage composition', () => {
   it('uses seven compact primary blocks including the CMS warehouse gallery', () => {
     const source = readFileSync(join(process.cwd(), 'app/[locale]/page.tsx'), 'utf8');
 
-    expect(source).toContain('<Hero locale={locale} location={location} units={featuredUnits} />');
+    expect(source).toContain('<Hero');
+    expect(source).toContain('hasGallery={galleryItems.length > 0}');
     expect(source).toContain('<HomeChoiceHub');
     expect(source).toContain('<HomeProofBento');
     expect(source).toContain('<WarehouseGallery');

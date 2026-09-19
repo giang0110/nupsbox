@@ -10,11 +10,13 @@ import {getFacilityMedia} from '@/features/content/facility-media';
 export function Hero({
   locale,
   location,
-  units
+  units,
+  hasGallery = false
 }: {
   locale: 'vi' | 'en';
   location: PublicLocation | null;
   units: PublicUnitType[];
+  hasGallery?: boolean;
 }) {
   const vi = locale === 'vi';
   const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2)) : null;
@@ -51,12 +53,21 @@ export function Hero({
               {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
               <ArrowRight size={18} aria-hidden="true" className="transition group-hover:translate-x-0.5" />
             </ConversionCta>
-            <Link
-              href="/bang-gia"
-              className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/18 hover:bg-white/10'})}
-            >
-              {vi ? 'Xem bảng giá' : 'View pricing'}
-            </Link>
+            {hasGallery ? (
+              <a
+                href="#warehouse-gallery"
+                className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/18 hover:bg-white/10'})}
+              >
+                {vi ? 'Xem kho thực tế' : 'See the real space'}
+              </a>
+            ) : (
+              <Link
+                href="/bang-gia"
+                className={buttonClassName({variant: 'ghost', size: 'lg', className: 'text-white ring-1 ring-white/18 hover:bg-white/10'})}
+              >
+                {vi ? 'Xem bảng giá' : 'View pricing'}
+              </Link>
+            )}
           </div>
 
           <div className="home-hero-trust mt-6 flex max-w-[39rem] flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/70">
@@ -76,14 +87,14 @@ export function Hero({
         </div>
 
         {location && facilityMedia ? (
-          <div className="home-hero-image relative min-h-[360px] overflow-hidden rounded-[1.65rem] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,.2)] sm:min-h-[420px] lg:h-[clamp(430px,36vw,500px)] lg:min-h-0">
+          <div className="home-hero-image group relative min-h-[360px] overflow-hidden rounded-[1.8rem] border border-white/12 shadow-[0_30px_80px_rgba(0,0,0,.28)] sm:min-h-[420px] lg:h-[clamp(430px,36vw,500px)] lg:min-h-0">
             <Image
               src={facilityMedia.imageUrl}
               alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 44vw"
-              className="object-cover"
+              className="object-cover transition duration-700 ease-out group-hover:scale-[1.025]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.82)] via-[rgba(7,26,56,.05)] to-transparent" />
             <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/12 bg-[rgba(7,26,56,.76)] p-4 backdrop-blur-md sm:inset-x-5 sm:bottom-5">
