@@ -10,7 +10,7 @@ describe('SEO route manifest', () => {
 
   it('uses NEXT_PUBLIC_SITE_URL as the canonical origin and pairs VI/EN URLs', () => {
     const expectedOrigin = new URL(
-      process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nupsbox.vercel.app'
+      process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nupsbox.vn'
     ).origin;
     expect(SITE_ORIGIN).toBe(expectedOrigin);
     expect(routes.find((route) => route.key === 'home')).toMatchObject({vi: '/', en: '/en'});
