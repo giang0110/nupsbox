@@ -7,12 +7,14 @@ describe('admin navigation', () => {
     expect(groups.map((group) => group.label)).toEqual([
       'Tổng quan',
       'CRM',
+      'Vận hành',
       'Catalog',
       'Content'
     ]);
     expect(groups.flatMap((group) => group.items.map((item) => item.href))).toEqual([
       '/admin',
       '/admin/leads',
+      '/admin/quality',
       '/admin/catalog',
       '/admin/catalog/locations',
       '/admin/catalog/unit-types',
