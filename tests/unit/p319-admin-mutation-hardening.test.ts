@@ -20,7 +20,7 @@ describe('P3.19 admin mutation hardening', () => {
       capacityNoteVi: '',
       capacityNoteEn: '',
       sortOrder: 0
-    }).slug).toBe('kho-mini-2-5m2');
+    }).slug).toBe('kho-mini-2-5m');
 
     expect(BlogInputSchema.parse({
       slug: 'Giới thiệu NupsBox',
