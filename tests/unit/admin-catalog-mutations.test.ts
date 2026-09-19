@@ -64,10 +64,22 @@ const validPricingInput = {
 };
 
 describe('catalog CMS mutation contracts', () => {
-  it('rejects invalid location slugs', () => {
-    expect(() =>
+  it('normalizes human-friendly location slugs and rejects empty results', () => {
+    expect(
       LocationInputSchema.parse({
         slug: 'Bad Slug',
+        nameVi: 'Kho Tân Phú',
+        nameEn: 'Tan Phu Storage',
+        addressVi: '1 Đường A',
+        addressEn: '1 A Street',
+        district: 'Tân Phú',
+        city: 'Ho Chi Minh City'
+      }).slug
+    ).toBe('bad-slug');
+
+    expect(() =>
+      LocationInputSchema.parse({
+        slug: '---',
         nameVi: 'Kho Tân Phú',
         nameEn: 'Tan Phu Storage',
         addressVi: '1 Đường A',

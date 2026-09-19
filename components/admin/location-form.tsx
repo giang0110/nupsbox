@@ -64,7 +64,21 @@ export function LocationForm({location, canMutate, canPublish}: Props) {
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-semibold">
               Slug
-              <input className={inputClass} name="slug" required disabled={!canMutate || slugLocked} defaultValue={location?.slug ?? ''} placeholder="tan-phu" />
+              <input
+                className={inputClass}
+                name="slug"
+                required
+                disabled={!canMutate || slugLocked}
+                defaultValue={location?.slug ?? ''}
+                placeholder="tan-phu"
+                autoCapitalize="none"
+                spellCheck={false}
+              />
+              {!slugLocked ? (
+                <span className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
+                  Có thể nhập “NupsBox Tân Phú”; hệ thống sẽ tự chuẩn hoá thành “nupsbox-tan-phu”.
+                </span>
+              ) : null}
             </label>
             <label className="text-sm font-semibold">
               Quận / huyện

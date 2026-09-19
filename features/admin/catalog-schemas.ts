@@ -2,6 +2,19 @@ import {z} from 'zod';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+export function normalizeCatalogSlug(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 const blankToNullString = z.preprocess(
   value => (typeof value === 'string' && value.trim() === '' ? null : value),
   z.string().trim().nullable().optional()
@@ -19,7 +32,10 @@ const blankToNullableNumber = (schema: z.ZodNumber) =>
 
 export const LocationInputSchema = z
   .object({
-    slug: z.string().trim().min(1).regex(slugPattern),
+    slug: z.preprocess(
+      normalizeCatalogSlug,
+      z.string().trim().min(1).regex(slugPattern)
+    ),
     nameVi: z.string().trim().min(1),
     nameEn: z.string().trim().min(1),
     addressVi: z.string().trim().min(1),
