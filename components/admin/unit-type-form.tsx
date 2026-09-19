@@ -57,7 +57,20 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-semibold">
               Slug
-              <input className={inputClass} name="slug" required disabled={!canMutate || slugLocked} defaultValue={unit?.slug ?? ''} />
+              <input
+                className={inputClass}
+                name="slug"
+                required
+                disabled={!canMutate || slugLocked}
+                defaultValue={unit?.slug ?? ''}
+                autoCapitalize="none"
+                spellCheck={false}
+              />
+              {!slugLocked ? (
+                <span className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
+                  Có thể nhập “Kho Mini 2.5m²”; hệ thống sẽ tự chuẩn hoá thành slug URL-safe.
+                </span>
+              ) : null}
             </label>
             <label className="text-sm font-semibold">
               Diện tích m²
