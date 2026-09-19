@@ -103,12 +103,16 @@ export function Hero({
                 <Boxes size={22} aria-hidden="true" />
               </span>
               <h2 className="mt-5 max-w-md text-2xl font-extrabold tracking-[-0.03em]">
-                {vi ? 'Không gian kho được cập nhật theo từng cơ sở.' : 'Storage information is updated by facility.'}
+                {location
+                  ? location.name
+                  : (vi ? 'Không gian kho được cập nhật theo từng cơ sở.' : 'Storage information is updated by facility.')}
               </h2>
               <p className="mt-3 max-w-md text-sm leading-6 text-white/60">
-                {vi
-                  ? 'Bạn vẫn có thể dùng công cụ tìm kho để chọn diện tích phù hợp và gửi nhu cầu.'
-                  : 'You can still use the storage finder to choose a suitable size and send your requirements.'}
+                {location
+                  ? location.address
+                  : (vi
+                      ? 'Bạn vẫn có thể dùng công cụ tìm kho để chọn diện tích phù hợp và gửi nhu cầu.'
+                      : 'You can still use the storage finder to choose a suitable size and send your requirements.')}
               </p>
             </div>
           </div>
