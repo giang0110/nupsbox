@@ -42,6 +42,62 @@ export default async function AdminCatalogPage() {
     pricingLaunch.usableMappings === 0 ? 'Chưa có mapping giá usable' : null
   ].filter(Boolean) as string[];
 
+  const launchTasks = [
+    activeLocations.length === 0
+      ? {
+          id: 'location',
+          priority: 1,
+          title: 'Kích hoạt location đầu tiên',
+          detail: 'Catalog public cần ít nhất một cơ sở active trước khi cấu hình media và pricing.',
+          href: '/admin/catalog/locations',
+          cta: 'Mở Locations'
+        }
+      : null,
+    unitLaunch.active === 0
+      ? {
+          id: 'unit',
+          priority: 2,
+          title: unitLaunch.readyDrafts > 0 ? 'Publish Unit Type đã sẵn sàng' : 'Hoàn thiện Unit Type đầu tiên',
+          detail: unitLaunch.readyDrafts > 0
+            ? unitLaunch.readyDrafts + ' draft đã đủ nội dung cốt lõi và có thể được rà soát trước khi publish.'
+            : 'Tạo hoặc hoàn thiện draft bằng dữ liệu thực; không tự suy đoán diện tích, tên hoặc nội dung tư vấn.',
+          href: '/admin/catalog/unit-types#saved-units',
+          cta: 'Mở Unit Types'
+        }
+      : null,
+    activeLocations.length > 0 && unitLaunch.active > 0 && pricingLaunch.missingPairs > 0
+      ? {
+          id: 'pricing',
+          priority: 3,
+          title: 'Bổ sung mapping pricing còn thiếu',
+          detail: pricingLaunch.missingPairs + ' cặp active location × active unit chưa có mapping usable.',
+          href: '/admin/catalog/pricing',
+          cta: 'Mở Pricing'
+        }
+      : null,
+    activeLocations.length > 0 && (mediaLaunch.publicCount === 0 || mediaLaunch.issueCount > 0)
+      ? {
+          id: 'media',
+          priority: 4,
+          title: mediaLaunch.publicCount === 0 ? 'Bổ sung ảnh public cho cơ sở' : 'Rà soát media chưa đạt',
+          detail: mediaLaunch.publicCount === 0
+            ? 'Hiện chưa có ảnh public để làm gallery cho location.'
+            : mediaLaunch.issueCount + ' media item cần rà lại mapping, alt text hoặc trạng thái hiển thị.',
+          href: '/admin/content/media',
+          cta: 'Mở Media'
+        }
+      : null
+  ]
+    .filter(Boolean)
+    .sort((a, b) => (a?.priority ?? 99) - (b?.priority ?? 99)) as Array<{
+      id: string;
+      priority: number;
+      title: string;
+      detail: string;
+      href: string;
+      cta: string;
+    }>;
+
   return (
     <main className="py-8 sm:py-10">
       <Container className="grid gap-6">
@@ -197,6 +253,57 @@ export default async function AdminCatalogPage() {
               </div>
             </div>
           ) : null}
+        </AdminPanel>
+
+        <AdminPanel
+          title="Launch Task Queue"
+          description="Danh sách việc còn thiếu được sắp theo thứ tự ưu tiên từ dữ liệu thật. Hoàn tất từ trên xuống để giảm vòng lặp giữa các màn hình."
+          actions={
+            <AdminStatusBadge
+              label={launchTasks.length ? launchTasks.length + ' việc cần làm' : 'Sẵn sàng rà public'}
+              tone={launchTasks.length ? 'warning' : 'success'}
+            />
+          }
+        >
+          {launchTasks.length ? (
+            <div className="grid gap-3">
+              {launchTasks.map((task, index) => (
+                <div
+                  key={task.id}
+                  className="grid gap-4 rounded-xl border border-[var(--nupsbox-border)] bg-white p-4 md:grid-cols-[auto_1fr_auto] md:items-center"
+                >
+                  <div className="flex size-9 items-center justify-center rounded-full bg-[var(--nupsbox-navy)] text-sm font-black text-white">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-black text-[var(--nupsbox-navy)]">{task.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-[var(--nupsbox-slate)]">{task.detail}</p>
+                  </div>
+                  <Link
+                    href={task.href}
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-black text-[var(--nupsbox-blue)] transition hover:border-[var(--nupsbox-blue)]"
+                  >
+                    {task.cta} →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl bg-emerald-50 px-4 py-4">
+              <p className="text-sm font-black text-emerald-900">Core catalog đã đủ điều kiện để rà public.</p>
+              <p className="mt-1 text-xs leading-5 text-emerald-800">
+                Tiếp tục preview Bảng giá, Kho mini và từng Location trước khi bổ sung dữ liệu kinh doanh mới.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/bang-gia" target="_blank" className="inline-flex min-h-10 items-center rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white">
+                  Preview bảng giá ↗
+                </Link>
+                <Link href="/kho-mini" target="_blank" className="inline-flex min-h-10 items-center rounded-xl border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-900">
+                  Preview kho mini ↗
+                </Link>
+              </div>
+            </div>
+          )}
         </AdminPanel>
 
         <CatalogTables catalog={catalog} />
