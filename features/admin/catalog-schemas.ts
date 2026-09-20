@@ -17,10 +17,19 @@ export function normalizeCatalogSlug(value: unknown): unknown {
     .replace(/^-+|-+$/g, '');
 }
 
-const blankToNullString = z.preprocess(
+const blankToNullString = (max = 1000) => z.preprocess(
   value => (typeof value === 'string' && value.trim() === '' ? null : value),
-  z.string().trim().nullable().optional()
+  z.string().trim().max(max).nullable().optional()
 );
+
+const blankToNullHttpUrl = z.preprocess(
+  value => (typeof value === 'string' && value.trim() === '' ? null : value),
+  z.union([
+    z.string().trim().url().refine(value => /^https?:\/\//i.test(value), 'http_url_required'),
+    z.null(),
+    z.undefined()
+  ])
+).transform(value => value ?? null);
 
 const blankToNullableNumber = (schema: z.ZodNumber) =>
   z.preprocess(
@@ -38,16 +47,16 @@ export const LocationInputSchema = z
       normalizeCatalogSlug,
       z.string().trim().min(1).regex(slugPattern)
     ),
-    nameVi: z.string().trim().min(1),
-    nameEn: z.string().trim().min(1),
-    addressVi: z.string().trim().min(1),
-    addressEn: z.string().trim().min(1),
-    district: z.string().trim().min(1),
-    city: z.string().trim().min(1).default('Ho Chi Minh City'),
+    nameVi: z.string().trim().min(1).max(160),
+    nameEn: z.string().trim().min(1).max(160),
+    addressVi: z.string().trim().min(1).max(500),
+    addressEn: z.string().trim().min(1).max(500),
+    district: z.string().trim().min(1).max(120),
+    city: z.string().trim().min(1).max(120).default('Ho Chi Minh City'),
     latitude: blankToNullableNumber(z.number().min(-90).max(90)).optional(),
     longitude: blankToNullableNumber(z.number().min(-180).max(180)).optional(),
-    phone: blankToNullString,
-    zaloUrl: blankToNullString,
+    phone: blankToNullString(40),
+    zaloUrl: blankToNullHttpUrl,
     openingHours: z.record(z.string(), z.unknown()).default({}),
     isFeatured: z.boolean().default(false),
     sortOrder: z.coerce.number().int().default(0)
@@ -63,10 +72,10 @@ export const UnitTypeInputSchema = z
     nameVi: z.string().trim().min(1),
     nameEn: z.string().trim().min(1),
     areaM2: z.coerce.number().positive(),
-    recommendedForVi: blankToNullString,
-    recommendedForEn: blankToNullString,
-    capacityNoteVi: blankToNullString,
-    capacityNoteEn: blankToNullString,
+    recommendedForVi: blankToNullString(1200),
+    recommendedForEn: blankToNullString(1200),
+    capacityNoteVi: blankToNullString(1200),
+    capacityNoteEn: blankToNullString(1200),
     sortOrder: z.coerce.number().int().default(0)
   })
   .strict();
