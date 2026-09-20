@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ok: false, error: 'invalid_origin'}, {status: 403});
   }
 
+  const contentType = request.headers.get('content-type') ?? '';
+  if (!contentType.toLowerCase().startsWith('application/json')) {
+    return NextResponse.json({ok: false, error: 'unsupported_media_type'}, {status: 415});
+  }
+
   if (payloadTooLarge(request)) {
     return NextResponse.json({ok: false, error: 'payload_too_large'}, {status: 413});
   }
