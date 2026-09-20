@@ -49,10 +49,6 @@ export async function createUnitType(formData: FormData) {
   const {error} = await supabase.from('unit_types').insert(payload);
   throwUnitError(error);
   revalidateUnits();
-
-  if (active && String(formData.get('next') ?? '') === 'pricing') {
-    redirect('/admin/catalog/pricing?unit=' + id);
-  }
 }
 
 export async function updateUnitType(formData: FormData) {
@@ -103,4 +99,8 @@ export async function setUnitTypePublication(formData: FormData) {
   throwUnitError(error);
   if (!data) throw new Error('unit_type_publication_noop');
   revalidateUnits();
+
+  if (active && String(formData.get('next') ?? '') === 'pricing') {
+    redirect('/admin/catalog/pricing?unit=' + id);
+  }
 }
