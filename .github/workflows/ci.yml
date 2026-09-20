@@ -152,7 +152,7 @@ jobs:
       statuses: read
     env:
       PRODUCTION_URL: https://nupsbox.vercel.app
-      CANONICAL_ORIGIN: https://nupsbox.vn
+      CANONICAL_ORIGIN: https://nupsbox.vercel.app
       HEAD_SHA: ${{ github.sha }}
     steps:
       - name: Wait for Vercel production status when exact head is deployable
