@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -237,10 +240,10 @@ jobs:
       - name: Verify lead API rejects invalid input without creating a lead
         run: |
           invalid_json_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
-            -X POST -H 'content-type: application/json' --data '{' \
+            -X POST -H 'content-type: application/json' -H "origin: ${PRODUCTION_URL}" --data '{' \
             "${PRODUCTION_URL}/api/leads" || true)
           invalid_lead_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
-            -X POST -H 'content-type: application/json' --data '{}' \
+            -X POST -H 'content-type: application/json' -H "origin: ${PRODUCTION_URL}" --data '{}' \
             "${PRODUCTION_URL}/api/leads" || true)
           echo "invalid_json=${invalid_json_code} invalid_lead=${invalid_lead_code}"
           test "$invalid_json_code" = "400"
