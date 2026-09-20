@@ -6,6 +6,7 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {UnitCompare} from '@/components/units/unit-compare';
 import {FinalCta} from '@/components/marketing/final-cta';
+import {EmptyCatalogConversion} from '@/components/marketing/empty-catalog-conversion';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
@@ -42,16 +43,22 @@ export default async function StorageIndexPage({params}: {params: Promise<{local
       />
 
       <Section tone="soft">
-        <SectionHeading
-          eyebrow={vi ? 'CHỌN & SO SÁNH' : 'SELECT & COMPARE'}
-          title={vi ? 'Hiểu nhanh trước khi liên hệ.' : 'Understand the options before you enquire.'}
-          description={vi
-            ? 'Mỗi thẻ chỉ hiển thị dữ liệu đang có trong hệ thống. Bạn có thể chọn tối đa 3 loại kho để đặt cạnh nhau.'
-            : 'Each card shows only information currently available in the system. Select up to 3 unit types to compare side by side.'}
-        />
-        <div className="mt-8">
-          <UnitCompare units={units} locale={rawLocale} />
-        </div>
+        {units.length ? (
+          <>
+            <SectionHeading
+              eyebrow={vi ? 'CHỌN & SO SÁNH' : 'SELECT & COMPARE'}
+              title={vi ? 'Hiểu nhanh trước khi liên hệ.' : 'Understand the options before you enquire.'}
+              description={vi
+                ? 'Mỗi thẻ chỉ hiển thị dữ liệu đang có trong hệ thống. Bạn có thể chọn tối đa 3 loại kho để đặt cạnh nhau.'
+                : 'Each card shows only information currently available in the system. Select up to 3 unit types to compare side by side.'}
+            />
+            <div className="mt-8">
+              <UnitCompare units={units} locale={rawLocale} />
+            </div>
+          </>
+        ) : (
+          <EmptyCatalogConversion locale={rawLocale} context="units" />
+        )}
       </Section>
 
       <FinalCta locale={rawLocale} />
