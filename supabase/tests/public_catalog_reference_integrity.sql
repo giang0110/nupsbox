@@ -6,7 +6,7 @@ insert into public.locations (
   id, slug, name_vi, name_en, address_vi, address_en, district, city, status
 ) values
 ('91000000-0000-4000-8000-000000000001', 'p339-active', 'Active', 'Active', 'A', 'A', 'D', 'Ho Chi Minh City', 'active'),
-('91000000-0000-4000-8000-000000000002', 'p339-draft', 'Draft', 'Draft', 'B', 'B', 'D', 'Ho Chi Minh City', 'draft');
+('91000000-0000-4000-8000-000000000002', 'p339-draft', 'Draft', 'Draft', 'B', 'B', 'D', 'Ho Chi Minh City', 'inactive');
 
 insert into public.unit_types (
   id, slug, name_vi, name_en, area_m2, active
