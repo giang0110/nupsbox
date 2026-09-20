@@ -1,6 +1,7 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import {ChevronDown, MapPin, Pencil, Ruler} from 'lucide-react';
-import {updateMediaMetadata} from '@/app/admin/content/media/actions';
+import {moveMediaToFront, promoteMediaHero, updateMediaMetadata} from '@/app/admin/content/media/actions';
 import {MediaDeleteForm} from '@/components/admin/media-delete-form';
 import {
   AdminFieldGroup,
@@ -15,6 +16,8 @@ type Props = {
   canDelete: boolean;
   locationOptions: Option[];
   unitOptions: Option[];
+  locationSlugById?: Record<string, string>;
+  unitSlugById?: Record<string, string>;
 };
 
 const inputClass =
@@ -25,10 +28,15 @@ export function MediaMetadataForm({
   canEdit,
   canDelete,
   locationOptions,
-  unitOptions
+  unitOptions,
+  locationSlugById = {},
+  unitSlugById = {}
 }: Props) {
   const locationLabel = locationOptions.find(option => option.id === media.locationId)?.label ?? null;
   const unitLabel = unitOptions.find(option => option.id === media.unitTypeId)?.label ?? null;
+  const locationSlug = media.locationId ? locationSlugById[media.locationId] : undefined;
+  const unitSlug = media.unitTypeId ? unitSlugById[media.unitTypeId] : undefined;
+  const publicIssue = media.isPublic && (!media.altVi.trim() || !media.altEn.trim() || !media.locationId);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-[var(--nupsbox-border)] bg-white shadow-sm">
@@ -66,6 +74,12 @@ export function MediaMetadataForm({
           {media.storagePath}
         </p>
 
+        {publicIssue ? (
+          <p role="status" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold leading-5 text-amber-800">
+            Ảnh đang public nhưng metadata chưa đủ tốt: cần alt VI/EN và location mapping.
+          </p>
+        ) : null}
+
         <div className="mt-3 grid gap-1.5 text-xs text-[var(--nupsbox-slate)]">
           <p className="flex min-w-0 items-center gap-2">
             <MapPin size={14} className="shrink-0" aria-hidden="true" />
@@ -75,6 +89,46 @@ export function MediaMetadataForm({
             <Ruler size={14} className="shrink-0" aria-hidden="true" />
             <span className="truncate">{unitLabel ?? 'Chưa gắn loại kho'}</span>
           </p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--nupsbox-border)] pt-4">
+          {canEdit && media.locationId ? (
+            <form action={moveMediaToFront}>
+              <input type="hidden" name="id" value={media.id} />
+              <button className="inline-flex min-h-10 items-center rounded-xl border border-[var(--nupsbox-border)] px-3 text-xs font-black text-[var(--nupsbox-navy)]">
+                Đưa lên đầu gallery
+              </button>
+            </form>
+          ) : null}
+          {canEdit && media.isPublic && media.locationId && media.category !== 'hero' ? (
+            <form action={promoteMediaHero}>
+              <input type="hidden" name="id" value={media.id} />
+              <button className="inline-flex min-h-10 items-center rounded-xl bg-[var(--nupsbox-navy)] px-3 text-xs font-black text-white">
+                Ưu tiên làm hero
+              </button>
+            </form>
+          ) : null}
+          {media.category === 'hero' ? (
+            <AdminStatusBadge label="Hero hiện tại" tone="success" />
+          ) : null}
+          {locationSlug ? (
+            <Link
+              href={'/dia-diem/' + locationSlug}
+              target="_blank"
+              className="inline-flex min-h-10 items-center rounded-xl border border-[var(--nupsbox-border)] px-3 text-xs font-black text-[var(--nupsbox-blue)]"
+            >
+              Preview location ↗
+            </Link>
+          ) : null}
+          {unitSlug ? (
+            <Link
+              href={'/kho-mini/' + unitSlug}
+              target="_blank"
+              className="inline-flex min-h-10 items-center rounded-xl border border-[var(--nupsbox-border)] px-3 text-xs font-black text-[var(--nupsbox-blue)]"
+            >
+              Preview unit ↗
+            </Link>
+          ) : null}
         </div>
 
         <details className="group mt-4 border-t border-[var(--nupsbox-border)] pt-3">
