@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {ChevronDown, MapPin, Pencil, Ruler} from 'lucide-react';
-import {promoteMediaHero, updateMediaMetadata} from '@/app/admin/content/media/actions';
+import {moveMediaToFront, promoteMediaHero, updateMediaMetadata} from '@/app/admin/content/media/actions';
 import {MediaDeleteForm} from '@/components/admin/media-delete-form';
 import {
   AdminFieldGroup,
@@ -92,6 +92,14 @@ export function MediaMetadataForm({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--nupsbox-border)] pt-4">
+          {canEdit && media.locationId ? (
+            <form action={moveMediaToFront}>
+              <input type="hidden" name="id" value={media.id} />
+              <button className="inline-flex min-h-10 items-center rounded-xl border border-[var(--nupsbox-border)] px-3 text-xs font-black text-[var(--nupsbox-navy)]">
+                Đưa lên đầu gallery
+              </button>
+            </form>
+          ) : null}
           {canEdit && media.isPublic && media.locationId && media.category !== 'hero' ? (
             <form action={promoteMediaHero}>
               <input type="hidden" name="id" value={media.id} />
