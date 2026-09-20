@@ -12,19 +12,8 @@ import {
   normalizeAnalyticsDays,
   type AdminAnalyticsBreakdownItem
 } from '@/features/admin/analytics';
-import type {OperationalLeadStatus} from '@/features/admin/leads';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
-
-const statusLabels: Record<OperationalLeadStatus, string> = {
-  new: 'Mới',
-  contacted: 'Đã liên hệ',
-  qualified: 'Đã xác nhận nhu cầu',
-  viewing: 'Đang xem kho',
-  negotiating: 'Đang thương lượng',
-  won: 'Đã thuê',
-  lost: 'Không chuyển đổi'
-};
 
 const needLabels: Record<string, string> = {
   shop_online: 'Shop online',
