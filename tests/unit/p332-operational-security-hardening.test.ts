@@ -7,13 +7,14 @@ function source(path: string) {
 }
 
 describe('P3.32 operational security hardening', () => {
-  it('adds baseline security response headers without a stale image origin', () => {
+  it('adds baseline security response headers with only approved image origins', () => {
     const config = source('next.config.ts');
     expect(config).toContain("'X-Content-Type-Options'");
     expect(config).toContain("'X-Frame-Options'");
     expect(config).toContain("'Strict-Transport-Security'");
     expect(config).toContain("'Content-Security-Policy'");
-    expect(config).not.toContain('siaodieqxzlarnvfppox.supabase.co');
+    expect(config).toContain('siaodieqxzlarnvfppox.supabase.co');
+    expect(config).toContain('/storage/v1/object/public/onboarding-photos/**');
   });
 
   it('rejects cross-origin and oversized public lead requests', () => {
