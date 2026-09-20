@@ -16,10 +16,14 @@ export function normalizeContentSlug(value: unknown): unknown {
 }
 const secretLikeKeyPattern = /(secret|token|service[_-]?role|api[_-]?key|password|salt)/i;
 
-const blankToNullString = z.preprocess(
+const blankToNullString = (max = 2000) => z.preprocess(
   value => (typeof value === 'string' && value.trim() === '' ? null : value),
-  z.string().trim().nullable().optional()
+  z.string().trim().max(max).nullable().optional()
 );
+
+const blogBodySchema = z
+  .record(z.string(), z.unknown())
+  .refine(value => JSON.stringify(value).length <= 200_000, 'blog_body_too_large');
 
 const nullableUuid = z.preprocess(
   value => (value === '' || value === null || value === undefined ? null : value),
@@ -37,10 +41,10 @@ const blankToNullHttpUrl = z.preprocess(
 
 export const FaqInputSchema = z
   .object({
-    questionVi: z.string().trim().min(1),
-    answerVi: z.string().trim().min(1),
-    questionEn: z.string().trim().min(1),
-    answerEn: z.string().trim().min(1),
+    questionVi: z.string().trim().min(1).max(500),
+    answerVi: z.string().trim().min(1).max(6000),
+    questionEn: z.string().trim().min(1).max(500),
+    answerEn: z.string().trim().min(1).max(6000),
     sortOrder: z.coerce.number().int().default(0)
   })
   .strict();
@@ -49,18 +53,18 @@ export const BlogInputSchema = z
   .object({
     slug: z.preprocess(
       normalizeContentSlug,
-      z.string().trim().min(1).regex(slugPattern)
+      z.string().trim().min(1).max(160).regex(slugPattern)
     ),
-    titleVi: z.string().trim().min(1),
-    titleEn: z.string().trim().min(1),
-    excerptVi: blankToNullString,
-    excerptEn: blankToNullString,
-    bodyVi: z.record(z.string(), z.unknown()),
-    bodyEn: z.record(z.string(), z.unknown()),
-    seoTitleVi: blankToNullString,
-    seoTitleEn: blankToNullString,
-    seoDescriptionVi: blankToNullString,
-    seoDescriptionEn: blankToNullString,
+    titleVi: z.string().trim().min(1).max(300),
+    titleEn: z.string().trim().min(1).max(300),
+    excerptVi: blankToNullString(1200),
+    excerptEn: blankToNullString(1200),
+    bodyVi: blogBodySchema,
+    bodyEn: blogBodySchema,
+    seoTitleVi: blankToNullString(300),
+    seoTitleEn: blankToNullString(300),
+    seoDescriptionVi: blankToNullString(1200),
+    seoDescriptionEn: blankToNullString(1200),
     coverMediaId: nullableUuid.optional().default(null),
     sourceUrl: blankToNullHttpUrl
   })
@@ -68,8 +72,8 @@ export const BlogInputSchema = z
 
 export const MediaMetadataInputSchema = z
   .object({
-    altVi: z.string().trim().min(1),
-    altEn: z.string().trim().min(1),
+    altVi: z.string().trim().min(1).max(500),
+    altEn: z.string().trim().min(1).max(500),
     category: z.enum(['hero', 'location', 'unit', 'security', 'exterior', 'lifestyle', 'blog']),
     sortOrder: z.coerce.number().int().default(0),
     isPublic: z.boolean(),
