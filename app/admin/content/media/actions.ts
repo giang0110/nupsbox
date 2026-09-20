@@ -94,6 +94,52 @@ export async function bulkUpdateMediaAssets(formData: FormData) {
   revalidateMedia();
 }
 
+
+export async function promoteMediaHero(formData: FormData) {
+  const session = await requireAdminUser();
+  const id = String(formData.get('id') ?? '');
+  const supabase = await createSupabaseServerClient();
+
+  const {data: media, error: readError} = await supabase
+    .from('media_assets')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (readError) throw readError;
+  if (!media) throw new Error('media_not_found');
+  if (!media.location_id) throw new Error('media_hero_requires_location');
+  if (!media.is_public) throw new Error('media_hero_requires_public');
+
+  const {changes} = prepareMediaMetadataUpdate(session.role, id, {
+    altVi: media.alt_vi,
+    altEn: media.alt_en,
+    category: 'hero',
+    sortOrder: 0,
+    isPublic: true,
+    locationId: media.location_id,
+    unitTypeId: media.unit_type_id ?? ''
+  });
+
+  const {data: updated, error: updateError} = await supabase
+    .from('media_assets')
+    .update(changes)
+    .eq('id', id)
+    .select('id')
+    .single();
+  if (updateError) throw updateError;
+  if (!updated) throw new Error('media_hero_update_noop');
+
+  const {error: demoteError} = await supabase
+    .from('media_assets')
+    .update({category: 'location'})
+    .eq('location_id', media.location_id)
+    .eq('category', 'hero')
+    .neq('id', id);
+  if (demoteError) throw demoteError;
+
+  revalidateMedia();
+}
+
 export async function updateMediaMetadata(formData: FormData) {
   const session = await requireAdminUser();
   const {id, changes} = prepareMediaMetadataUpdate(
