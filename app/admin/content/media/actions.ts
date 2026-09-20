@@ -63,7 +63,19 @@ export async function uploadMediaAsset(formData: FormData) {
   });
 
   if (metadataError) {
-    await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
+    const {data: cleanupRows, error: cleanupError} = await supabase.storage
+      .from(MEDIA_BUCKET)
+      .remove([storagePath]);
+
+    if (cleanupError || !cleanupRows || cleanupRows.length !== 1) {
+      console.error('media_upload_cleanup_failed', {
+        storagePath,
+        metadataError: metadataError.message,
+        cleanupError: cleanupError?.message ?? null,
+        cleanedCount: cleanupRows?.length ?? 0
+      });
+    }
+
     throw metadataError;
   }
 
