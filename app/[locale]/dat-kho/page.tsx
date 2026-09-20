@@ -7,6 +7,7 @@ import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {isSupportedLocale} from '@/i18n/routing';
+import {normalizeLeadNeed, normalizeLeadVolume} from '@/features/leads/intake';
 
 export const metadata: Metadata = {robots: {index: false, follow: true}};
 
@@ -15,12 +16,14 @@ export default async function Page({
   searchParams
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{unit?: string; location?: string}>;
+  searchParams: Promise<{unit?: string; location?: string; need?: string; volume?: string}>;
 }) {
   const {locale} = await params;
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const query = await searchParams;
+  const intakeNeed = normalizeLeadNeed(query.need);
+  const intakeVolume = normalizeLeadVolume(query.volume);
 
   const [requestedLocation, requestedUnit, settings] = await Promise.all([
     query.location ? getMarketingLocationBySlug(query.location, locale) : Promise.resolve(null),
