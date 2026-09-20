@@ -2,6 +2,7 @@ import {NextResponse, type NextRequest} from 'next/server';
 import {ZodError} from 'zod';
 import {isSameOriginTelemetryRequest} from '@/features/analytics/web-vitals';
 import {createLead} from '@/features/leads/create-lead';
+import {PublicCatalogReferenceError} from '@/features/leads/catalog-reference-guard';
 import {LeadRateLimitError} from '@/lib/rate-limit/leads';
 
 const MAX_BODY_BYTES = 16_384;
@@ -55,6 +56,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json({ok: false, error: 'invalid_lead'}, {status: 400});
+    }
+    if (error instanceof PublicCatalogReferenceError) {
+      return NextResponse.json({ok: false, error: 'invalid_catalog_reference'}, {status: 400});
     }
     if (error instanceof LeadRateLimitError) {
       return NextResponse.json(
