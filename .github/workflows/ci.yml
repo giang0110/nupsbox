@@ -152,6 +152,7 @@ jobs:
       statuses: read
     env:
       PRODUCTION_URL: https://nupsbox.vercel.app
+      CANONICAL_ORIGIN: https://nupsbox.vn
       HEAD_SHA: ${{ github.sha }}
     steps:
       - name: Wait for Vercel production status when exact head is deployable
@@ -220,7 +221,7 @@ jobs:
         run: |
           html=$(curl -fsSL --max-time 30 "${PRODUCTION_URL}/")
           printf '%s' "$html" | grep -F 'rel="canonical"' >/dev/null
-          printf '%s' "$html" | grep -F 'https://nupsbox.vercel.app/' >/dev/null
+          printf '%s' "$html" | grep -F "${CANONICAL_ORIGIN}/" >/dev/null
 
       - name: Verify unauthenticated admin is not exposed on Production
         run: |
