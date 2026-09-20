@@ -11,11 +11,13 @@ const inputClass =
 export function MediaUploadForm({
   locationOptions,
   unitOptions,
-  defaultLocationId
+  defaultLocationId,
+  defaultUnitTypeId
 }: {
   locationOptions: Option[];
   unitOptions: Option[];
   defaultLocationId?: string;
+  defaultUnitTypeId?: string;
 }) {
   return (
     <details className="group overflow-hidden rounded-2xl border border-[var(--nupsbox-border)] bg-white shadow-sm">
@@ -76,7 +78,7 @@ export function MediaUploadForm({
               </label>
               <label className="text-sm font-semibold">
                 Loại kho liên kết
-                <select className={inputClass} name="unitTypeId" defaultValue="">
+                <select className={inputClass} name="unitTypeId" defaultValue={defaultUnitTypeId ?? ''}>
                   <option value="">Không liên kết</option>
                   {unitOptions.map((option) => (
                     <option key={option.id} value={option.id}>{option.label}</option>
