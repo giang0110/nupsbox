@@ -1,6 +1,7 @@
 'use server';
 
 import {revalidatePath} from 'next/cache';
+import {redirect} from 'next/navigation';
 import {
   prepareUnitTypeCreate,
   getUnitTypePublicationReadiness,
@@ -48,6 +49,10 @@ export async function createUnitType(formData: FormData) {
   const {error} = await supabase.from('unit_types').insert(payload);
   throwUnitError(error);
   revalidateUnits();
+
+  if (active && String(formData.get('next') ?? '') === 'pricing') {
+    redirect('/admin/catalog/pricing?unit=' + id);
+  }
 }
 
 export async function updateUnitType(formData: FormData) {
