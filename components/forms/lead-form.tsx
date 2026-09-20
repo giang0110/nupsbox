@@ -8,6 +8,7 @@ import {trackEvent} from '@/features/analytics/events';
 import {Button} from '@/components/ui/button';
 import {TrackedContactLink} from '@/components/marketing/tracked-contact-link';
 import {LeadFormFields} from './lead-form-fields';
+import type {LeadEstimatedVolume, LeadNeedType} from '@/features/leads/intake';
 import {ConversionSummary} from './conversion-summary';
 
 type Props = {
@@ -19,8 +20,8 @@ type Props = {
   unitTypeId?: string;
   unitName?: string | null;
   locationName?: string | null;
-  needType?: 'shop_online' | 'sme' | 'inventory' | 'personal' | 'documents' | 'other';
-  estimatedVolume?: 'under_20_boxes' | 'boxes_20_50' | 'over_50_boxes' | 'unknown';
+  needType?: LeadNeedType;
+  estimatedVolume?: LeadEstimatedVolume;
   appointmentMode?: boolean;
 };
 
@@ -56,7 +57,12 @@ export function LeadForm({
     }
   }, [state]);
 
-  function trackSubmission(outcome: SubmitOutcome, appointmentRequested: boolean) {
+  function trackSubmission(
+    outcome: SubmitOutcome,
+    appointmentRequested: boolean,
+    submittedNeedType: LeadNeedType,
+    submittedEstimatedVolume: LeadEstimatedVolume
+  ) {
     trackEvent('lead_submit', {
       outcome,
       locale,
@@ -64,8 +70,8 @@ export function LeadForm({
       appointmentRequested,
       hasLocation: Boolean(locationId),
       hasUnit: Boolean(unitTypeId),
-      needType,
-      estimatedVolume
+      needType: submittedNeedType,
+      estimatedVolume: submittedEstimatedVolume
     });
   }
 
@@ -76,6 +82,9 @@ export function LeadForm({
     const form = new FormData(formElement);
     const attribution = {...readPersistedAttribution(), ...captureUtm(searchParams)};
 
+    const submittedNeedType = String(form.get('needType') ?? needType) as LeadNeedType;
+    const submittedEstimatedVolume = String(form.get('estimatedVolume') ?? estimatedVolume) as LeadEstimatedVolume;
+
     let appointment;
     try {
       appointment = buildOptionalPublicAppointment(
@@ -84,7 +93,7 @@ export function LeadForm({
         String(form.get('viewingNote') ?? '')
       );
     } catch {
-      trackSubmission('validation_error', appointmentMode && wantsViewing);
+      trackSubmission('validation_error', appointmentMode && wantsViewing, submittedNeedType, submittedEstimatedVolume);
       setState('error');
       return;
     }
@@ -98,8 +107,8 @@ export function LeadForm({
       preferredLanguage: locale,
       locationId,
       unitTypeId,
-      needType,
-      estimatedVolume,
+      needType: submittedNeedType,
+      estimatedVolume: submittedEstimatedVolume,
       landingPage: window.location.pathname,
       referrer: document.referrer || undefined,
       ...attribution,
@@ -114,23 +123,23 @@ export function LeadForm({
       });
 
       if (response.status === 429) {
-        trackSubmission('rate_limited', Boolean(appointment));
+        trackSubmission('rate_limited', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
         setState('rate_limited');
         return;
       }
 
       if (!response.ok) {
-        trackSubmission('error', Boolean(appointment));
+        trackSubmission('error', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
         setState('error');
         return;
       }
 
-      trackSubmission('success', Boolean(appointment));
+      trackSubmission('success', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
       setState('success');
       formElement.reset();
       setWantsViewing(false);
     } catch {
-      trackSubmission('network_error', Boolean(appointment));
+      trackSubmission('network_error', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
       setState('error');
     }
   }
@@ -155,7 +164,11 @@ export function LeadForm({
     <form aria-busy={state === 'submitting'} onSubmit={submit} className="grid gap-4.5 rounded-3xl border border-[var(--nupsbox-border)] bg-white p-5 text-[var(--nupsbox-navy)] shadow-[var(--nupsbox-shadow-sm)] sm:p-7">
       <div className="absolute -left-[10000px]" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <ConversionSummary locale={locale} unitName={unitName} locationName={locationName} appointmentMode={appointmentMode} />
-      <LeadFormFields locale={locale} />
+      <LeadFormFields
+        locale={locale}
+        defaultNeedType={needType}
+        defaultEstimatedVolume={estimatedVolume}
+      />
 
       {appointmentMode ? (
         <div className="grid gap-4 rounded-2xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-4">
