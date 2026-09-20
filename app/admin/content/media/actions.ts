@@ -110,11 +110,20 @@ export async function promoteMediaHero(formData: FormData) {
   if (!media.location_id) throw new Error('media_hero_requires_location');
   if (!media.is_public) throw new Error('media_hero_requires_public');
 
+  const {data: ordering, error: orderingError} = await supabase
+    .from('media_assets')
+    .select('sort_order')
+    .eq('location_id', media.location_id)
+    .order('sort_order', {ascending: true})
+    .limit(1);
+  if (orderingError) throw orderingError;
+  const firstSort = ordering?.[0]?.sort_order ?? 0;
+
   const {changes} = prepareMediaMetadataUpdate(session.role, id, {
     altVi: media.alt_vi,
     altEn: media.alt_en,
     category: 'hero',
-    sortOrder: 0,
+    sortOrder: firstSort - 10,
     isPublic: true,
     locationId: media.location_id,
     unitTypeId: media.unit_type_id ?? ''
@@ -137,6 +146,51 @@ export async function promoteMediaHero(formData: FormData) {
     .neq('id', id);
   if (demoteError) throw demoteError;
 
+  revalidateMedia();
+}
+
+
+export async function moveMediaToFront(formData: FormData) {
+  const session = await requireAdminUser();
+  const id = String(formData.get('id') ?? '');
+  const supabase = await createSupabaseServerClient();
+
+  const {data: media, error: readError} = await supabase
+    .from('media_assets')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (readError) throw readError;
+  if (!media) throw new Error('media_not_found');
+  if (!media.location_id) throw new Error('media_order_requires_location');
+
+  const {data: ordering, error: orderingError} = await supabase
+    .from('media_assets')
+    .select('sort_order')
+    .eq('location_id', media.location_id)
+    .order('sort_order', {ascending: true})
+    .limit(1);
+  if (orderingError) throw orderingError;
+  const firstSort = ordering?.[0]?.sort_order ?? 0;
+
+  const {changes} = prepareMediaMetadataUpdate(session.role, id, {
+    altVi: media.alt_vi,
+    altEn: media.alt_en,
+    category: media.category,
+    sortOrder: firstSort - 10,
+    isPublic: media.is_public,
+    locationId: media.location_id,
+    unitTypeId: media.unit_type_id ?? ''
+  });
+
+  const {data: updated, error: updateError} = await supabase
+    .from('media_assets')
+    .update(changes)
+    .eq('id', id)
+    .select('id')
+    .single();
+  if (updateError) throw updateError;
+  if (!updated) throw new Error('media_order_update_noop');
   revalidateMedia();
 }
 
