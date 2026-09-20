@@ -9,6 +9,7 @@ import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingFeaturedLocation, getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {isSupportedLocale} from '@/i18n/routing';
+import {normalizeLeadNeed, normalizeLeadVolume} from '@/features/leads/intake';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
@@ -29,12 +30,14 @@ export default async function Page({
   searchParams
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{unit?: string; location?: string}>;
+  searchParams: Promise<{unit?: string; location?: string; need?: string; volume?: string}>;
 }) {
   const {locale} = await params;
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const query = await searchParams;
+  const intakeNeed = normalizeLeadNeed(query.need);
+  const intakeVolume = normalizeLeadVolume(query.volume);
 
   const [featuredLocation, requestedLocation, requestedUnit, settings] = await Promise.all([
     getMarketingFeaturedLocation(locale),
@@ -129,6 +132,8 @@ export default async function Page({
                 unitName={requestedUnit?.name}
                 locationId={requestedLocation?.id}
                 locationName={requestedLocation?.name}
+                needType={intakeNeed}
+                estimatedVolume={intakeVolume}
               />
             </Suspense>
           </div>
