@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
-import {AdminEmptyState} from '@/components/admin/admin-primitives';
+import {AdminEmptyState, AdminPanel, AdminStatCard} from '@/components/admin/admin-primitives';
 import {LocationForm} from '@/components/admin/location-form';
 import {Container} from '@/components/ui/container';
 import {listAdminLocations} from '@/features/admin/locations';
+import {listAdminMedia} from '@/features/admin/media';
+import {listAdminPricing} from '@/features/admin/pricing';
+import {buildLocationLaunchReadiness} from '@/features/admin/location-launch';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 
@@ -12,7 +15,11 @@ export default async function AdminLocationsPage() {
   const session = await requireAdminUser();
   if (!can(session.role, 'catalog:read')) redirect('/admin');
 
-  const locations = await listAdminLocations();
+  const [locations, media, pricing] = await Promise.all([
+    listAdminLocations(),
+    listAdminMedia(),
+    listAdminPricing()
+  ]);
   const canCreate = can(session.role, 'catalog:create');
   const canUpdate = can(session.role, 'catalog:update');
   const canPublish = can(session.role, 'catalog:publish');
@@ -34,6 +41,18 @@ export default async function AdminLocationsPage() {
           }
         />
 
+        <AdminPanel
+          title="Location Launch"
+          description="Rà nhanh mức hoàn thiện của từng cơ sở trước khi bổ sung media, mapping giá và mở public preview."
+        >
+          <section aria-label="Tổng quan địa điểm" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <AdminStatCard label="Tổng cơ sở" value={locations.length} />
+            <AdminStatCard label="Đang active" value={locations.filter(item => item.status === 'active').length} />
+            <AdminStatCard label="Có ảnh public" value={locations.filter(item => media.some(asset => asset.locationId === item.id && asset.isPublic)).length} />
+            <AdminStatCard label="Có mapping giá" value={locations.filter(item => pricing.some(row => row.locationId === item.id)).length} />
+          </section>
+        </AdminPanel>
+
         <div className="grid gap-6">
           {canCreate ? <LocationForm canMutate canPublish={false} /> : null}
           {locations.length ? (
@@ -43,6 +62,7 @@ export default async function AdminLocationsPage() {
                 location={location}
                 canMutate={canUpdate}
                 canPublish={canPublish}
+                launch={buildLocationLaunchReadiness(location, media, pricing)}
               />
             ))
           ) : (
