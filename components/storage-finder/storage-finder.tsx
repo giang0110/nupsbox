@@ -2,7 +2,7 @@
 
 import {useMemo, useState} from 'react';
 import {useLocale} from 'next-intl';
-import {Link} from '@/i18n/navigation';
+import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {trackEvent} from '@/features/analytics/events';
 import {recommendStorage} from '@/features/storage-finder/recommend';
 import type {StorageCatalogItem, StorageNeed, StorageVolume} from '@/features/storage-finder/types';
@@ -64,12 +64,30 @@ export function StorageFinder({units}: StorageFinderProps) {
                 ? 'Website chưa có loại kho đã được xác nhận để đưa ra gợi ý. Bạn vẫn có thể gửi nhu cầu để NupsBox tư vấn trực tiếp.'
                 : 'There are no verified unit types available for an automated recommendation yet. You can still send your requirements for direct advice.'}
             </p>
-            <Link
-              href="/lien-he"
-              className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[var(--nupsbox-blue)] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)] focus-visible:ring-offset-2"
-            >
-              {locale === 'vi' ? 'Gửi nhu cầu' : 'Send your requirements'}
-            </Link>
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              <ConversionCta
+                locale={locale}
+                intent="quote"
+                placement="finder-empty"
+                size="md"
+              >
+                {locale === 'vi' ? 'Gửi nhu cầu để được tư vấn' : 'Send requirements for advice'}
+              </ConversionCta>
+              <ConversionCta
+                locale={locale}
+                intent="viewing"
+                placement="finder-empty"
+                variant="secondary"
+                size="md"
+              >
+                {locale === 'vi' ? 'Đề xuất lịch xem kho' : 'Request a viewing'}
+              </ConversionCta>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-[var(--nupsbox-muted)]">
+              {locale === 'vi'
+                ? 'Bạn chưa cần chọn loại kho hoặc diện tích trước khi gửi yêu cầu.'
+                : 'You do not need to choose a unit type or area before sending your request.'}
+            </p>
           </div>
         </div>
       </section>

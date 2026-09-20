@@ -22,6 +22,18 @@ export type UnitTypeDbRow = {
   updated_at: string;
 };
 
+export type UnitTypePublicationCheck = {
+  id: 'nameVi' | 'nameEn' | 'areaM2' | 'recommendedForVi' | 'recommendedForEn';
+  label: string;
+  ready: boolean;
+};
+
+export type UnitTypePublicationReadiness = {
+  ready: boolean;
+  checks: UnitTypePublicationCheck[];
+  missingLabels: string[];
+};
+
 export type AdminUnitType = {
   id: string;
   slug: string;
@@ -38,6 +50,25 @@ export type AdminUnitType = {
   createdAt: string;
   updatedAt: string;
 };
+
+function hasText(value: string | null | undefined): boolean {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export function getUnitTypePublicationReadiness(unit: Pick<AdminUnitType, 'nameVi' | 'nameEn' | 'areaM2' | 'recommendedForVi' | 'recommendedForEn'>): UnitTypePublicationReadiness {
+  const checks: UnitTypePublicationCheck[] = [
+    {id: 'nameVi', label: 'Tên VI', ready: hasText(unit.nameVi)},
+    {id: 'nameEn', label: 'Tên EN', ready: hasText(unit.nameEn)},
+    {id: 'areaM2', label: 'Diện tích', ready: Number.isFinite(unit.areaM2) && unit.areaM2 > 0},
+    {id: 'recommendedForVi', label: 'Gợi ý VI', ready: hasText(unit.recommendedForVi)},
+    {id: 'recommendedForEn', label: 'Gợi ý EN', ready: hasText(unit.recommendedForEn)}
+  ];
+  return {
+    ready: checks.every(check => check.ready),
+    checks,
+    missingLabels: checks.filter(check => !check.ready).map(check => check.label)
+  };
+}
 
 export function mapAdminUnitType(row: UnitTypeDbRow): AdminUnitType {
   return {

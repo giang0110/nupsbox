@@ -3,13 +3,14 @@ import {
   setUnitTypePublication,
   updateUnitType
 } from '@/app/admin/catalog/unit-types/actions';
+import Link from 'next/link';
 import {
   AdminActionBar,
   AdminFieldGroup,
   AdminPanel,
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
-import type {AdminUnitType} from '@/features/admin/unit-types';
+import {getUnitTypePublicationReadiness, type AdminUnitType} from '@/features/admin/unit-types';
 
 type Props = {
   unit?: AdminUnitType;
@@ -23,6 +24,7 @@ const inputClass =
 export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
   const editing = Boolean(unit);
   const slugLocked = Boolean(unit?.publishedAt);
+  const publication = unit ? getUnitTypePublicationReadiness(unit) : null;
 
   return (
     <AdminPanel
@@ -34,21 +36,59 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
             label={unit?.active ? 'Đang hoạt động' : editing ? 'Bản nháp' : 'Mới'}
             tone={unit?.active ? 'success' : 'neutral'}
           />
+          {unit?.active ? (
+            <Link
+              href={'/kho-mini/' + unit.slug}
+              target="_blank"
+              className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-blue)]"
+            >
+              Preview public ↗
+            </Link>
+          ) : null}
           {unit && canPublish ? (
             <form action={setUnitTypePublication}>
               <input type="hidden" name="id" value={unit.id} />
               <input type="hidden" name="publish" value={unit.active ? 'false' : 'true'} />
               <button
                 type="submit"
-                className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
+                disabled={!unit.active && !publication?.ready}
+                title={!unit.active && !publication?.ready ? 'Hoàn thiện checklist trước khi xuất bản' : undefined}
+                className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {unit.active ? 'Ngừng xuất bản' : 'Xuất bản'}
+                {unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản' : 'Chưa sẵn sàng'}
               </button>
             </form>
           ) : null}
         </AdminActionBar>
       }
     >
+      {unit && publication ? (
+        <div className="mb-6 rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-black text-[var(--nupsbox-navy)]">Checklist trước khi xuất bản</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--nupsbox-slate)]">
+                Chỉ các trường cốt lõi được dùng để chặn publish; ghi chú sức chứa vẫn là tùy chọn.
+              </p>
+            </div>
+            <AdminStatusBadge
+              label={publication.ready ? 'Sẵn sàng' : publication.missingLabels.length + ' mục còn thiếu'}
+              tone={publication.ready ? 'success' : 'warning'}
+            />
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+            {publication.checks.map(check => (
+              <div key={check.id} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-[var(--nupsbox-navy)]">
+                <span aria-hidden="true" className={check.ready ? 'text-emerald-700' : 'text-amber-700'}>
+                  {check.ready ? '✓' : '○'}
+                </span>
+                {check.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <form action={editing ? updateUnitType : createUnitType} className="grid gap-6">
         {unit ? <input type="hidden" name="id" value={unit.id} /> : null}
         {slugLocked && unit ? <input type="hidden" name="slug" value={unit.slug} /> : null}

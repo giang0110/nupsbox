@@ -12,22 +12,8 @@ import {
   normalizeAnalyticsDays,
   type AdminAnalyticsBreakdownItem
 } from '@/features/admin/analytics';
-import {
-  operationalLeadStatuses,
-  type OperationalLeadStatus
-} from '@/features/admin/leads';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
-
-const statusLabels: Record<OperationalLeadStatus, string> = {
-  new: 'Mới',
-  contacted: 'Đã liên hệ',
-  qualified: 'Đã xác nhận nhu cầu',
-  viewing: 'Đang xem kho',
-  negotiating: 'Đang thương lượng',
-  won: 'Đã thuê',
-  lost: 'Không chuyển đổi'
-};
 
 const needLabels: Record<string, string> = {
   shop_online: 'Shop online',
@@ -168,30 +154,30 @@ export default async function AdminAnalyticsPage({
 
             <section className="grid gap-4 xl:grid-cols-2">
               <AdminPanel
-                title="Funnel CRM"
-                description="Exact count theo bảy trạng thái CRM trong khoảng thời gian đã chọn."
+                title="Funnel chuyển đổi CRM"
+                description="Funnel tích lũy suy ra từ trạng thái hiện tại: mỗi bước “+” gồm lead đang ở bước đó hoặc đã tiến xa hơn. Không phải lịch sử event trước lead."
               >
                 <div className="grid gap-3">
-                  {operationalLeadStatuses.map(status => {
-                    const item = analytics.byStatus.find(entry => entry.status === status)!;
-                    return (
-                      <div key={status}>
-                        <div className="mb-1 flex items-center justify-between gap-3 text-sm">
-                          <span className="font-bold text-[var(--nupsbox-navy)]">{statusLabels[status]}</span>
-                          <span className="text-xs font-bold text-[var(--nupsbox-slate)]">
-                            {item.count} · {percent(item.share)}
-                          </span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-[var(--nupsbox-surface)]">
-                          <div
-                            className="h-full rounded-full bg-[var(--nupsbox-blue)]"
-                            style={{width: `${item.share ? Math.max(item.share * 100, 3) : 0}%`}}
-                          />
-                        </div>
+                  {analytics.funnel.map(stage => (
+                    <div key={stage.key}>
+                      <div className="mb-1 flex items-center justify-between gap-3 text-sm">
+                        <span className="font-bold text-[var(--nupsbox-navy)]">{stage.label}</span>
+                        <span className="text-xs font-bold text-[var(--nupsbox-slate)]">
+                          {stage.count} · {percent(stage.shareOfLeads)}
+                        </span>
                       </div>
-                    );
-                  })}
+                      <div className="h-2 overflow-hidden rounded-full bg-[var(--nupsbox-surface)]">
+                        <div
+                          className="h-full rounded-full bg-[var(--nupsbox-blue)]"
+                          style={{width: `${stage.shareOfLeads ? Math.max(stage.shareOfLeads * 100, 3) : 0}%`}}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
+                <p className="mt-4 text-xs leading-5 text-[var(--nupsbox-slate)]">
+                  Event trước khi tạo lead như Finder start/complete và Quote/View start vẫn được phát qua analytics taxonomy hiện có; khi cần attribution đầy đủ có thể nối dataLayer với GTM/GA4 mà không đổi flow public.
+                </p>
               </AdminPanel>
 
               <AdminPanel

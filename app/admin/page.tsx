@@ -12,6 +12,7 @@ import {
   operationalLeadStatuses,
   type OperationalLeadStatus
 } from '@/features/admin/leads';
+import {buildPublicReadiness} from '@/features/admin/public-readiness';
 import {
   buildAdminQualityIssues,
   getAdminQualitySnapshot,
@@ -54,6 +55,7 @@ export default async function AdminDashboardPage() {
     getAdminQualitySnapshot()
   ]);
   const qualityIssues = buildAdminQualityIssues(qualitySnapshot);
+  const readiness = buildPublicReadiness(qualitySnapshot, summary);
   const canReadLeads = can(session.role, 'leads:read');
 
   const quickActions = [
@@ -119,6 +121,38 @@ export default async function AdminDashboardPage() {
             </Link>
           }
         />
+
+        <AdminPanel
+          title="Public Readiness"
+          description="Mức sẵn sàng của dữ liệu đang ảnh hưởng trực tiếp tới website public. Ưu tiên xử lý các mục chưa đạt trước khi thêm hiệu ứng hoặc campaign."
+          actions={
+            <div className="text-right">
+              <p className="text-3xl font-black tracking-[-0.04em] text-[var(--nupsbox-navy)]">{readiness.score}%</p>
+              <p className="text-xs font-bold text-[var(--nupsbox-slate)]">{readiness.readyCount}/{readiness.totalCount} mục đạt</p>
+            </div>
+          }
+        >
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {readiness.items.map(item => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="rounded-xl border border-[var(--nupsbox-border)] bg-white p-3 transition hover:border-[var(--nupsbox-blue)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <strong className="text-sm text-[var(--nupsbox-navy)]">{item.label}</strong>
+                  <AdminStatusBadge label={item.ready ? 'Đạt' : 'Thiếu'} tone={item.ready ? 'success' : item.weight >= 2 ? 'danger' : 'warning'} />
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[var(--nupsbox-slate)]">{item.detail}</p>
+              </Link>
+            ))}
+          </div>
+          {readiness.blockingCount ? (
+            <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-800">
+              Còn {readiness.blockingCount} hạng mục cốt lõi đang chặn trải nghiệm public đầy đủ.
+            </p>
+          ) : null}
+        </AdminPanel>
 
         <section className="grid gap-4 xl:grid-cols-[1.05fr_.95fr]">
           <AdminPanel
