@@ -51,7 +51,8 @@ describe('P3.24 unit type launch workflow', () => {
     expect(source('app/admin/catalog/unit-types/page.tsx')).toContain('Unit Type Launch');
     expect(source('components/admin/unit-type-form.tsx')).toContain('Preview nội dung public');
     expect(source('components/admin/unit-type-form.tsx')).toContain('Xuất bản & cấu hình giá');
-    expect(source('components/admin/unit-type-preview.tsx')).toContain('Preview VI');
+    expect(source('components/admin/unit-type-preview.tsx')).toContain("locale: 'VI'");
+    expect(source('components/admin/unit-type-preview.tsx')).toContain('Preview {row.locale}');
     expect(source('app/admin/catalog/unit-types/actions.ts')).toContain("redirect('/admin/catalog/pricing?unit=' + id)");
   });
 });
