@@ -91,11 +91,11 @@ insert into auth.users (
   'authenticated', 'authenticated', 'p23-staff@example.invalid', '', now(),
   '{}'::jsonb, '{}'::jsonb, now(), now()
 );
-insert into public.profiles (id, full_name, role, active)
-values (
-  '20000000-0000-4000-8000-000000000001'::uuid,
-  'P2.3 Test Staff', 'staff', true
-);
+update public.profiles
+set full_name = 'P2.3 Test Staff',
+    role = 'staff',
+    active = true
+where id = '20000000-0000-4000-8000-000000000001'::uuid;
 insert into public.locations (
   id, slug, name_vi, name_en, address_vi, address_en, district, city, status
 ) values (
