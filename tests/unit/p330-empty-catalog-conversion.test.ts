@@ -25,6 +25,9 @@ describe('P3.30 empty catalog conversion', () => {
     const contact = source('app/[locale]/lien-he/page.tsx');
     const booking = source('app/[locale]/dat-kho/page.tsx');
     const compare = source('components/units/unit-compare.tsx');
+    const emptyCatalog = source('components/marketing/empty-catalog-conversion.tsx');
+    const unitsPage = source('app/[locale]/kho-mini/page.tsx');
+    const pricingPage = source('app/[locale]/bang-gia/page.tsx');
 
     expect(fields).toContain('name="needType"');
     expect(fields).toContain('name="estimatedVolume"');
@@ -34,5 +37,10 @@ describe('P3.30 empty catalog conversion', () => {
     expect(booking).toContain('normalizeLeadVolume(query.volume)');
     expect(compare).toContain('TƯ VẤN TRƯỚC, CHỌN SAU');
     expect(compare).toContain('unit-compare-empty');
+    expect(emptyCatalog).toContain('Không hiển thị dữ liệu giả');
+    expect(emptyCatalog).toContain('intent="quote"');
+    expect(emptyCatalog).toContain('intent="viewing"');
+    expect(unitsPage).toContain('context="units"');
+    expect(pricingPage).toContain('context="pricing"');
   });
 });
