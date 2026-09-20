@@ -31,11 +31,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'siaodieqxzlarnvfppox.supabase.co',
-        pathname: '/storage/v1/object/public/onboarding-photos/**'
-      },
-      {
-        protocol: 'https',
         hostname: 'veglohnmofzkgovedxkb.supabase.co',
         pathname: '/storage/v1/object/public/nupsbox-media/**'
       }
