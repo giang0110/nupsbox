@@ -16,8 +16,9 @@ describe('public catalog empty states', () => {
     render(<UnitCompare units={[]} locale="vi" />);
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Chưa có loại kho được công bố.'
+      'Catalog đang được hoàn thiện bằng dữ liệu đã xác minh.'
     );
+    expect(screen.getByRole('link', {name: 'Gửi nhu cầu để được tư vấn'})).toBeInTheDocument();
     expect(screen.queryByText(/0\/3/)).not.toBeInTheDocument();
   });
 });
