@@ -6,6 +6,7 @@ import {formatMonthlyPrice} from '@/features/catalog/price';
 import {toggleComparedUnit} from '@/features/catalog/compare';
 import type {PublicUnitType} from '@/features/catalog/types';
 import {trackEvent} from '@/features/analytics/events';
+import {ConversionCta} from '@/components/marketing/conversion-cta';
 
 function availabilityLabel(status: PublicUnitType['availabilityStatus'], locale: 'vi' | 'en') {
   const vi = locale === 'vi';
@@ -31,19 +32,68 @@ export function UnitCompare({units, locale}: {units: PublicUnitType[]; locale: '
 
   if (units.length === 0) {
     return (
-      <div
-        className="rounded-2xl border border-[var(--nupsbox-border)] bg-white p-5 text-sm leading-6 text-[var(--nupsbox-slate)]"
+      <section
+        className="overflow-hidden rounded-3xl border border-[var(--nupsbox-border)] bg-white shadow-[var(--nupsbox-shadow-sm)]"
         role="status"
+        aria-labelledby="empty-catalog-title"
       >
-        <p className="font-bold text-[var(--nupsbox-navy)]">
-          {vi ? 'Chưa có loại kho được công bố.' : 'No storage unit types are currently published.'}
-        </p>
-        <p className="mt-1">
-          {vi
-            ? 'NupsBox chỉ hiển thị diện tích, giá và tình trạng sau khi dữ liệu đã được xác nhận.'
-            : 'NupsBox shows area, pricing and status only after the data has been verified.'}
-        </p>
-      </div>
+        <div className="grid lg:grid-cols-[.72fr_1.28fr]">
+          <div className="bg-[var(--nupsbox-navy)] p-6 text-white sm:p-7">
+            <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.15em] text-[var(--nupsbox-yellow)]">
+              {vi ? 'TƯ VẤN TRƯỚC, CHỌN SAU' : 'ADVICE FIRST, CHOOSE SECOND'}
+            </p>
+            <h2 id="empty-catalog-title" className="mt-3 text-2xl font-extrabold tracking-[-0.035em] sm:text-3xl">
+              {vi ? 'Catalog đang được hoàn thiện bằng dữ liệu đã xác minh.' : 'The catalog is being completed with verified data.'}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-white/68">
+              {vi
+                ? 'NupsBox không hiển thị diện tích hoặc giá ước tính chỉ để lấp chỗ trống.'
+                : 'NupsBox does not publish estimated sizes or prices simply to fill an empty catalog.'}
+            </p>
+          </div>
+
+          <div className="p-5 sm:p-7">
+            <p className="text-sm font-extrabold text-[var(--nupsbox-navy)]">
+              {vi ? 'Bạn vẫn có thể bắt đầu ngay mà không cần biết diện tích kho.' : 'You can still start without knowing the storage size.'}
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {(vi
+                ? [
+                    ['01', 'Nói nhu cầu', 'Chọn mục đích lưu trữ và lượng hàng ước tính.'],
+                    ['02', 'NupsBox xác nhận', 'Đội ngũ đối chiếu loại kho và mức giá hiện hành.'],
+                    ['03', 'Chọn bước tiếp theo', 'Nhận tư vấn hoặc đề xuất lịch xem kho.']
+                  ]
+                : [
+                    ['01', 'Share your need', 'Choose the purpose and rough storage volume.'],
+                    ['02', 'NupsBox confirms', 'The team checks a suitable unit and current pricing.'],
+                    ['03', 'Choose the next step', 'Get advice or request a facility viewing.']
+                  ]
+              ).map(([index, title, text]) => (
+                <div key={index} className="border-t border-[var(--nupsbox-border)] pt-3">
+                  <p className="text-[0.65rem] font-black tracking-[0.12em] text-[var(--nupsbox-blue)]">{index}</p>
+                  <p className="mt-1 text-sm font-black text-[var(--nupsbox-navy)]">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--nupsbox-slate)]">{text}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              <ConversionCta locale={locale} intent="quote" placement="unit-compare-empty" size="md">
+                {vi ? 'Gửi nhu cầu để được tư vấn' : 'Send requirements for advice'}
+              </ConversionCta>
+              <ConversionCta
+                locale={locale}
+                intent="viewing"
+                placement="unit-compare-empty"
+                variant="secondary"
+                size="md"
+              >
+                {vi ? 'Đề xuất lịch xem kho' : 'Request a viewing'}
+              </ConversionCta>
+            </div>
+          </div>
+        </div>
+      </section>
     );
   }
 
