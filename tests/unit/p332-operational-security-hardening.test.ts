@@ -20,6 +20,7 @@ describe('P3.32 operational security hardening', () => {
     const route = source('app/api/leads/route.ts');
     expect(route).toContain("error: 'invalid_origin'");
     expect(route).toContain("error: 'payload_too_large'");
+    expect(route).toContain("error: 'unsupported_media_type'");
     expect(route).toContain("MAX_BODY_BYTES = 16_384");
     expect(route).toContain("'retry-after': '900'");
   });
