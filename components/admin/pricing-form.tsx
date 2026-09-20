@@ -14,12 +14,21 @@ type Props = {
   locations: AdminLocation[];
   units: AdminUnitType[];
   canMutate: boolean;
+  defaultLocationId?: string;
+  defaultUnitTypeId?: string;
 };
 
 const inputClass =
   'mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm disabled:bg-slate-50';
 
-export function PricingForm({pricing, locations, units, canMutate}: Props) {
+export function PricingForm({
+  pricing,
+  locations,
+  units,
+  canMutate,
+  defaultLocationId,
+  defaultUnitTypeId
+}: Props) {
   const editing = Boolean(pricing);
 
   return (
@@ -48,14 +57,14 @@ export function PricingForm({pricing, locations, units, canMutate}: Props) {
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-semibold">
               Địa điểm
-              <select className={inputClass} name="locationId" required defaultValue={pricing?.locationId ?? ''}>
+              <select className={inputClass} name="locationId" required defaultValue={pricing?.locationId ?? defaultLocationId ?? ''}>
                 <option value="" disabled>Chọn địa điểm</option>
                 {locations.map((item) => <option key={item.id} value={item.id}>{item.nameVi}</option>)}
               </select>
             </label>
             <label className="text-sm font-semibold">
               Loại kho
-              <select className={inputClass} name="unitTypeId" required defaultValue={pricing?.unitTypeId ?? ''}>
+              <select className={inputClass} name="unitTypeId" required defaultValue={pricing?.unitTypeId ?? defaultUnitTypeId ?? ''}>
                 <option value="" disabled>Chọn loại kho</option>
                 {units.map((item) => <option key={item.id} value={item.id}>{item.nameVi} ({item.areaM2} m²)</option>)}
               </select>
