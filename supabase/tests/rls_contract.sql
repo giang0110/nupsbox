@@ -91,14 +91,14 @@ select ok(
   'consolidated profile policy preserves active admin/staff target scope'
 );
 
-select has_function('public', 'current_app_role', array[]::text[], 'role helper exists');
-select has_function('public', 'is_admin', array[]::text[], 'admin helper exists');
+select has_function('private', 'current_app_role', array[]::text[], 'role helper exists');
+select has_function('private', 'is_admin', array[]::text[], 'admin helper exists');
 select ok(
-  not has_function_privilege('anon', 'public.current_app_role()', 'EXECUTE'),
+  not has_function_privilege('anon', 'private.current_app_role()', 'EXECUTE'),
   'anon cannot execute current_app_role'
 );
 select ok(
-  not has_function_privilege('anon', 'public.is_admin()', 'EXECUTE'),
+  not has_function_privilege('anon', 'private.is_admin()', 'EXECUTE'),
   'anon cannot execute is_admin'
 );
 select ok(
