@@ -26,6 +26,15 @@ const nextConfig: NextConfig = {
       }
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/en/about',
+        destination: '/en/about-nupsbox',
+        permanent: true
+      }
+    ];
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
