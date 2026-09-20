@@ -1,6 +1,7 @@
 'use server';
 
 import {revalidatePath} from 'next/cache';
+import {redirect} from 'next/navigation';
 import {preparePricingCreate, preparePricingUpdate} from '@/features/admin/pricing';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
@@ -36,9 +37,22 @@ export async function createPricing(formData: FormData) {
   const session = await requireAdminUser();
   const payload = preparePricingCreate(session.role, inputFromFormData(formData));
   const supabase = await createSupabaseServerClient();
+  const {data: existing, error: lookupError} = await supabase
+    .from('location_unit_types')
+    .select('id')
+    .eq('location_id', payload.location_id)
+    .eq('unit_type_id', payload.unit_type_id)
+    .maybeSingle();
+  throwPricingError(lookupError);
+  if (existing) throw new Error('pricing_conflict');
+
   const {error} = await supabase.from('location_unit_types').insert(payload);
   throwPricingError(error);
   revalidatePricing();
+
+  if (String(formData.get('next') ?? '') === 'preview') {
+    redirect('/bang-gia');
+  }
 }
 
 export async function updatePricing(formData: FormData) {
@@ -53,4 +67,8 @@ export async function updatePricing(formData: FormData) {
   throwPricingError(error);
   if (!data) throw new Error('pricing_update_noop');
   revalidatePricing();
+
+  if (String(formData.get('next') ?? '') === 'preview') {
+    redirect('/bang-gia');
+  }
 }
