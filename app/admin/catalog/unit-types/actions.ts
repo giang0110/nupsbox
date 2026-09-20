@@ -3,6 +3,7 @@
 import {revalidatePath} from 'next/cache';
 import {
   prepareUnitTypeCreate,
+  getUnitTypePublicationReadiness,
   prepareUnitTypePublication,
   prepareUnitTypeUpdate
 } from '@/features/admin/unit-types';
@@ -71,6 +72,28 @@ export async function setUnitTypePublication(formData: FormData) {
     String(formData.get('publish') ?? '') === 'true'
   );
   const supabase = await createSupabaseServerClient();
+
+  if (active) {
+    const {data: unit, error: readError} = await supabase
+      .from('unit_types')
+      .select('name_vi, name_en, area_m2, recommended_for_vi, recommended_for_en')
+      .eq('id', id)
+      .single();
+    throwUnitError(readError);
+    if (!unit) throw new Error('unit_type_not_found');
+
+    const readiness = getUnitTypePublicationReadiness({
+      nameVi: unit.name_vi,
+      nameEn: unit.name_en,
+      areaM2: Number(unit.area_m2),
+      recommendedForVi: unit.recommended_for_vi,
+      recommendedForEn: unit.recommended_for_en
+    });
+    if (!readiness.ready) {
+      throw new Error('unit_type_not_ready:' + readiness.missingLabels.join(','));
+    }
+  }
+
   const {data, error} = await supabase.from('unit_types').update({active}).eq('id', id).select('id').single();
   throwUnitError(error);
   if (!data) throw new Error('unit_type_publication_noop');
