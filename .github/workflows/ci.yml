@@ -30,7 +30,9 @@ jobs:
       - run: npm run build
 
   preview-smoke:
-    if: github.event_name == 'pull_request'
+    # Vercel branch previews are intentionally disabled to protect Hobby build quota.
+    # CI quality + Playwright still validate pull requests; production smoke runs on main.
+    if: ${{ false }}
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 10
