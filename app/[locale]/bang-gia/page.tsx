@@ -7,6 +7,7 @@ import {SectionHeading} from '@/components/ui/section-heading';
 import {UnitCompare} from '@/components/units/unit-compare';
 import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {FinalCta} from '@/components/marketing/final-cta';
+import {EmptyCatalogConversion} from '@/components/marketing/empty-catalog-conversion';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
@@ -70,14 +71,20 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
       </Section>
 
       <Section tone="soft">
-        <SectionHeading
-          eyebrow={vi ? 'SO SÁNH' : 'COMPARE'}
-          title={vi ? 'Đặt tối đa 3 loại kho cạnh nhau.' : 'Compare up to 3 unit types side by side.'}
-          description={vi
-            ? 'Các thẻ chỉ hiển thị dữ liệu đang có; giá trống sẽ tiếp tục hiển thị “Liên hệ báo giá”.'
-            : 'Cards show only current data; missing prices remain “Contact for pricing”.'}
-        />
-        <div className="mt-8"><UnitCompare units={units} locale={rawLocale} /></div>
+        {units.length ? (
+          <>
+            <SectionHeading
+              eyebrow={vi ? 'SO SÁNH' : 'COMPARE'}
+              title={vi ? 'Đặt tối đa 3 loại kho cạnh nhau.' : 'Compare up to 3 unit types side by side.'}
+              description={vi
+                ? 'Các thẻ chỉ hiển thị dữ liệu đang có; giá trống sẽ tiếp tục hiển thị “Liên hệ báo giá”.'
+                : 'Cards show only current data; missing prices remain “Contact for pricing”.'}
+            />
+            <div className="mt-8"><UnitCompare units={units} locale={rawLocale} /></div>
+          </>
+        ) : (
+          <EmptyCatalogConversion locale={rawLocale} context="pricing" />
+        )}
       </Section>
 
       <FinalCta locale={rawLocale} />
