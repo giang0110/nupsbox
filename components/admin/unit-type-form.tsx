@@ -37,13 +37,21 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
             tone={unit?.active ? 'success' : 'neutral'}
           />
           {unit?.active ? (
-            <Link
-              href={'/kho-mini/' + unit.slug}
-              target="_blank"
-              className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-blue)]"
-            >
-              Preview public ↗
-            </Link>
+            <>
+              <Link
+                href={'/admin/catalog/pricing?unit=' + unit.id}
+                className="inline-flex min-h-11 items-center rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white"
+              >
+                Tiếp theo: cấu hình giá
+              </Link>
+              <Link
+                href={'/kho-mini/' + unit.slug}
+                target="_blank"
+                className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-blue)]"
+              >
+                Preview public ↗
+              </Link>
+            </>
           ) : null}
           {unit && canPublish ? (
             <form action={setUnitTypePublication}>
