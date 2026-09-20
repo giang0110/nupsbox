@@ -66,6 +66,8 @@ export default async function Page({
               unitName={requestedUnit?.name}
               locationId={requestedLocation?.id}
               locationName={requestedLocation?.name}
+              needType={intakeNeed}
+              estimatedVolume={intakeVolume}
               appointmentMode
             />
           </Suspense>
