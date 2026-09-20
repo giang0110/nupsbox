@@ -1,6 +1,7 @@
 'use server';
 
 import {revalidatePath} from 'next/cache';
+import {redirect} from 'next/navigation';
 import {
   prepareLocationCreate,
   prepareLocationPublication,
@@ -94,4 +95,8 @@ export async function setLocationPublication(formData: FormData) {
   throwCmsError(error);
   if (!data) throw new Error('location_publication_noop');
   revalidateLocations();
+
+  if (status === 'active' && String(formData.get('next') ?? '') === 'media') {
+    redirect('/admin/content/media?location=' + id);
+  }
 }
