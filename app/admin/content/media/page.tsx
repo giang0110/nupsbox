@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {AdminEmptyState} from '@/components/admin/admin-primitives';
@@ -52,9 +53,9 @@ export default async function AdminMediaPage({
             <p className="text-sm font-bold text-[var(--nupsbox-navy)]">
               Đang tập trung media cho: {selectedLocation.nameVi}
             </p>
-            <a href="/admin/content/media" className="text-sm font-bold text-[var(--nupsbox-blue)] hover:underline">
+            <Link href="/admin/content/media" className="text-sm font-bold text-[var(--nupsbox-blue)] hover:underline">
               Xem toàn bộ media
-            </a>
+            </Link>
           </div>
         ) : null}
 
