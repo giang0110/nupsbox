@@ -19,6 +19,13 @@ export type AdminAnalyticsDailyItem = {
   count: number;
 };
 
+export type AdminLeadFunnelStage = {
+  key: 'lead' | 'contacted' | 'qualified' | 'viewing' | 'won';
+  label: string;
+  count: number;
+  shareOfLeads: number;
+};
+
 export type AdminLeadAnalytics = {
   days: AnalyticsWindowDays;
   fromIso: string;
@@ -28,6 +35,7 @@ export type AdminLeadAnalytics = {
   wonLeads: number;
   activeLeads: number;
   conversionRate: number;
+  funnel: AdminLeadFunnelStage[];
   byStatus: Array<{status: OperationalLeadStatus; count: number; share: number}>;
   bySource: AdminAnalyticsBreakdownItem[];
   byNeedType: AdminAnalyticsBreakdownItem[];
@@ -158,6 +166,21 @@ export function summarizeLeadAnalytics(
   const activeLeads = activeStatuses.reduce((sum, status) => sum + statusCounts[status], 0);
   const statusDenominator = safeTotal || 1;
 
+  const reached = {
+    lead: safeTotal,
+    contacted: statusCounts.contacted + statusCounts.qualified + statusCounts.viewing + statusCounts.negotiating + statusCounts.won,
+    qualified: statusCounts.qualified + statusCounts.viewing + statusCounts.negotiating + statusCounts.won,
+    viewing: statusCounts.viewing + statusCounts.negotiating + statusCounts.won,
+    won: statusCounts.won
+  };
+  const funnel: AdminLeadFunnelStage[] = [
+    {key: 'lead', label: 'Lead', count: reached.lead, shareOfLeads: safeTotal ? 1 : 0},
+    {key: 'contacted', label: 'Đã liên hệ+', count: reached.contacted, shareOfLeads: safeTotal ? reached.contacted / safeTotal : 0},
+    {key: 'qualified', label: 'Qualified+', count: reached.qualified, shareOfLeads: safeTotal ? reached.qualified / safeTotal : 0},
+    {key: 'viewing', label: 'Xem kho+', count: reached.viewing, shareOfLeads: safeTotal ? reached.viewing / safeTotal : 0},
+    {key: 'won', label: 'Đã thuê', count: reached.won, shareOfLeads: safeTotal ? reached.won / safeTotal : 0}
+  ];
+
   return {
     days,
     fromIso,
@@ -167,6 +190,7 @@ export function summarizeLeadAnalytics(
     wonLeads,
     activeLeads,
     conversionRate: safeTotal ? wonLeads / safeTotal : 0,
+    funnel,
     byStatus: operationalLeadStatuses.map(status => ({
       status,
       count: statusCounts[status],
