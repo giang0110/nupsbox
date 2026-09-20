@@ -11,6 +11,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import {getUnitTypePublicationReadiness, type AdminUnitType} from '@/features/admin/unit-types';
+import {UnitTypePreview} from '@/components/admin/unit-type-preview';
 
 type Props = {
   unit?: AdminUnitType;
@@ -57,13 +58,16 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
             <form action={setUnitTypePublication}>
               <input type="hidden" name="id" value={unit.id} />
               <input type="hidden" name="publish" value={unit.active ? 'false' : 'true'} />
+              {!unit.active && publication?.ready ? (
+                <input type="hidden" name="next" value="pricing" />
+              ) : null}
               <button
                 type="submit"
                 disabled={!unit.active && !publication?.ready}
                 title={!unit.active && !publication?.ready ? 'Hoàn thiện checklist trước khi xuất bản' : undefined}
                 className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản' : 'Chưa sẵn sàng'}
+                {unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản & cấu hình giá' : 'Chưa sẵn sàng'}
               </button>
             </form>
           ) : null}
@@ -94,6 +98,13 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
               </div>
             ))}
           </div>
+        </div>
+      ) : null}
+
+      {unit ? (
+        <div className="mb-6">
+          <p className="mb-3 text-sm font-black text-[var(--nupsbox-navy)]">Preview nội dung public</p>
+          <UnitTypePreview unit={unit} />
         </div>
       ) : null}
 
@@ -138,12 +149,18 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
         <AdminFieldGroup legend="Nội dung tư vấn" disabled={!canMutate}>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="text-sm font-semibold">
-              Gợi ý VI
+              Gợi ý VI <span className="text-rose-700">*</span>
               <input className={inputClass} name="recommendedForVi" defaultValue={unit?.recommendedForVi ?? ''} />
+              <span className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
+                Bắt buộc trước khi publish. Mô tả ngắn nhóm khách hoặc tình huống phù hợp.
+              </span>
             </label>
             <label className="text-sm font-semibold">
-              Gợi ý EN
+              Gợi ý EN <span className="text-rose-700">*</span>
               <input className={inputClass} name="recommendedForEn" defaultValue={unit?.recommendedForEn ?? ''} />
+              <span className="mt-1 block text-xs font-normal leading-5 text-[var(--nupsbox-slate)]">
+                Required before publish. Keep the meaning aligned with the Vietnamese copy.
+              </span>
             </label>
             <label className="text-sm font-semibold">
               Sức chứa VI

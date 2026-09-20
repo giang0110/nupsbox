@@ -1,6 +1,7 @@
 'use server';
 
 import {revalidatePath} from 'next/cache';
+import {redirect} from 'next/navigation';
 import {
   prepareUnitTypeCreate,
   getUnitTypePublicationReadiness,
@@ -98,4 +99,8 @@ export async function setUnitTypePublication(formData: FormData) {
   throwUnitError(error);
   if (!data) throw new Error('unit_type_publication_noop');
   revalidateUnits();
+
+  if (active && String(formData.get('next') ?? '') === 'pricing') {
+    redirect('/admin/catalog/pricing?unit=' + id);
+  }
 }
