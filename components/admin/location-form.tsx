@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   createLocation,
   setLocationPublication,
@@ -11,17 +12,20 @@ import {
 } from '@/components/admin/admin-primitives';
 import {JsonTextarea} from '@/components/admin/json-textarea';
 import type {AdminLocation} from '@/features/admin/locations';
+import type {LocationLaunchReadiness} from '@/features/admin/location-launch';
+import {LocationPreview} from '@/components/admin/location-preview';
 
 type Props = {
   location?: AdminLocation;
   canMutate: boolean;
   canPublish: boolean;
+  launch?: LocationLaunchReadiness;
 };
 
 const inputClass =
   'mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 py-2 text-sm text-[var(--nupsbox-navy)] disabled:bg-slate-50 disabled:text-slate-500';
 
-export function LocationForm({location, canMutate, canPublish}: Props) {
+export function LocationForm({location, canMutate, canPublish, launch}: Props) {
   const editing = Boolean(location);
   const slugLocked = Boolean(location?.publishedAt);
   const action = editing ? updateLocation : createLocation;
@@ -32,6 +36,29 @@ export function LocationForm({location, canMutate, canPublish}: Props) {
         label={location?.status === 'active' ? 'Đang hoạt động' : editing ? 'Bản nháp' : 'Mới'}
         tone={location?.status === 'active' ? 'success' : 'neutral'}
       />
+      {location?.status === 'active' ? (
+        <>
+          <Link
+            href={'/admin/content/media?location=' + location.id}
+            className="inline-flex min-h-11 items-center rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white"
+          >
+            Quản lý ảnh
+          </Link>
+          <Link
+            href={'/admin/catalog/pricing?location=' + location.id}
+            className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
+          >
+            Cấu hình giá
+          </Link>
+          <Link
+            href={'/dia-diem/' + location.slug}
+            target="_blank"
+            className="inline-flex min-h-11 items-center rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-blue)]"
+          >
+            Preview public ↗
+          </Link>
+        </>
+      ) : null}
       {location && canPublish ? (
         <form action={setLocationPublication}>
           <input type="hidden" name="id" value={location.id} />
@@ -40,11 +67,12 @@ export function LocationForm({location, canMutate, canPublish}: Props) {
             name="publish"
             value={location.status === 'active' ? 'false' : 'true'}
           />
+          {location.status !== 'active' ? <input type="hidden" name="next" value="media" /> : null}
           <button
             type="submit"
             className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
           >
-            {location.status === 'active' ? 'Ngừng xuất bản' : 'Xuất bản'}
+            {location.status === 'active' ? 'Ngừng xuất bản' : 'Xuất bản & quản lý ảnh'}
           </button>
         </form>
       ) : null}
@@ -57,6 +85,44 @@ export function LocationForm({location, canMutate, canPublish}: Props) {
       description={location?.publishedAt ? 'Đã từng xuất bản — slug được khóa vĩnh viễn trong Phase 2.' : undefined}
       actions={panelActions}
     >
+      {location ? (
+        <div className="mb-6 grid gap-5">
+          <div>
+            <p className="mb-3 text-sm font-black text-[var(--nupsbox-navy)]">Preview nội dung public</p>
+            <LocationPreview location={location} />
+          </div>
+          {launch ? (
+            <div className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-black text-[var(--nupsbox-navy)]">Location readiness</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--nupsbox-slate)]">
+                    Các mục dưới đây tăng chất lượng public nhưng không tự động chặn publish.
+                  </p>
+                </div>
+                <AdminStatusBadge
+                  label={launch.qualityScore + '% quality'}
+                  tone={launch.qualityScore >= 80 ? 'success' : launch.qualityScore >= 40 ? 'warning' : 'neutral'}
+                />
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                {launch.checks.map(check => (
+                  <div key={check.id} className="rounded-lg bg-white px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[var(--nupsbox-navy)]">
+                      <span aria-hidden="true" className={check.ready ? 'text-emerald-700' : 'text-amber-700'}>
+                        {check.ready ? '✓' : '○'}
+                      </span>
+                      {check.label}
+                    </div>
+                    <p className="mt-1 text-[0.7rem] leading-4 text-[var(--nupsbox-slate)]">{check.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       <form action={action} className="grid gap-6">
         {location ? <input type="hidden" name="id" value={location.id} /> : null}
         {slugLocked && location ? <input type="hidden" name="slug" value={location.slug} /> : null}
