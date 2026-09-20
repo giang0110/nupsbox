@@ -21,10 +21,10 @@ select ok(
     select 1 from pg_policies
     where schemaname='public'
       and tablename='profiles'
-      and policyname='profiles_self_read'
+      and policyname='profiles_authenticated_read'
       and qual like '%( SELECT auth.uid() AS uid)%'
   ),
-  'profiles self policy caches auth uid through select'
+  'consolidated profiles policy caches auth uid through select'
 );
 
 select ok(
