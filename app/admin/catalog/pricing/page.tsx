@@ -6,6 +6,7 @@ import {PricingForm} from '@/components/admin/pricing-form';
 import {Container} from '@/components/ui/container';
 import {listAdminLocations} from '@/features/admin/locations';
 import {listAdminPricing} from '@/features/admin/pricing';
+import {pricingPairKey, summarizePricingLaunch} from '@/features/admin/pricing-launch';
 import {listAdminUnitTypes} from '@/features/admin/unit-types';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
@@ -32,6 +33,8 @@ export default async function AdminPricingPage({
   const activeLocations = locations.filter(location => location.status === 'active');
   const activeUnits = units.filter(unit => unit.active);
   const hasPrerequisites = activeLocations.length > 0 && activeUnits.length > 0;
+  const launch = summarizePricingLaunch(locations, units, pricing);
+  const existingPairKeys = pricing.map(item => pricingPairKey(item.locationId, item.unitTypeId));
   const defaultLocationId = activeLocations.some(location => location.id === requestedLocationId)
     ? requestedLocationId
     : activeLocations[0]?.id;
@@ -55,6 +58,30 @@ export default async function AdminPricingPage({
             </Link>
           }
         />
+
+        <AdminPanel
+          title="Pricing Launch"
+          description="Theo dõi độ phủ mapping active location × active unit. Giá chưa xác minh vẫn có thể để trống và hiển thị Liên hệ."
+          actions={
+            <div className="text-right">
+              <p className="text-3xl font-black tracking-[-0.04em] text-[var(--nupsbox-navy)]">{launch.score}%</p>
+              <p className="text-xs font-bold text-[var(--nupsbox-slate)]">{launch.usableMappings} mapping usable</p>
+            </div>
+          }
+        >
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl border border-[var(--nupsbox-border)] p-4"><p className="text-xs font-bold text-[var(--nupsbox-slate)]">Active locations</p><p className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">{launch.activeLocations}</p></div>
+            <div className="rounded-xl border border-[var(--nupsbox-border)] p-4"><p className="text-xs font-bold text-[var(--nupsbox-slate)]">Active units</p><p className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">{launch.activeUnits}</p></div>
+            <div className="rounded-xl border border-[var(--nupsbox-border)] p-4"><p className="text-xs font-bold text-[var(--nupsbox-slate)]">Giá đã xác minh</p><p className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">{launch.verifiedPriceMappings}</p></div>
+            <div className="rounded-xl border border-[var(--nupsbox-border)] p-4"><p className="text-xs font-bold text-[var(--nupsbox-slate)]">Pair còn thiếu</p><p className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">{launch.missingPairs}</p></div>
+          </div>
+          {launch.ready ? (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3">
+              <p className="text-sm font-bold text-emerald-900">Đã có mapping usable. Có thể rà lại cách hiển thị ngoài public.</p>
+              <Link href="/bang-gia" target="_blank" className="inline-flex min-h-10 items-center rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white">Preview bảng giá ↗</Link>
+            </div>
+          ) : null}
+        </AdminPanel>
 
         <AdminPanel
           title="Prerequisite"
@@ -92,6 +119,7 @@ export default async function AdminPricingPage({
               canMutate
               defaultLocationId={defaultLocationId}
               defaultUnitTypeId={defaultUnitTypeId}
+              existingPairKeys={existingPairKeys}
             />
           ) : null}
           {pricing.length ? (
@@ -102,6 +130,7 @@ export default async function AdminPricingPage({
                 locations={locations}
                 units={units}
                 canMutate={canUpdate}
+                existingPairKeys={existingPairKeys}
               />
             ))
           ) : (
