@@ -62,16 +62,29 @@ function blogInput(blog: AdminBlog) {
   };
 }
 
-function translationRows(blogPostId: string, translations: PreparedBlogTranslation[]) {
-  return translations.map((translation) => ({
-    blog_post_id: blogPostId,
-    locale: translation.locale,
+type BlogAtomicRpcError = {code?: string; message?: string} | null;
+type BlogAtomicRpcClient = {
+  rpc(
+    name: 'create_blog_post_atomic' | 'update_blog_post_atomic',
+    args: Record<string, unknown>
+  ): PromiseLike<{data: unknown; error: BlogAtomicRpcError}>;
+};
+
+function translationPayload(translation: PreparedBlogTranslation): Json {
+  return {
     title: translation.title,
     excerpt: translation.excerpt,
     body: translation.body as Json,
     seo_title: translation.seo_title,
     seo_description: translation.seo_description
-  }));
+  };
+}
+
+function bilingualPayload(translations: PreparedBlogTranslation[]) {
+  const vi = translations.find(item => item.locale === 'vi');
+  const en = translations.find(item => item.locale === 'en');
+  if (!vi || !en) throw new Error('blog_translations_incomplete');
+  return {vi: translationPayload(vi), en: translationPayload(en)};
 }
 
 function throwBlogError(error: {code?: string; message?: string} | null) {
@@ -91,19 +104,20 @@ function revalidateBlogs() {
 export async function createBlogPost(formData: FormData) {
   const session = await requireAdminUser();
   const prepared = prepareBlogCreate(session.role, inputFromFormData(formData));
+  const payload = bilingualPayload(prepared.translations);
   const supabase = await createSupabaseServerClient();
-  const {data: post, error: postError} = await supabase
-    .from('blog_posts')
-    .insert({...prepared.post, author_id: session.user.id})
-    .select('id')
-    .single();
-  throwBlogError(postError);
-  if (!post) throw new Error('blog_create_failed');
+  const rpcClient = supabase as unknown as BlogAtomicRpcClient;
 
-  const {error: translationError} = await supabase
-    .from('blog_translations')
-    .insert(translationRows(post.id, prepared.translations));
-  if (translationError) throw translationError;
+  const {data, error} = await rpcClient.rpc('create_blog_post_atomic', {
+    p_slug: prepared.post.slug,
+    p_cover_media_id: prepared.post.cover_media_id,
+    p_source_url: prepared.post.source_url,
+    p_author_id: session.user.id,
+    p_vi: payload.vi,
+    p_en: payload.en
+  });
+  throwBlogError(error);
+  if (typeof data !== 'string') throw new Error('blog_create_failed');
   revalidateBlogs();
 }
 
@@ -117,22 +131,19 @@ export async function updateBlogPost(formData: FormData) {
     slug: current.slug,
     publishedAt: current.publishedAt
   });
+  const payload = bilingualPayload(prepared.translations);
   const supabase = await createSupabaseServerClient();
-  const {data: updatedPost, error: postError} = await supabase
-    .from('blog_posts')
-    .update(prepared.postChanges)
-    .eq('id', prepared.id)
-    .select('id')
-    .single();
-  throwBlogError(postError);
-  if (!updatedPost) throw new Error('blog_update_noop');
-
-  const {error: translationError} = await supabase
-    .from('blog_translations')
-    .upsert(translationRows(prepared.id, prepared.translations), {
-      onConflict: 'blog_post_id,locale'
-    });
-  if (translationError) throw translationError;
+  const rpcClient = supabase as unknown as BlogAtomicRpcClient;
+  const {data, error} = await rpcClient.rpc('update_blog_post_atomic', {
+    p_id: prepared.id,
+    p_slug: prepared.postChanges.slug,
+    p_cover_media_id: prepared.postChanges.cover_media_id,
+    p_source_url: prepared.postChanges.source_url,
+    p_vi: payload.vi,
+    p_en: payload.en
+  });
+  throwBlogError(error);
+  if (data !== prepared.id) throw new Error('blog_update_noop');
   revalidateBlogs();
   revalidatePath(`/admin/content/blog/${prepared.id}`);
 }
