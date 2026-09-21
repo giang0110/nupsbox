@@ -2,7 +2,13 @@ import {render, screen} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 
 vi.mock('next/image', () => ({
-  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement> & {fill?: boolean}) => {
+    const {fill, alt = '', ...imageProps} = props;
+    void fill;
+    // Test double for next/image; native img is intentional here.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img alt={alt} {...imageProps} />;
+  }
 }));
 
 vi.mock('@/i18n/navigation', () => ({
