@@ -15,14 +15,27 @@ function revalidateLeadWorkspace(leadId: string) {
   revalidatePath(`/admin/leads/${leadId}`);
 }
 
+function formText(formData: FormData, name: string): string {
+  const value = formData.get(name);
+  return typeof value === 'string' ? value : '';
+}
+
+async function requireLeadExists(leadId: string) {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase.from('leads').select('id').eq('id', leadId).maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('lead_not_found');
+  return supabase;
+}
+
 export async function updateLeadStatus(formData: FormData) {
   const session = await requireAdminUser();
   const {leadId, status} = prepareLeadStatusUpdate(
     session.role,
-    String(formData.get('leadId') ?? ''),
+    formText(formData, 'leadId'),
     formData.get('status')
   );
-  const supabase = await createSupabaseServerClient();
+  const supabase = await requireLeadExists(leadId);
 
   const {error} = await supabase.from('leads').update({status}).eq('id', leadId);
   if (error) throw error;
@@ -32,13 +45,13 @@ export async function updateLeadStatus(formData: FormData) {
 
 export async function assignLead(formData: FormData) {
   const session = await requireAdminUser();
-  const rawAssigneeId = String(formData.get('assigneeId') ?? '').trim();
+  const rawAssigneeId = formText(formData, 'assigneeId').trim();
   const {leadId, assigneeId} = prepareLeadAssignment(
     session.role,
-    String(formData.get('leadId') ?? ''),
+    formText(formData, 'leadId'),
     rawAssigneeId || null
   );
-  const supabase = await createSupabaseServerClient();
+  const supabase = await requireLeadExists(leadId);
 
   const {error} = await supabase
     .from('leads')
@@ -53,10 +66,10 @@ export async function addLeadNote(formData: FormData) {
   const session = await requireAdminUser();
   const {leadId, note} = prepareLeadNote(
     session.role,
-    String(formData.get('leadId') ?? ''),
+    formText(formData, 'leadId'),
     formData.get('note')
   );
-  const supabase = await createSupabaseServerClient();
+  const supabase = await requireLeadExists(leadId);
 
   const {error} = await supabase.from('lead_notes').insert({
     lead_id: leadId,

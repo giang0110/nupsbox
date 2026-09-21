@@ -14,6 +14,7 @@ import type {AppointmentSource, AppointmentStatus, AppRole} from '@/types/databa
 
 export type AdminLeadAppointment = {
   id: string;
+  leadId: string;
   scheduledAt: string;
   durationMinutes: number;
   status: AppointmentStatus;
@@ -104,7 +105,7 @@ export async function getAdminLeadDetailReadModel(leadId: string, role: AppRole 
     createdAt: row.created_at
   }] : []);
   const appointments = (appointmentsResult.data ?? []).map((row) => ({
-    id: row.id, scheduledAt: row.scheduled_at, durationMinutes: row.duration_minutes, status: row.status,
+    id: row.id, leadId, scheduledAt: row.scheduled_at, durationMinutes: row.duration_minutes, status: row.status,
     source: row.source, locationId: row.location_id, unitTypeId: row.unit_type_id, assignedTo: row.assigned_to,
     assignedName: profileName(profileNames, row.assigned_to), customerNote: row.customer_note,
     internalNote: row.internal_note, createdAt: row.created_at, updatedAt: row.updated_at

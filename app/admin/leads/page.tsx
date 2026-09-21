@@ -27,6 +27,17 @@ const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
   timeZone: 'Asia/Ho_Chi_Minh'
 });
 
+const appointmentDateFormatter = new Intl.DateTimeFormat('vi-VN', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+  timeZone: 'Asia/Ho_Chi_Minh'
+});
+
+const appointmentStatusLabels = {
+  pending: 'Chờ xác nhận',
+  confirmed: 'Đã xác nhận'
+} as const;
+
 export default async function AdminLeadsPage({
   searchParams
 }: {
@@ -63,13 +74,15 @@ export default async function AdminLeadsPage({
         </div>
 
         <div className="mt-8 overflow-x-auto rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white shadow-sm">
-          <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1250px] border-collapse text-left text-sm">
             <thead className="bg-[var(--nupsbox-surface)] text-xs uppercase tracking-[0.08em] text-[var(--nupsbox-slate)]">
               <tr>
                 <th className="px-5 py-4">Thời gian</th>
                 <th className="px-5 py-4">Khách hàng</th>
                 <th className="px-5 py-4">Nhu cầu</th>
                 <th className="px-5 py-4">Nguồn</th>
+                <th className="px-5 py-4">Phụ trách</th>
+                <th className="px-5 py-4">Cuộc hẹn kế tiếp</th>
                 <th className="px-5 py-4">Trạng thái</th>
               </tr>
             </thead>
@@ -91,13 +104,26 @@ export default async function AdminLeadsPage({
                     <p>{lead.utmSource ?? 'Trực tiếp / chưa rõ'}</p>
                     {lead.utmCampaign ? <p className="mt-1 text-xs">{lead.utmCampaign}</p> : null}
                   </td>
+                  <td className="px-5 py-5 text-[var(--nupsbox-slate)]">
+                    <p className="font-bold text-[var(--nupsbox-navy)]">{lead.assignedName ?? 'Chưa phân công'}</p>
+                    {lead.assignedTo && !lead.assignedName ? <p className="mt-1 break-all text-xs">{lead.assignedTo}</p> : null}
+                  </td>
+                  <td className="px-5 py-5 text-[var(--nupsbox-slate)]">
+                    {lead.nextAppointment ? (
+                      <>
+                        <p className="font-bold text-[var(--nupsbox-navy)]">{appointmentDateFormatter.format(new Date(lead.nextAppointment.scheduledAt))}</p>
+                        <p className="mt-1 text-xs">{appointmentStatusLabels[lead.nextAppointment.status]}</p>
+                        {lead.nextAppointment.overdue ? <p className="mt-1 text-xs font-black text-red-700">Quá hạn</p> : null}
+                      </>
+                    ) : <span>Chưa có lịch</span>}
+                  </td>
                   <td className="px-5 py-5">
                     {canUpdate ? <LeadStatusForm leadId={lead.id} status={lead.status} /> : <span className="font-bold text-[var(--nupsbox-navy)]">{statusLabels[lead.status]}</span>}
                   </td>
                 </tr>
               ))}
               {!leads.length ? (
-                <tr><td colSpan={5} className="px-5 py-12 text-center text-[var(--nupsbox-slate)]">Chưa có lead phù hợp bộ lọc hiện tại.</td></tr>
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-[var(--nupsbox-slate)]">Chưa có lead phù hợp bộ lọc hiện tại.</td></tr>
               ) : null}
             </tbody>
           </table>

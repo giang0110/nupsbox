@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import {notFound, redirect} from 'next/navigation';
-import {addLeadNote, assignLead} from '@/app/admin/leads/actions';
+import {AppointmentForm} from '@/components/admin/appointment-form';
+import {AppointmentList} from '@/components/admin/appointment-list';
+import {LeadAssigneeForm} from '@/components/admin/lead-assignee-form';
+import {LeadNoteForm} from '@/components/admin/lead-note-form';
 import {LeadStatusForm} from '@/components/admin/lead-status-form';
-import {Container} from '@/components/ui/container';
-import {
-  getAdminLeadDetail,
-  listLeadAssignees,
-  type OperationalLeadStatus
-} from '@/features/admin/leads';
+import {LeadTimeline} from '@/components/admin/lead-timeline';
+import {getAdminLeadDetail, type OperationalLeadStatus} from '@/features/admin/leads';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 
@@ -20,6 +19,14 @@ const statusLabels: Record<OperationalLeadStatus, string> = {
   won: 'Đã thuê',
   lost: 'Không chuyển đổi'
 };
+
+const appointmentStatusLabels = {
+  pending: 'Chờ xác nhận',
+  confirmed: 'Đã xác nhận',
+  completed: 'Hoàn tất',
+  cancelled: 'Đã huỷ',
+  no_show: 'Không đến'
+} as const;
 
 const needTypeLabels: Record<string, string> = {
   shop_online: 'Bán hàng online',
@@ -47,6 +54,11 @@ function formatDate(value: string) {
   return dateFormatter.format(new Date(value));
 }
 
+function optionName(options: Array<{id: string; name: string}>, id: string | null) {
+  if (!id) return 'Chưa chọn';
+  return options.find((option) => option.id === id)?.name ?? id;
+}
+
 function MetaItem({label, value}: {label: string; value: string | null | undefined}) {
   return (
     <div className="rounded-2xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-4">
@@ -61,18 +73,16 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
   if (!can(session.role, 'leads:read')) redirect('/admin');
 
   const {leadId} = await params;
-  const lead = await getAdminLeadDetail(leadId, session.role);
-  if (!lead) notFound();
+  const detail = await getAdminLeadDetail(leadId, session.role);
+  if (!detail) notFound();
 
-  const canUpdate = can(session.role, 'leads:update');
-  const canAssign = can(session.role, 'leads:assign');
-  const canNote = can(session.role, 'leads:note');
-  const assignees = canAssign ? await listLeadAssignees() : [];
-  const currentAssignee = assignees.find((item) => item.id === lead.assignedTo);
+  const lead = detail.lead;
+  const locationName = optionName(detail.locationOptions, lead.locationId);
+  const unitTypeName = optionName(detail.unitTypeOptions, lead.unitTypeId);
 
   return (
     <main className="py-10 sm:py-14">
-      <Container>
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
         <Link href="/admin/leads" className="text-sm font-bold text-[var(--nupsbox-blue)]">← Danh sách lead</Link>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -80,7 +90,6 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
             <p className="text-xs font-black tracking-[0.16em] text-[var(--nupsbox-blue)]">CRM · LEAD DETAIL</p>
             <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[var(--nupsbox-navy)] sm:text-5xl">{lead.fullName}</h1>
             <p className="mt-4 text-[var(--nupsbox-slate)]">Tiếp nhận {formatDate(lead.createdAt)} · Ngôn ngữ {lead.preferredLanguage.toUpperCase()}</p>
-
             <div className="mt-6 flex flex-wrap gap-3">
               <a href={`tel:${lead.phone}`} className="rounded-xl bg-[var(--nupsbox-blue)] px-4 py-3 text-sm font-bold text-white">Gọi {lead.phone}</a>
               {lead.email ? <a href={`mailto:${lead.email}`} className="rounded-xl border border-[var(--nupsbox-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--nupsbox-navy)]">{lead.email}</a> : null}
@@ -88,39 +97,33 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
           </section>
 
           <aside className="rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-slate)]">Trạng thái</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-slate)]">Trạng thái lead</p>
             <div className="mt-3">
-              {canUpdate ? <LeadStatusForm leadId={lead.id} status={lead.status} /> : <p className="font-black text-[var(--nupsbox-navy)]">{statusLabels[lead.status]}</p>}
+              {detail.canMutateAppointments ? <LeadStatusForm leadId={lead.id} status={lead.status} /> : <p className="font-black text-[var(--nupsbox-navy)]">{statusLabels[lead.status]}</p>}
             </div>
 
             <div className="mt-6 border-t border-[var(--nupsbox-border)] pt-5">
-              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-slate)]">Phụ trách</p>
-              {canAssign ? (
-                <form action={assignLead} className="mt-3 grid gap-3">
-                  <input type="hidden" name="leadId" value={lead.id} />
-                  <select name="assigneeId" defaultValue={lead.assignedTo ?? ''} className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 text-sm text-[var(--nupsbox-navy)]">
-                    <option value="">Chưa phân công</option>
-                    {assignees.map((assignee) => (
-                      <option key={assignee.id} value={assignee.id}>{assignee.fullName} · {assignee.role}</option>
-                    ))}
-                  </select>
-                  <button type="submit" className="min-h-11 rounded-xl bg-[var(--nupsbox-navy)] px-4 text-sm font-bold text-white">Lưu phân công</button>
-                </form>
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-slate)]">Phụ trách lead</p>
+              {detail.canAssignLead ? (
+                <LeadAssigneeForm leadId={lead.id} assignedTo={lead.assignedTo} options={detail.assigneeOptions} />
               ) : (
-                <p className="mt-2 text-sm font-bold text-[var(--nupsbox-navy)]">{lead.assignedTo ? 'Đã phân công' : 'Chưa phân công'}</p>
+                <p className="mt-3 text-sm font-bold text-[var(--nupsbox-navy)]">{lead.assignedName ?? lead.assignedTo ?? 'Chưa phân công'}</p>
               )}
-              {canAssign && lead.assignedTo ? <p className="mt-2 break-all text-xs text-[var(--nupsbox-slate)]">Hiện tại: {currentAssignee?.fullName ?? lead.assignedTo}</p> : null}
             </div>
           </aside>
         </div>
 
         <section className="mt-10">
-          <h2 className="text-2xl font-black text-[var(--nupsbox-navy)]">Thông tin nhu cầu & nguồn</h2>
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">Customer summary</p>
+          <h2 className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">Thông tin khách hàng & nhu cầu</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetaItem label="Họ và tên" value={lead.fullName} />
+            <MetaItem label="Điện thoại" value={lead.phone} />
+            <MetaItem label="Email" value={lead.email} />
             <MetaItem label="Nhu cầu" value={needTypeLabels[lead.needType] ?? lead.needType} />
             <MetaItem label="Quy mô ước tính" value={volumeLabels[lead.estimatedVolume] ?? lead.estimatedVolume} />
-            <MetaItem label="Địa điểm ID" value={lead.locationId} />
-            <MetaItem label="Loại kho ID" value={lead.unitTypeId} />
+            <MetaItem label="Địa điểm mong muốn" value={locationName} />
+            <MetaItem label="Loại kho mong muốn" value={unitTypeName} />
             <MetaItem label="Nguồn" value={lead.source} />
             <MetaItem label="UTM source" value={lead.utmSource} />
             <MetaItem label="UTM medium" value={lead.utmMedium} />
@@ -137,24 +140,58 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
           ) : null}
         </section>
 
-        <div className="mt-10 grid gap-8 xl:grid-cols-2">
+        <section className="mt-10 rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">Next appointment</p>
+              <h2 className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">Cuộc hẹn tiếp theo</h2>
+            </div>
+            {detail.nextAppointment ? <span className="rounded-full bg-[var(--nupsbox-surface)] px-3 py-1 text-xs font-bold text-[var(--nupsbox-slate)]">{appointmentStatusLabels[detail.nextAppointment.status]}</span> : null}
+          </div>
+          {detail.nextAppointment ? (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--nupsbox-surface)] p-4">
+              <div>
+                <p className="font-black text-[var(--nupsbox-navy)]">{formatDate(detail.nextAppointment.scheduledAt)}</p>
+                <p className="mt-1 text-sm text-[var(--nupsbox-slate)]">Mã lịch: {detail.nextAppointment.id}</p>
+              </div>
+              {detail.nextAppointment.overdue ? <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">Quá hạn</span> : null}
+            </div>
+          ) : <p className="mt-5 text-sm text-[var(--nupsbox-slate)]">Chưa có cuộc hẹn đang chờ xử lý.</p>}
+        </section>
+
+        {detail.canMutateAppointments ? (
+          <section className="mt-8">
+            <AppointmentForm
+              leadId={lead.id}
+              defaultAssignedTo={lead.assignedTo}
+              assigneeOptions={detail.assigneeOptions}
+              locationOptions={detail.locationOptions}
+              unitTypeOptions={detail.unitTypeOptions}
+            />
+          </section>
+        ) : null}
+
+        <div className="mt-8">
+          <AppointmentList
+            appointments={detail.appointments}
+            appointmentHistory={detail.appointmentHistory}
+            canMutate={detail.canMutateAppointments}
+            assigneeOptions={detail.assigneeOptions}
+            locationOptions={detail.locationOptions}
+            unitTypeOptions={detail.unitTypeOptions}
+          />
+        </div>
+
+        <div className="mt-8 grid gap-8 xl:grid-cols-2">
           <section className="rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-black text-[var(--nupsbox-navy)]">Ghi chú nội bộ</h2>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">Notes</p>
+                <h2 className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">Ghi chú nội bộ</h2>
+              </div>
               <span className="text-xs font-bold text-[var(--nupsbox-slate)]">{lead.notes.length}/100 gần nhất</span>
             </div>
-
-            {canNote ? (
-              <form action={addLeadNote} className="mt-5 grid gap-3">
-                <input type="hidden" name="leadId" value={lead.id} />
-                <label className="grid gap-2 text-sm font-bold text-[var(--nupsbox-navy)]">
-                  Thêm ghi chú
-                  <textarea name="note" required maxLength={2000} rows={4} className="rounded-xl border border-[var(--nupsbox-border)] bg-white p-3 font-normal" placeholder="Ví dụ: Khách muốn xem kho chiều thứ Sáu…" />
-                </label>
-                <button type="submit" className="w-fit rounded-xl bg-[var(--nupsbox-blue)] px-4 py-3 text-sm font-bold text-white">Lưu ghi chú</button>
-              </form>
-            ) : null}
-
+            {detail.canAddNote ? <LeadNoteForm leadId={lead.id} /> : null}
             <div className="mt-6 grid gap-3">
               {lead.notes.map((note) => (
                 <article key={note.id} className="rounded-2xl bg-[var(--nupsbox-surface)] p-4">
@@ -167,24 +204,24 @@ export default async function AdminLeadDetailPage({params}: {params: Promise<{le
           </section>
 
           <section className="rounded-[1.5rem] border border-[var(--nupsbox-border)] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-black text-[var(--nupsbox-navy)]">Timeline trạng thái</h2>
-              <span className="text-xs font-bold text-[var(--nupsbox-slate)]">Audit từ database</span>
-            </div>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--nupsbox-blue)]">Lead history</p>
+            <h2 className="mt-2 text-2xl font-black text-[var(--nupsbox-navy)]">Lịch sử trạng thái lead</h2>
             <div className="mt-6 grid gap-3">
-              {lead.history.map((entry) => (
+              {detail.statusHistory.map((entry) => (
                 <article key={entry.id} className="rounded-2xl border border-[var(--nupsbox-border)] p-4">
-                  <p className="font-black text-[var(--nupsbox-navy)]">
-                    {entry.fromStatus ? statusLabels[entry.fromStatus] : 'Khởi tạo'} → {statusLabels[entry.toStatus]}
-                  </p>
-                  <p className="mt-2 text-xs text-[var(--nupsbox-slate)]">{formatDate(entry.createdAt)}{entry.changedBy ? ` · ${entry.changedBy}` : ''}</p>
+                  <p className="font-black text-[var(--nupsbox-navy)]">{entry.fromStatus ? statusLabels[entry.fromStatus] : 'Khởi tạo'} → {statusLabels[entry.toStatus]}</p>
+                  <p className="mt-2 text-xs text-[var(--nupsbox-slate)]">{formatDate(entry.createdAt)} · {entry.changedByName ?? entry.changedBy ?? 'Hệ thống'}</p>
                 </article>
               ))}
-              {!lead.history.length ? <p className="py-6 text-center text-sm text-[var(--nupsbox-slate)]">Chưa có thay đổi trạng thái được ghi nhận.</p> : null}
+              {!detail.statusHistory.length ? <p className="py-6 text-center text-sm text-[var(--nupsbox-slate)]">Chưa có thay đổi trạng thái được ghi nhận.</p> : null}
             </div>
           </section>
         </div>
-      </Container>
+
+        <div className="mt-8">
+          <LeadTimeline items={detail.timeline} />
+        </div>
+      </div>
     </main>
   );
 }
