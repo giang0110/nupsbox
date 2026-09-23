@@ -36,7 +36,9 @@ describe('admin navigation', () => {
     const staffHrefs = getAdminNavigation('staff').flatMap(group => group.items.map(item => item.href));
 
     expect(adminHrefs).toContain('/admin/audit');
+    expect(adminHrefs).toContain('/admin/users');
     expect(staffHrefs).not.toContain('/admin/audit');
+    expect(staffHrefs).not.toContain('/admin/users');
     expect(staffHrefs).toContain('/admin/action-center');
     expect(staffHrefs).toContain('/admin/quality');
     expect(staffHrefs).toContain('/admin/analytics');

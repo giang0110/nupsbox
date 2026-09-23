@@ -88,6 +88,9 @@ export default async function AdminDashboardPage() {
       : null,
     can(session.role, 'settings:update')
       ? {label: 'Cập nhật liên hệ', detail: 'Phone · Zalo · Facebook', href: '/admin/content/settings'}
+      : null,
+    can(session.role, 'roles:update')
+      ? {label: 'Người dùng & quyền', detail: 'Kích hoạt · role · trạng thái', href: '/admin/users'}
       : null
   ].filter((item): item is {label: string; detail: string; href: string} => Boolean(item));
 
