@@ -63,14 +63,12 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
               {!unit.active && publication?.ready ? (
                 <input type="hidden" name="next" value="pricing" />
               ) : null}
-              <button
-                type="submit"
+              <AdminSubmitButton
+                idleLabel={unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản & cấu hình giá' : 'Chưa sẵn sàng'}
+                pendingLabel={unit.active ? 'Đang ngừng…' : 'Đang xuất bản…'}
                 disabled={!unit.active && !publication?.ready}
-                title={!unit.active && !publication?.ready ? 'Hoàn thiện checklist trước khi xuất bản' : undefined}
                 className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản & cấu hình giá' : 'Chưa sẵn sàng'}
-              </button>
+              />
             </form>
           ) : null}
         </AdminActionBar>
@@ -188,11 +186,11 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
         </AdminFieldGroup>
 
         {canMutate ? (
-          <button
-            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white"
-          >
-            {editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
-          </button>
+          <AdminSubmitButton
+            idleLabel={editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
+            pendingLabel={editing ? 'Đang lưu…' : 'Đang tạo…'}
+            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+          />
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
