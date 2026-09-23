@@ -1,6 +1,6 @@
-import {render, screen, waitFor} from '@testing-library/react';
+import {cleanup, render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 const {updateLeadStatusValue} = vi.hoisted(() => ({
   updateLeadStatusValue: vi.fn()
@@ -14,6 +14,8 @@ vi.mock('@/app/admin/leads/actions', () => ({
 import {LeadStatusForm} from '@/components/admin/lead-status-form';
 
 describe('lead action feedback', () => {
+  afterEach(() => cleanup());
+
   it('shows a visible message when a status mutation fails', async () => {
     updateLeadStatusValue.mockResolvedValueOnce({
       ok: false,
