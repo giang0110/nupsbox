@@ -1,8 +1,10 @@
 'use client';
 
+import {ClientErrorReporter} from '@/components/ops/client-error-reporter';
 import Link from 'next/link';
 
 export default function AdminError({
+  error,
   reset
 }: {
   error: Error & {digest?: string};
@@ -10,6 +12,7 @@ export default function AdminError({
 }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <ClientErrorReporter scope="admin" digest={error.digest} />
       <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-blue-700">
         KHU VỰC QUẢN TRỊ
       </p>
