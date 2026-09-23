@@ -28,7 +28,7 @@ function DraftHarness() {
           <input aria-label="Tiêu đề" name="title" defaultValue="Ban đầu" />
         </label>
       </AdminMutationForm>
-      <a href="/admin/content">Đi nội dung</a>
+      <a href="https://example.com/leave-admin">Rời trang</a>
     </AdminDraftProtectionProvider>
   );
 }
@@ -56,7 +56,7 @@ describe('P3.48 admin draft protection and unsaved changes UX', () => {
     render(<DraftHarness />);
 
     fireEvent.input(screen.getByLabelText('Tiêu đề'), {target: {value: 'Đã sửa'}});
-    const link = screen.getByRole('link', {name: 'Đi nội dung'});
+    const link = screen.getByRole('link', {name: 'Rời trang'});
     const event = new MouseEvent('click', {bubbles: true, cancelable: true});
 
     link.dispatchEvent(event);
