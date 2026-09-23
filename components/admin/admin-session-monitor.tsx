@@ -55,7 +55,6 @@ export function AdminSessionMonitor({expectedRole}: {expectedRole: AppRole}) {
   }, [expectedRole, router]);
 
   useEffect(() => {
-    void checkSession();
     const interval = window.setInterval(() => void checkSession(), CHECK_INTERVAL_MS);
 
     const onVisibility = () => {
