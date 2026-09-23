@@ -3,7 +3,8 @@
 import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
 import {preparePricingCreate, preparePricingUpdate} from '@/features/admin/pricing';
-import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
+import {adminMutationConflict, adminMutationFailure, adminMutationSuccess, type AdminMutationResult} from '@/features/admin/action-result';
+import {assertFreshAdminWrite, isStaleAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -34,6 +35,21 @@ function revalidatePricing() {
   revalidatePath('/en/pricing');
 }
 
+async function recoverPricingConflict(id: string): Promise<AdminMutationResult> {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase
+    .from('location_unit_types')
+    .select('updated_at')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data?.updated_at) {
+    return adminMutationFailure('Cấu hình giá này không còn tồn tại. Hãy tải lại trang để đồng bộ dữ liệu.');
+  }
+  return adminMutationConflict(data.updated_at);
+}
+
 export async function createPricing(formData: FormData) {
   const session = await requireAdminUser();
   const payload = preparePricingCreate(session.role, inputFromFormData(formData));
@@ -56,27 +72,34 @@ export async function createPricing(formData: FormData) {
   }
 }
 
-export async function updatePricing(formData: FormData) {
-  const session = await requireAdminUser();
-  const {id, changes} = preparePricingUpdate(
-    session.role,
-    String(formData.get('id') ?? ''),
-    inputFromFormData(formData)
-  );
-  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
-  const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase
-    .from('location_unit_types')
-    .update(changes)
-    .eq('id', id)
-    .eq('updated_at', expectedUpdatedAt)
-    .select('id')
-    .maybeSingle();
-  throwPricingError(error);
-  assertFreshAdminWrite(data);
-  revalidatePricing();
+export async function updatePricing(formData: FormData): Promise<AdminMutationResult> {
+  const id = String(formData.get('id') ?? '');
 
-  if (String(formData.get('next') ?? '') === 'preview') {
-    redirect('/bang-gia');
+  try {
+    const session = await requireAdminUser();
+    const {id: preparedId, changes} = preparePricingUpdate(
+      session.role,
+      id,
+      inputFromFormData(formData)
+    );
+    const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    const supabase = await createSupabaseServerClient();
+    const {data, error} = await supabase
+      .from('location_unit_types')
+      .update(changes)
+      .eq('id', preparedId)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    throwPricingError(error);
+    assertFreshAdminWrite(data);
+    revalidatePricing();
+
+    return adminMutationSuccess(
+      String(formData.get('next') ?? '') === 'preview' ? '/bang-gia' : undefined
+    );
+  } catch (error) {
+    if (!isStaleAdminWrite(error)) throw error;
+    return recoverPricingConflict(id);
   }
 }
