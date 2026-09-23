@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {ClientErrorReporter} from '@/components/ops/client-error-reporter';
 
 export default function GlobalError({
@@ -28,12 +29,12 @@ export default function GlobalError({
               >
                 Thử lại
               </button>
-              <a
+              <Link
                 href="/"
                 style={{minHeight: '44px', display: 'inline-flex', alignItems: 'center', borderRadius: '999px', padding: '0 20px', fontWeight: 700, border: '1px solid #cbd5e1', color: '#0f172a', textDecoration: 'none'}}
               >
                 Về trang chủ
-              </a>
+              </Link>
             </div>
           </section>
         </main>
