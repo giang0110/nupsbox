@@ -38,4 +38,24 @@ describe('lead action feedback', () => {
       expect(screen.getByRole('alert')).toBeVisible();
     });
   });
+
+  it('shows a retryable message when the Server Action transport fails', async () => {
+    updateLeadStatusValue.mockRejectedValueOnce(new Error('network'));
+    const user = userEvent.setup();
+
+    render(
+      <LeadStatusForm
+        leadId="a8ba1e58-ece7-4a8a-844c-3b5edcbf8ab0"
+        status="new"
+      />
+    );
+
+    await user.selectOptions(screen.getByLabelText('Trạng thái'), 'contacted');
+    await user.click(screen.getByRole('button', {name: 'Lưu trạng thái'}));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Mất kết nối');
+      expect(screen.getByRole('button', {name: 'Lưu trạng thái'})).toBeEnabled();
+    });
+  });
 });
