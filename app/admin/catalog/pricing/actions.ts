@@ -3,6 +3,7 @@
 import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
 import {preparePricingCreate, preparePricingUpdate} from '@/features/admin/pricing';
+import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -62,10 +63,17 @@ export async function updatePricing(formData: FormData) {
     String(formData.get('id') ?? ''),
     inputFromFormData(formData)
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase.from('location_unit_types').update(changes).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('location_unit_types')
+    .update(changes)
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   throwPricingError(error);
-  if (!data) throw new Error('pricing_update_noop');
+  assertFreshAdminWrite(data);
   revalidatePricing();
 
   if (String(formData.get('next') ?? '') === 'preview') {
