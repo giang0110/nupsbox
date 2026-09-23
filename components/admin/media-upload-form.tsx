@@ -2,6 +2,7 @@ import {ChevronDown, UploadCloud} from 'lucide-react';
 import {uploadMediaAsset} from '@/app/admin/content/media/actions';
 import {AdminFieldGroup} from '@/components/admin/admin-primitives';
 import {MediaFileInput} from '@/components/admin/media-file-input';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 
 type Option = {id: string; label: string};
 
@@ -35,7 +36,7 @@ export function MediaUploadForm({
       </summary>
 
       <div className="border-t border-[var(--nupsbox-border)] p-5">
-        <form action={uploadMediaAsset} className="grid gap-6">
+        <AdminMutationForm action={uploadMediaAsset} className="grid gap-6">
           <AdminFieldGroup legend="File & mô tả">
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm font-semibold md:col-span-2">
@@ -101,7 +102,7 @@ export function MediaUploadForm({
               Upload ảnh
             </button>
           </div>
-        </form>
+        </AdminMutationForm>
       </div>
     </details>
   );
