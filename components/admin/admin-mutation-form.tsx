@@ -87,6 +87,7 @@ export function AdminMutationForm({
         router.refresh();
       } catch {
         setFeedback({
+          ok: false,
           kind: 'error',
           message: 'Không thể lưu thay đổi lúc này. Dữ liệu bạn vừa nhập vẫn được giữ; vui lòng kiểm tra kết nối và thử lại.'
         });
