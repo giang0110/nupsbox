@@ -1,6 +1,7 @@
 import {updatePublicSiteSetting} from '@/app/admin/content/settings/actions';
 import {AdminFieldGroup, AdminPanel, AdminStatusBadge} from '@/components/admin/admin-primitives';
 import type {AdminPublicSetting} from '@/features/admin/settings';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {setting: AdminPublicSetting; canEdit: boolean};
 
@@ -16,6 +17,7 @@ export function SiteSettingForm({setting, canEdit}: Props) {
     >
       <form action={updatePublicSiteSetting} className="grid gap-6">
         <input type="hidden" name="key" value={setting.key} />
+        <input type="hidden" name="expectedUpdatedAt" value={setting.updatedAt} />
 
         <AdminFieldGroup legend="Liên hệ công khai" disabled={!canEdit}>
           <div className="grid gap-4 md:grid-cols-2">
