@@ -9,6 +9,7 @@ import {
 import type {AdminLocation} from '@/features/admin/locations';
 import type {AdminPricing} from '@/features/admin/pricing';
 import type {AdminUnitType} from '@/features/admin/unit-types';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
   pricing?: AdminPricing;
@@ -82,7 +83,12 @@ export function PricingForm({
           }
         }}
       >
-        {pricing ? <input type="hidden" name="id" value={pricing.id} /> : null}
+        {pricing ? (
+          <>
+            <input type="hidden" name="id" value={pricing.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={pricing.updatedAt} />
+          </>
+        ) : null}
 
         <AdminFieldGroup legend="Phạm vi áp dụng" disabled={!canMutate}>
           <div className="grid gap-4 md:grid-cols-2">
