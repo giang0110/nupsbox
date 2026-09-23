@@ -1,4 +1,4 @@
-import {fireEvent, render, screen} from '@testing-library/react';
+import {cleanup, fireEvent, render, screen} from '@testing-library/react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -34,6 +34,7 @@ function DraftHarness() {
 }
 
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
 });
 
