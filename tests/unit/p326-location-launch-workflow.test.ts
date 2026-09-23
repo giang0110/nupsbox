@@ -83,7 +83,9 @@ describe('P3.26 location launch workflow', () => {
     expect(source('app/admin/catalog/locations/page.tsx')).toContain('Location Launch');
     expect(source('components/admin/location-form.tsx')).toContain('Preview nội dung public');
     expect(source('components/admin/location-form.tsx')).toContain('Xuất bản & quản lý ảnh');
-    expect(source('app/admin/catalog/locations/actions.ts')).toContain("redirect('/admin/content/media?location=' + id)");
+    const action = source('app/admin/catalog/locations/actions.ts');
+    expect(action).toContain('adminMutationSuccess(');
+    expect(action).toContain("'/admin/content/media?location=' + id");
     expect(source('app/admin/content/media/page.tsx')).toContain('defaultLocationId');
   });
 });
