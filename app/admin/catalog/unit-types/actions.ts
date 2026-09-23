@@ -8,6 +8,7 @@ import {
   prepareUnitTypePublication,
   prepareUnitTypeUpdate
 } from '@/features/admin/unit-types';
+import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -58,10 +59,17 @@ export async function updateUnitType(formData: FormData) {
     String(formData.get('id') ?? ''),
     inputFromFormData(formData)
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase.from('unit_types').update(changes).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('unit_types')
+    .update(changes)
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   throwUnitError(error);
-  if (!data) throw new Error('unit_type_update_noop');
+  assertFreshAdminWrite(data);
   revalidateUnits();
 }
 
@@ -72,6 +80,7 @@ export async function setUnitTypePublication(formData: FormData) {
     String(formData.get('id') ?? ''),
     String(formData.get('publish') ?? '') === 'true'
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
 
   if (active) {
@@ -95,9 +104,15 @@ export async function setUnitTypePublication(formData: FormData) {
     }
   }
 
-  const {data, error} = await supabase.from('unit_types').update({active}).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('unit_types')
+    .update({active})
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   throwUnitError(error);
-  if (!data) throw new Error('unit_type_publication_noop');
+  assertFreshAdminWrite(data);
   revalidateUnits();
 
   if (active && String(formData.get('next') ?? '') === 'pricing') {

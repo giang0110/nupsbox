@@ -9,6 +9,7 @@ import {
 import type {AdminLocation} from '@/features/admin/locations';
 import type {AdminPricing} from '@/features/admin/pricing';
 import type {AdminUnitType} from '@/features/admin/unit-types';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
   pricing?: AdminPricing;
@@ -82,7 +83,12 @@ export function PricingForm({
           }
         }}
       >
-        {pricing ? <input type="hidden" name="id" value={pricing.id} /> : null}
+        {pricing ? (
+          <>
+            <input type="hidden" name="id" value={pricing.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={pricing.updatedAt} />
+          </>
+        ) : null}
 
         <AdminFieldGroup legend="Phạm vi áp dụng" disabled={!canMutate}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -169,18 +175,20 @@ export function PricingForm({
 
         {canMutate ? (
           <div className="flex flex-wrap gap-2.5">
-            <button disabled={duplicatePair} className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-45">
-              {editing ? 'Lưu bảng giá' : 'Tạo cấu hình'}
-            </button>
-            <button
-              type="submit"
+            <AdminSubmitButton
+              idleLabel={editing ? 'Lưu bảng giá' : 'Tạo cấu hình'}
+              pendingLabel={editing ? 'Đang lưu…' : 'Đang tạo…'}
+              disabled={duplicatePair}
+              className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-45"
+            />
+            <AdminSubmitButton
+              idleLabel={editing ? 'Lưu & preview public' : 'Tạo & preview public'}
+              pendingLabel={editing ? 'Đang lưu…' : 'Đang tạo…'}
               name="next"
               value="preview"
               disabled={duplicatePair}
               className="min-h-11 w-fit rounded-xl border border-[var(--nupsbox-border)] bg-white px-5 text-sm font-black text-[var(--nupsbox-navy)] disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {editing ? 'Lưu & preview public' : 'Tạo & preview public'}
-            </button>
+            />
           </div>
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>

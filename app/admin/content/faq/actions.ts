@@ -6,6 +6,7 @@ import {
   prepareFaqPublication,
   prepareFaqUpdate
 } from '@/features/admin/faqs';
+import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -41,10 +42,17 @@ export async function updateFaq(formData: FormData) {
     String(formData.get('id') ?? ''),
     inputFromFormData(formData)
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase.from('faqs').update(changes).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('faqs')
+    .update(changes)
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   if (error) throw error;
-  if (!data) throw new Error('faq_update_noop');
+  assertFreshAdminWrite(data);
   revalidateFaqs();
 }
 
@@ -52,6 +60,7 @@ export async function setFaqPublication(formData: FormData) {
   const session = await requireAdminUser();
   const id = String(formData.get('id') ?? '');
   const publish = String(formData.get('publish') ?? '') === 'true';
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
 
   let currentInput: ReturnType<typeof inputFromFormData> | undefined;
@@ -72,8 +81,14 @@ export async function setFaqPublication(formData: FormData) {
   }
 
   const command = prepareFaqPublication(session.role, id, publish, currentInput);
-  const {data, error} = await supabase.from('faqs').update({active: command.active}).eq('id', command.id).select('id').single();
+  const {data, error} = await supabase
+    .from('faqs')
+    .update({active: command.active})
+    .eq('id', command.id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   if (error) throw error;
-  if (!data) throw new Error('faq_publication_noop');
+  assertFreshAdminWrite(data);
   revalidateFaqs();
 }

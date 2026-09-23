@@ -12,6 +12,7 @@ import {
 } from '@/components/admin/admin-primitives';
 import {getUnitTypePublicationReadiness, type AdminUnitType} from '@/features/admin/unit-types';
 import {UnitTypePreview} from '@/components/admin/unit-type-preview';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
   unit?: AdminUnitType;
@@ -57,18 +58,17 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
           {unit && canPublish ? (
             <form action={setUnitTypePublication}>
               <input type="hidden" name="id" value={unit.id} />
+              <input type="hidden" name="expectedUpdatedAt" value={unit.updatedAt} />
               <input type="hidden" name="publish" value={unit.active ? 'false' : 'true'} />
               {!unit.active && publication?.ready ? (
                 <input type="hidden" name="next" value="pricing" />
               ) : null}
-              <button
-                type="submit"
+              <AdminSubmitButton
+                idleLabel={unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản & cấu hình giá' : 'Chưa sẵn sàng'}
+                pendingLabel={unit.active ? 'Đang ngừng…' : 'Đang xuất bản…'}
                 disabled={!unit.active && !publication?.ready}
-                title={!unit.active && !publication?.ready ? 'Hoàn thiện checklist trước khi xuất bản' : undefined}
                 className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {unit.active ? 'Ngừng xuất bản' : publication?.ready ? 'Xuất bản & cấu hình giá' : 'Chưa sẵn sàng'}
-              </button>
+              />
             </form>
           ) : null}
         </AdminActionBar>
@@ -109,7 +109,12 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
       ) : null}
 
       <form action={editing ? updateUnitType : createUnitType} className="grid gap-6">
-        {unit ? <input type="hidden" name="id" value={unit.id} /> : null}
+        {unit ? (
+          <>
+            <input type="hidden" name="id" value={unit.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={unit.updatedAt} />
+          </>
+        ) : null}
         {slugLocked && unit ? <input type="hidden" name="slug" value={unit.slug} /> : null}
 
         <AdminFieldGroup legend="Thông tin chính" disabled={!canMutate}>
@@ -181,11 +186,11 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
         </AdminFieldGroup>
 
         {canMutate ? (
-          <button
-            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white"
-          >
-            {editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
-          </button>
+          <AdminSubmitButton
+            idleLabel={editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
+            pendingLabel={editing ? 'Đang lưu…' : 'Đang tạo…'}
+            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+          />
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}

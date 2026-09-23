@@ -8,6 +8,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminMedia} from '@/features/admin/media';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Option = {id: string; label: string};
 type Props = {
@@ -143,6 +144,7 @@ export function MediaMetadataForm({
           <div className="pt-4">
             <form action={updateMediaMetadata} className="grid gap-5">
               <input type="hidden" name="id" value={media.id} />
+              <input type="hidden" name="expectedUpdatedAt" value={media.updatedAt} />
 
               <AdminFieldGroup legend="Alt text song ngữ" disabled={!canEdit}>
                 <div className="grid gap-3">
@@ -203,9 +205,11 @@ export function MediaMetadataForm({
               </AdminFieldGroup>
 
               {canEdit ? (
-                <button className="min-h-11 w-full rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white">
-                  Lưu metadata
-                </button>
+                <AdminSubmitButton
+                  idleLabel="Lưu metadata"
+                  pendingLabel="Đang lưu…"
+                  className="min-h-11 w-full rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+                />
               ) : (
                 <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
               )}

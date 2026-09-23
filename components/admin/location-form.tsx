@@ -11,6 +11,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import {JsonTextarea} from '@/components/admin/json-textarea';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 import type {AdminLocation} from '@/features/admin/locations';
 import type {LocationLaunchReadiness} from '@/features/admin/location-launch';
 import {LocationPreview} from '@/components/admin/location-preview';
@@ -62,18 +63,18 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
       {location && canPublish ? (
         <form action={setLocationPublication}>
           <input type="hidden" name="id" value={location.id} />
+          <input type="hidden" name="expectedUpdatedAt" value={location.updatedAt} />
           <input
             type="hidden"
             name="publish"
             value={location.status === 'active' ? 'false' : 'true'}
           />
           {location.status !== 'active' ? <input type="hidden" name="next" value="media" /> : null}
-          <button
-            type="submit"
-            className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
-          >
-            {location.status === 'active' ? 'Ngừng xuất bản' : 'Xuất bản & quản lý ảnh'}
-          </button>
+          <AdminSubmitButton
+            idleLabel={location.status === 'active' ? 'Ngừng xuất bản' : 'Xuất bản & quản lý ảnh'}
+            pendingLabel={location.status === 'active' ? 'Đang ngừng…' : 'Đang xuất bản…'}
+            className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-wait disabled:opacity-60"
+          />
         </form>
       ) : null}
     </AdminActionBar>
@@ -124,7 +125,12 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
       ) : null}
 
       <form action={action} className="grid gap-6">
-        {location ? <input type="hidden" name="id" value={location.id} /> : null}
+        {location ? (
+          <>
+            <input type="hidden" name="id" value={location.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={location.updatedAt} />
+          </>
+        ) : null}
         {slugLocked && location ? <input type="hidden" name="slug" value={location.slug} /> : null}
 
         <AdminFieldGroup legend="Thông tin chính" disabled={!canMutate}>
@@ -219,12 +225,11 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
         </AdminFieldGroup>
 
         {canMutate ? (
-          <button
-            type="submit"
-            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white"
-          >
-            {editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
-          </button>
+          <AdminSubmitButton
+            idleLabel={editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
+            pendingLabel={editing ? 'Đang lưu…' : 'Đang tạo…'}
+            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+          />
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}

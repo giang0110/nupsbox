@@ -6,6 +6,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminFaq} from '@/features/admin/faqs';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
   faq?: AdminFaq;
@@ -31,19 +32,25 @@ export function FaqForm({faq, canEdit, canPublish}: Props) {
           {faq && canPublish ? (
             <form action={setFaqPublication}>
               <input type="hidden" name="id" value={faq.id} />
+              <input type="hidden" name="expectedUpdatedAt" value={faq.updatedAt} />
               <input type="hidden" name="publish" value={faq.active ? 'false' : 'true'} />
-              <button
-                className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
-              >
-                {faq.active ? 'Ngừng xuất bản' : 'Xuất bản'}
-              </button>
+              <AdminSubmitButton
+                idleLabel={faq.active ? 'Ngừng xuất bản' : 'Xuất bản'}
+                pendingLabel={faq.active ? 'Đang ngừng…' : 'Đang xuất bản…'}
+                className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-wait disabled:opacity-60"
+              />
             </form>
           ) : null}
         </AdminActionBar>
       }
     >
       <form action={editing ? updateFaq : createFaq} className="grid gap-6">
-        {faq ? <input type="hidden" name="id" value={faq.id} /> : null}
+        {faq ? (
+          <>
+            <input type="hidden" name="id" value={faq.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={faq.updatedAt} />
+          </>
+        ) : null}
 
         <AdminFieldGroup legend="Tiếng Việt" disabled={!canEdit}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -79,9 +86,11 @@ export function FaqForm({faq, canEdit, canPublish}: Props) {
         </AdminFieldGroup>
 
         {canEdit ? (
-          <button className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white">
-            {editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
-          </button>
+          <AdminSubmitButton
+            idleLabel={editing ? 'Lưu thay đổi' : 'Tạo bản nháp'}
+            pendingLabel={editing ? 'Đang lưu…' : 'Đang tạo…'}
+            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+          />
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
