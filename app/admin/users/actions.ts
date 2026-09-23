@@ -12,7 +12,7 @@ import {
   isStaleAdminWrite,
   requireExpectedUpdatedAt
 } from '@/features/admin/optimistic-concurrency';
-import {prepareAdminUserAccessUpdate} from '@/features/admin/users';
+import {prepareAdminUserAccessUpdate} from '@/features/admin/user-access';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
