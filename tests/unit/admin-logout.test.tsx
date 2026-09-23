@@ -1,5 +1,5 @@
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {cleanup, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 const signOut = vi.fn();
 const replace = vi.fn();
@@ -18,6 +18,8 @@ vi.mock('next/navigation', () => ({
 import {AdminLogoutButton} from '@/components/admin/admin-logout-button';
 
 describe('admin logout', () => {
+  afterEach(() => cleanup());
+
   beforeEach(() => {
     signOut.mockReset();
     replace.mockReset();
