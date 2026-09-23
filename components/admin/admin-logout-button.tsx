@@ -5,14 +5,17 @@ import {useRouter} from 'next/navigation';
 import {useState} from 'react';
 import clsx from 'clsx';
 import {createSupabaseBrowserClient} from '@/lib/supabase/browser';
+import {useAdminDraftProtection} from '@/components/admin/admin-draft-protection';
 
 export function AdminLogoutButton({collapsed = false}: {collapsed?: boolean}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
+  const {confirmDiscardChanges} = useAdminDraftProtection();
 
   async function logout() {
     if (pending) return;
+    if (!confirmDiscardChanges()) return;
     setPending(true);
     setError(false);
 

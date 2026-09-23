@@ -29,6 +29,7 @@ import {
 import type {AppRole} from '@/types/database';
 import {AdminLogoutButton} from '@/components/admin/admin-logout-button';
 import {AdminSessionMonitor} from '@/components/admin/admin-session-monitor';
+import {AdminDraftProtectionProvider} from '@/components/admin/admin-draft-protection';
 
 function NavigationIcon({href}: {href: string}) {
   const iconClass = "size-[17px]";
@@ -140,7 +141,7 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
   }
 
   return (
-    <>
+    <AdminDraftProtectionProvider>
       <AdminSessionMonitor expectedRole={role} />
       <div
       className="min-h-screen bg-[var(--nupsbox-surface)] lg:grid"
@@ -241,6 +242,6 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
         {children}
       </div>
       </div>
-    </>
+    </AdminDraftProtectionProvider>
   );
 }
