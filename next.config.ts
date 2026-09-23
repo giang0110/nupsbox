@@ -11,7 +11,7 @@ const securityHeaders = [
   {key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload'},
   {
     key: 'Content-Security-Policy',
-    value: "base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'"
+    value: "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://siaodieqxzlarnvfppox.supabase.co https://veglohnmofzkgovedxkb.supabase.co; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; media-src 'self' blob: https://siaodieqxzlarnvfppox.supabase.co https://veglohnmofzkgovedxkb.supabase.co; worker-src 'self' blob:; manifest-src 'self'"
   }
 ];
 
