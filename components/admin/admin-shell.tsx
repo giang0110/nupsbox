@@ -40,6 +40,7 @@ function NavigationIcon({href}: {href: string}) {
   if (href === '/admin/analytics') return <BarChart3 className={iconClass} aria-hidden="true" />;
   if (href === '/admin/seo') return <SearchCheck className={iconClass} aria-hidden="true" />;
   if (href === '/admin/audit') return <FileText className={iconClass} aria-hidden="true" />;
+  if (href === '/admin/users') return <Users className={iconClass} aria-hidden="true" />;
   if (href === '/admin/catalog') return <CircleGauge className={iconClass} aria-hidden="true" />;
   if (href === '/admin/catalog/locations') return <MapPin className={iconClass} aria-hidden="true" />;
   if (href === '/admin/catalog/unit-types') return <Boxes className={iconClass} aria-hidden="true" />;
