@@ -28,6 +28,7 @@ import {
 } from '@/features/admin/navigation';
 import type {AppRole} from '@/types/database';
 import {AdminLogoutButton} from '@/components/admin/admin-logout-button';
+import {AdminSessionMonitor} from '@/components/admin/admin-session-monitor';
 
 function NavigationIcon({href}: {href: string}) {
   const iconClass = "size-[17px]";
@@ -139,7 +140,9 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
   }
 
   return (
-    <div
+    <>
+      <AdminSessionMonitor expectedRole={role} />
+      <div
       className="min-h-screen bg-[var(--nupsbox-surface)] lg:grid"
       style={{
         gridTemplateColumns: collapsed ? '5.25rem minmax(0, 1fr)' : '17rem minmax(0, 1fr)'
@@ -237,6 +240,7 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
       <div className="min-w-0">
         {children}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
