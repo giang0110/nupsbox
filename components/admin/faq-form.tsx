@@ -6,6 +6,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminFaq} from '@/features/admin/faqs';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
@@ -30,25 +31,31 @@ export function FaqForm({faq, canEdit, canPublish}: Props) {
             tone={faq?.active ? 'success' : 'neutral'}
           />
           {faq && canPublish ? (
-            <form action={setFaqPublication}>
+            <AdminMutationForm
+              recoverableAction={setFaqPublication}
+              expectedUpdatedAt={faq.updatedAt}
+            >
               <input type="hidden" name="id" value={faq.id} />
-              <input type="hidden" name="expectedUpdatedAt" value={faq.updatedAt} />
               <input type="hidden" name="publish" value={faq.active ? 'false' : 'true'} />
               <AdminSubmitButton
                 idleLabel={faq.active ? 'Ngừng xuất bản' : 'Xuất bản'}
                 pendingLabel={faq.active ? 'Đang ngừng…' : 'Đang xuất bản…'}
                 className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-wait disabled:opacity-60"
               />
-            </form>
+            </AdminMutationForm>
           ) : null}
         </AdminActionBar>
       }
     >
-      <form action={editing ? updateFaq : createFaq} className="grid gap-6">
+      <AdminMutationForm
+        action={!editing ? createFaq : undefined}
+        recoverableAction={editing ? updateFaq : undefined}
+        expectedUpdatedAt={faq?.updatedAt}
+        className="grid gap-6"
+      >
         {faq ? (
           <>
             <input type="hidden" name="id" value={faq.id} />
-            <input type="hidden" name="expectedUpdatedAt" value={faq.updatedAt} />
           </>
         ) : null}
 
@@ -94,7 +101,7 @@ export function FaqForm({faq, canEdit, canPublish}: Props) {
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
-      </form>
+      </AdminMutationForm>
     </AdminPanel>
   );
 }
