@@ -27,6 +27,7 @@ import {
   type AdminNavigationGroup
 } from '@/features/admin/navigation';
 import type {AppRole} from '@/types/database';
+import {AdminLogoutButton} from '@/components/admin/admin-logout-button';
 
 function NavigationIcon({href}: {href: string}) {
   const iconClass = "size-[17px]";
@@ -193,6 +194,7 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
             <p className={clsx('mt-1 text-xs font-bold uppercase tracking-[0.1em] text-[var(--nupsbox-slate)]', collapsed && 'text-center')}>
               {role}
             </p>
+            <AdminLogoutButton collapsed={collapsed} />
           </div>
         </div>
       </aside>
@@ -227,6 +229,7 @@ export function AdminShell({role, userLabel, groups, children}: AdminShellProps)
             <p className="mt-1 text-xs font-bold uppercase tracking-[0.1em] text-[var(--nupsbox-slate)]">
               {role}
             </p>
+            <AdminLogoutButton />
           </div>
         </div>
       </dialog>
