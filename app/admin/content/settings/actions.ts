@@ -2,6 +2,7 @@
 
 import {revalidatePath} from 'next/cache';
 import {preparePublicSiteSettingUpdate} from '@/features/admin/settings';
+import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -20,11 +21,17 @@ export async function updatePublicSiteSetting(formData: FormData) {
 
   const {data: current, error: currentError} = await supabase
     .from('site_settings')
-    .select('value')
+    .select('value, updated_at')
     .eq('key', key)
     .maybeSingle();
 
   if (currentError) throw currentError;
+
+  const expectedUpdatedAt = String(formData.get('expectedUpdatedAt') ?? '').trim();
+  if (current) {
+    requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    if (current.updated_at !== expectedUpdatedAt) throw new Error('stale_admin_write');
+  }
 
   const prepared = preparePublicSiteSettingUpdate(session.role, {
     key,
@@ -38,19 +45,32 @@ export async function updatePublicSiteSetting(formData: FormData) {
     isPublic: true
   });
 
-  const {data, error} = await supabase
-    .from('site_settings')
-    .upsert({
-      key: prepared.key,
-      value: prepared.value,
-      is_public: prepared.is_public,
-      updated_by: session.user.id
-    }, {onConflict: 'key'})
-    .select('key')
-    .single();
+  const payload = {
+    key: prepared.key,
+    value: prepared.value,
+    is_public: prepared.is_public,
+    updated_by: session.user.id
+  };
 
-  if (error) throw error;
-  if (!data) throw new Error('setting_not_found');
+  if (!current) {
+    const {data, error} = await supabase
+      .from('site_settings')
+      .insert(payload)
+      .select('key')
+      .single();
+    if (error) throw error;
+    if (!data) throw new Error('setting_not_found');
+  } else {
+    const {data, error} = await supabase
+      .from('site_settings')
+      .update(payload)
+      .eq('key', prepared.key)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('key')
+      .maybeSingle();
+    if (error) throw error;
+    assertFreshAdminWrite(data);
+  }
 
   revalidatePath('/admin/content');
   revalidatePath('/admin/content/settings');
