@@ -24,9 +24,11 @@ export function LeadStatusForm({
     setError('');
 
     startTransition(async () => {
-      const result = await updateLeadStatusValue(leadId, value);
-      if (!result.ok) {
-        setError(result.message);
+      try {
+        const result = await updateLeadStatusValue(leadId, value);
+        if (!result.ok) setError(result.message);
+      } catch {
+        setError('Mất kết nối khi cập nhật trạng thái. Vui lòng kiểm tra mạng và thử lại.');
       }
     });
   }
