@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
-import {prepareAdminUserAccessUpdate} from '@/features/admin/users';
+import {prepareAdminUserAccessUpdate} from '@/features/admin/user-access';
 
 function source(path: string) {
   return readFileSync(join(process.cwd(), path), 'utf8');
