@@ -3,7 +3,8 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {AdminShell} from '@/components/admin/admin-shell';
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/admin/leads'
+  usePathname: () => '/admin/leads',
+  useRouter: () => ({replace: vi.fn(), refresh: vi.fn()})
 }));
 
 afterEach(() => cleanup());
