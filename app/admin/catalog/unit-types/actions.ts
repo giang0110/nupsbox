@@ -1,14 +1,14 @@
 'use server';
 
 import {revalidatePath} from 'next/cache';
-import {redirect} from 'next/navigation';
 import {
   prepareUnitTypeCreate,
   getUnitTypePublicationReadiness,
   prepareUnitTypePublication,
   prepareUnitTypeUpdate
 } from '@/features/admin/unit-types';
-import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
+import {adminMutationConflict, adminMutationFailure, adminMutationSuccess, type AdminMutationResult} from '@/features/admin/action-result';
+import {assertFreshAdminWrite, isStaleAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -43,6 +43,21 @@ function revalidateUnits() {
   revalidatePath('/en/mini-storage');
 }
 
+async function recoverUnitTypeConflict(id: string): Promise<AdminMutationResult> {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase
+    .from('unit_types')
+    .select('updated_at')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data?.updated_at) {
+    return adminMutationFailure('Loại kho này không còn tồn tại. Hãy tải lại trang để đồng bộ dữ liệu.');
+  }
+  return adminMutationConflict(data.updated_at);
+}
+
 export async function createUnitType(formData: FormData) {
   const session = await requireAdminUser();
   const payload = prepareUnitTypeCreate(session.role, inputFromFormData(formData));
@@ -52,70 +67,87 @@ export async function createUnitType(formData: FormData) {
   revalidateUnits();
 }
 
-export async function updateUnitType(formData: FormData) {
-  const session = await requireAdminUser();
-  const {id, changes} = prepareUnitTypeUpdate(
-    session.role,
-    String(formData.get('id') ?? ''),
-    inputFromFormData(formData)
-  );
-  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
-  const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase
-    .from('unit_types')
-    .update(changes)
-    .eq('id', id)
-    .eq('updated_at', expectedUpdatedAt)
-    .select('id')
-    .maybeSingle();
-  throwUnitError(error);
-  assertFreshAdminWrite(data);
-  revalidateUnits();
+export async function updateUnitType(formData: FormData): Promise<AdminMutationResult> {
+  const id = String(formData.get('id') ?? '');
+
+  try {
+    const session = await requireAdminUser();
+    const {id: preparedId, changes} = prepareUnitTypeUpdate(
+      session.role,
+      id,
+      inputFromFormData(formData)
+    );
+    const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    const supabase = await createSupabaseServerClient();
+    const {data, error} = await supabase
+      .from('unit_types')
+      .update(changes)
+      .eq('id', preparedId)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    throwUnitError(error);
+    assertFreshAdminWrite(data);
+    revalidateUnits();
+    return adminMutationSuccess();
+  } catch (error) {
+    if (!isStaleAdminWrite(error)) throw error;
+    return recoverUnitTypeConflict(id);
+  }
 }
 
-export async function setUnitTypePublication(formData: FormData) {
-  const session = await requireAdminUser();
-  const {id, active} = prepareUnitTypePublication(
-    session.role,
-    String(formData.get('id') ?? ''),
-    String(formData.get('publish') ?? '') === 'true'
-  );
-  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
-  const supabase = await createSupabaseServerClient();
+export async function setUnitTypePublication(formData: FormData): Promise<AdminMutationResult> {
+  const rawId = String(formData.get('id') ?? '');
 
-  if (active) {
-    const {data: unit, error: readError} = await supabase
-      .from('unit_types')
-      .select('name_vi, name_en, area_m2, recommended_for_vi, recommended_for_en')
-      .eq('id', id)
-      .single();
-    throwUnitError(readError);
-    if (!unit) throw new Error('unit_type_not_found');
+  try {
+    const session = await requireAdminUser();
+    const {id, active} = prepareUnitTypePublication(
+      session.role,
+      rawId,
+      String(formData.get('publish') ?? '') === 'true'
+    );
+    const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    const supabase = await createSupabaseServerClient();
 
-    const readiness = getUnitTypePublicationReadiness({
-      nameVi: unit.name_vi,
-      nameEn: unit.name_en,
-      areaM2: Number(unit.area_m2),
-      recommendedForVi: unit.recommended_for_vi,
-      recommendedForEn: unit.recommended_for_en
-    });
-    if (!readiness.ready) {
-      throw new Error('unit_type_not_ready:' + readiness.missingLabels.join(','));
+    if (active) {
+      const {data: unit, error: readError} = await supabase
+        .from('unit_types')
+        .select('name_vi, name_en, area_m2, recommended_for_vi, recommended_for_en')
+        .eq('id', id)
+        .single();
+      throwUnitError(readError);
+      if (!unit) throw new Error('unit_type_not_found');
+
+      const readiness = getUnitTypePublicationReadiness({
+        nameVi: unit.name_vi,
+        nameEn: unit.name_en,
+        areaM2: Number(unit.area_m2),
+        recommendedForVi: unit.recommended_for_vi,
+        recommendedForEn: unit.recommended_for_en
+      });
+      if (!readiness.ready) {
+        throw new Error('unit_type_not_ready:' + readiness.missingLabels.join(','));
+      }
     }
-  }
 
-  const {data, error} = await supabase
-    .from('unit_types')
-    .update({active})
-    .eq('id', id)
-    .eq('updated_at', expectedUpdatedAt)
-    .select('id')
-    .maybeSingle();
-  throwUnitError(error);
-  assertFreshAdminWrite(data);
-  revalidateUnits();
+    const {data, error} = await supabase
+      .from('unit_types')
+      .update({active})
+      .eq('id', id)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    throwUnitError(error);
+    assertFreshAdminWrite(data);
+    revalidateUnits();
 
-  if (active && String(formData.get('next') ?? '') === 'pricing') {
-    redirect('/admin/catalog/pricing?unit=' + id);
+    return adminMutationSuccess(
+      active && String(formData.get('next') ?? '') === 'pricing'
+        ? '/admin/catalog/pricing?unit=' + id
+        : undefined
+    );
+  } catch (error) {
+    if (!isStaleAdminWrite(error)) throw error;
+    return recoverUnitTypeConflict(rawId);
   }
 }
