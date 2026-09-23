@@ -11,6 +11,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import {JsonTextarea} from '@/components/admin/json-textarea';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 import type {AdminLocation} from '@/features/admin/locations';
 import type {LocationLaunchReadiness} from '@/features/admin/location-launch';
 import {LocationPreview} from '@/components/admin/location-preview';
@@ -62,6 +63,7 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
       {location && canPublish ? (
         <form action={setLocationPublication}>
           <input type="hidden" name="id" value={location.id} />
+          <input type="hidden" name="expectedUpdatedAt" value={location.updatedAt} />
           <input
             type="hidden"
             name="publish"
@@ -124,7 +126,12 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
       ) : null}
 
       <form action={action} className="grid gap-6">
-        {location ? <input type="hidden" name="id" value={location.id} /> : null}
+        {location ? (
+          <>
+            <input type="hidden" name="id" value={location.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={location.updatedAt} />
+          </>
+        ) : null}
         {slugLocked && location ? <input type="hidden" name="slug" value={location.slug} /> : null}
 
         <AdminFieldGroup legend="Thông tin chính" disabled={!canMutate}>
