@@ -22,9 +22,11 @@ export function LeadAssignmentForm({
     setError('');
 
     startTransition(async () => {
-      const result = await assignLeadValue(leadId, value);
-      if (!result.ok) {
-        setError(result.message);
+      try {
+        const result = await assignLeadValue(leadId, value);
+        if (!result.ok) setError(result.message);
+      } catch {
+        setError('Mất kết nối khi lưu phân công. Vui lòng kiểm tra mạng và thử lại.');
       }
     });
   }

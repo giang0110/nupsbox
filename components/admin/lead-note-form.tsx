@@ -13,13 +13,17 @@ export function LeadNoteForm({leadId}: {leadId: string}) {
     setError('');
 
     startTransition(async () => {
-      const result = await addLeadNoteValue(leadId, note);
-      if (!result.ok) {
-        setError(result.message);
-        return;
-      }
+      try {
+        const result = await addLeadNoteValue(leadId, note);
+        if (!result.ok) {
+          setError(result.message);
+          return;
+        }
 
-      setNote('');
+        setNote('');
+      } catch {
+        setError('Mất kết nối khi lưu ghi chú. Nội dung chưa được gửi, vui lòng thử lại.');
+      }
     });
   }
 
