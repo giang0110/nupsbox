@@ -9,6 +9,7 @@ import {
   prepareMediaMetadataUpdate,
   prepareMediaUpload
 } from '@/features/admin/media';
+import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -213,10 +214,17 @@ export async function updateMediaMetadata(formData: FormData) {
     String(formData.get('id') ?? ''),
     inputFromFormData(formData)
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase.from('media_assets').update(changes).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('media_assets')
+    .update(changes)
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   if (error) throw error;
-  if (!data) throw new Error('media_metadata_update_noop');
+  assertFreshAdminWrite(data);
   revalidateMedia();
 }
 
