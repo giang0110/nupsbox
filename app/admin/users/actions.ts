@@ -10,7 +10,8 @@ import {
 import {
   assertFreshAdminWrite,
   isStaleAdminWrite,
-  requireExpectedUpdatedAt
+  requireExpectedUpdatedAt,
+  STALE_ADMIN_WRITE
 } from '@/features/admin/optimistic-concurrency';
 import {prepareAdminUserAccessUpdate} from '@/features/admin/user-access';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
@@ -32,8 +33,16 @@ async function recoverUserConflict(id: string): Promise<AdminMutationResult> {
   return adminMutationConflict(data.updated_at);
 }
 
+function errorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as {message?: unknown}).message ?? '');
+  }
+  return '';
+}
+
 function isLastAdminError(error: unknown) {
-  return error instanceof Error && error.message.includes('last_active_admin_required');
+  return errorMessage(error).includes('last_active_admin_required');
 }
 
 export async function updateAdminUserAccess(formData: FormData): Promise<AdminMutationResult> {
@@ -65,7 +74,7 @@ export async function updateAdminUserAccess(formData: FormData): Promise<AdminMu
 
     if (currentError) throw currentError;
     if (current.updated_at !== expectedUpdatedAt) {
-      throw new Error('stale_admin_write');
+      throw new Error(STALE_ADMIN_WRITE);
     }
 
     const removesActiveAdmin =
