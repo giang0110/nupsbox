@@ -5,6 +5,13 @@ import {BlogForm} from '@/components/admin/blog-form';
 import type {AdminFaq} from '@/features/admin/faqs';
 import type {AdminBlog} from '@/features/admin/blog';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn()
+  })
+}));
+
 vi.mock('@/app/admin/content/faq/actions', () => ({
   createFaq: vi.fn(),
   updateFaq: vi.fn(),
