@@ -38,7 +38,7 @@ describe('P3.47 admin conflict recovery UX', () => {
 
     expect(form).toContain('event.preventDefault()');
     expect(form).toContain('new FormData(form)');
-    expect(form).toContain('setVersion(feedback.latestUpdatedAt)');
+    expect(form).toContain('setVersionOverride(feedback.latestUpdatedAt)');
     expect(form).toContain('window.location.reload()');
     expect(form).toContain('Giữ bản đang nhập');
     expect(form).toContain('Tải bản mới');
