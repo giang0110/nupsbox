@@ -5,7 +5,6 @@ import {
   type FormEvent,
   type ReactNode,
   useContext,
-  useEffect,
   useRef,
   useState,
   useTransition
@@ -43,13 +42,10 @@ export function AdminMutationForm({
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [version, setVersion] = useState(expectedUpdatedAt ?? '');
+  const [versionOverride, setVersionOverride] = useState<string | null>(null);
+  const version = versionOverride ?? expectedUpdatedAt ?? '';
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setVersion(expectedUpdatedAt ?? '');
-  }, [expectedUpdatedAt]);
 
   function nativeSubmit(event: FormEvent<HTMLFormElement>) {
     if (validate && !validate(event.currentTarget)) {
@@ -83,6 +79,7 @@ export function AdminMutationForm({
         }
 
         setFeedback(null);
+        setVersionOverride(null);
         if (result.redirectTo) {
           router.push(result.redirectTo);
           return;
@@ -133,7 +130,7 @@ export function AdminMutationForm({
               <button
                 type="button"
                 onClick={() => {
-                  setVersion(feedback.latestUpdatedAt);
+                  setVersionOverride(feedback.latestUpdatedAt);
                   setFeedback({
                     kind: 'ready',
                     message:
