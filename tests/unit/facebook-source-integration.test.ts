@@ -11,7 +11,9 @@ describe('Facebook source integration', () => {
     const action = source('app/admin/content/settings/actions.ts');
     const settings = source('features/admin/settings.ts');
 
-    expect(action).toContain(".upsert({");
+    expect(action).toContain(".insert(payload)");
+    expect(action).toContain(".eq('updated_at', expectedUpdatedAt)");
+    expect(action).toContain("current.updated_at !== expectedUpdatedAt");
     expect(action).toContain('existingOpeningHours');
     expect(settings).toContain('facebook_url');
     expect(settings).toContain("updatedAt: row?.updated_at ?? ''");
