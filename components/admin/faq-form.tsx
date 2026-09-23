@@ -6,6 +6,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminFaq} from '@/features/admin/faqs';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
   faq?: AdminFaq;
@@ -31,6 +32,7 @@ export function FaqForm({faq, canEdit, canPublish}: Props) {
           {faq && canPublish ? (
             <form action={setFaqPublication}>
               <input type="hidden" name="id" value={faq.id} />
+              <input type="hidden" name="expectedUpdatedAt" value={faq.updatedAt} />
               <input type="hidden" name="publish" value={faq.active ? 'false' : 'true'} />
               <button
                 className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)]"
@@ -43,7 +45,12 @@ export function FaqForm({faq, canEdit, canPublish}: Props) {
       }
     >
       <form action={editing ? updateFaq : createFaq} className="grid gap-6">
-        {faq ? <input type="hidden" name="id" value={faq.id} /> : null}
+        {faq ? (
+          <>
+            <input type="hidden" name="id" value={faq.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={faq.updatedAt} />
+          </>
+        ) : null}
 
         <AdminFieldGroup legend="Tiếng Việt" disabled={!canEdit}>
           <div className="grid gap-4 md:grid-cols-2">
