@@ -205,9 +205,11 @@ export function MediaMetadataForm({
               </AdminFieldGroup>
 
               {canEdit ? (
-                <button className="min-h-11 w-full rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white">
-                  Lưu metadata
-                </button>
+                <AdminSubmitButton
+                  idleLabel="Lưu metadata"
+                  pendingLabel="Đang lưu…"
+                  className="min-h-11 w-full rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+                />
               ) : (
                 <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
               )}
