@@ -12,6 +12,7 @@ import {
 } from '@/components/admin/admin-primitives';
 import {getUnitTypePublicationReadiness, type AdminUnitType} from '@/features/admin/unit-types';
 import {UnitTypePreview} from '@/components/admin/unit-type-preview';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
@@ -56,9 +57,11 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
             </>
           ) : null}
           {unit && canPublish ? (
-            <form action={setUnitTypePublication}>
+            <AdminMutationForm
+              recoverableAction={setUnitTypePublication}
+              expectedUpdatedAt={unit.updatedAt}
+            >
               <input type="hidden" name="id" value={unit.id} />
-              <input type="hidden" name="expectedUpdatedAt" value={unit.updatedAt} />
               <input type="hidden" name="publish" value={unit.active ? 'false' : 'true'} />
               {!unit.active && publication?.ready ? (
                 <input type="hidden" name="next" value="pricing" />
@@ -69,7 +72,7 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
                 disabled={!unit.active && !publication?.ready}
                 className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-not-allowed disabled:opacity-45"
               />
-            </form>
+            </AdminMutationForm>
           ) : null}
         </AdminActionBar>
       }
@@ -108,11 +111,15 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
         </div>
       ) : null}
 
-      <form action={editing ? updateUnitType : createUnitType} className="grid gap-6">
+      <AdminMutationForm
+        action={!editing ? createUnitType : undefined}
+        recoverableAction={editing ? updateUnitType : undefined}
+        expectedUpdatedAt={unit?.updatedAt}
+        className="grid gap-6"
+      >
         {unit ? (
           <>
             <input type="hidden" name="id" value={unit.id} />
-            <input type="hidden" name="expectedUpdatedAt" value={unit.updatedAt} />
           </>
         ) : null}
         {slugLocked && unit ? <input type="hidden" name="slug" value={unit.slug} /> : null}
@@ -194,7 +201,7 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
-      </form>
+      </AdminMutationForm>
     </AdminPanel>
   );
 }

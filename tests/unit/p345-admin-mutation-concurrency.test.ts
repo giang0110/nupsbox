@@ -46,6 +46,9 @@ describe('P3.45 admin mutation consistency and optimistic concurrency', () => {
   });
 
   it('carries record versions through every protected admin edit form', () => {
+    const mutationForm = source('components/admin/admin-mutation-form.tsx');
+    expect(mutationForm).toContain('name="expectedUpdatedAt"');
+
     for (const path of [
       'components/admin/location-form.tsx',
       'components/admin/unit-type-form.tsx',
@@ -54,7 +57,9 @@ describe('P3.45 admin mutation consistency and optimistic concurrency', () => {
       'components/admin/site-setting-form.tsx',
       'components/admin/media-metadata-form.tsx'
     ]) {
-      expect(source(path)).toContain('name="expectedUpdatedAt"');
+      const form = source(path);
+      expect(form).toContain('AdminMutationForm');
+      expect(form).toContain('expectedUpdatedAt=');
     }
   });
 

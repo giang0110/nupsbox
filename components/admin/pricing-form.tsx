@@ -9,6 +9,7 @@ import {
 import type {AdminLocation} from '@/features/admin/locations';
 import type {AdminPricing} from '@/features/admin/pricing';
 import type {AdminUnitType} from '@/features/admin/unit-types';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
@@ -65,11 +66,12 @@ export function PricingForm({
 
   return (
     <AdminPanel title={editing ? 'Cập nhật bảng giá' : 'Thêm cấu hình giá'}>
-      <form
-        action={editing ? updatePricing : createPricing}
+      <AdminMutationForm
+        action={!editing ? createPricing : undefined}
+        recoverableAction={editing ? updatePricing : undefined}
+        expectedUpdatedAt={pricing?.updatedAt}
         className="grid gap-6"
-        onSubmit={(event) => {
-          const form = event.currentTarget;
+        validate={(form) => {
           const monthly = form.elements.namedItem('monthlyPrice') as HTMLInputElement | null;
           const promo = form.elements.namedItem('promoPrice') as HTMLInputElement | null;
           const monthlyValue = monthly?.value.trim() ? Number(monthly.value) : null;
@@ -78,15 +80,15 @@ export function PricingForm({
           promo?.setCustomValidity('');
           if (monthlyValue !== null && promoValue !== null && promoValue > monthlyValue) {
             promo?.setCustomValidity('Giá ưu đãi không được lớn hơn giá tháng.');
-            event.preventDefault();
             promo?.reportValidity();
+            return false;
           }
+          return true;
         }}
       >
         {pricing ? (
           <>
             <input type="hidden" name="id" value={pricing.id} />
-            <input type="hidden" name="expectedUpdatedAt" value={pricing.updatedAt} />
           </>
         ) : null}
 
@@ -193,7 +195,7 @@ export function PricingForm({
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
-      </form>
+      </AdminMutationForm>
     </AdminPanel>
   );
 }

@@ -1,6 +1,7 @@
 import {updatePublicSiteSetting} from '@/app/admin/content/settings/actions';
 import {AdminFieldGroup, AdminPanel, AdminStatusBadge} from '@/components/admin/admin-primitives';
 import type {AdminPublicSetting} from '@/features/admin/settings';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {setting: AdminPublicSetting; canEdit: boolean};
@@ -15,9 +16,12 @@ export function SiteSettingForm({setting, canEdit}: Props) {
       description={'Key cố định: ' + setting.key + '. Chỉ lưu business contact công khai; secrets không được quản lý tại đây.'}
       actions={<AdminStatusBadge label="Công khai" tone="success" />}
     >
-      <form action={updatePublicSiteSetting} className="grid gap-6">
+      <AdminMutationForm
+        recoverableAction={updatePublicSiteSetting}
+        expectedUpdatedAt={setting.updatedAt}
+        className="grid gap-6"
+      >
         <input type="hidden" name="key" value={setting.key} />
-        <input type="hidden" name="expectedUpdatedAt" value={setting.updatedAt} />
 
         <AdminFieldGroup legend="Liên hệ công khai" disabled={!canEdit}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -52,7 +56,7 @@ export function SiteSettingForm({setting, canEdit}: Props) {
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Role hiện tại chỉ có quyền xem settings.</p>
         )}
-      </form>
+      </AdminMutationForm>
     </AdminPanel>
   );
 }

@@ -1,13 +1,13 @@
 'use server';
 
 import {revalidatePath} from 'next/cache';
-import {redirect} from 'next/navigation';
 import {
   prepareLocationCreate,
   prepareLocationPublication,
   prepareLocationUpdate
 } from '@/features/admin/locations';
-import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
+import {adminMutationConflict, adminMutationFailure, adminMutationSuccess, type AdminMutationResult} from '@/features/admin/action-result';
+import {assertFreshAdminWrite, isStaleAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -61,6 +61,21 @@ function revalidateLocations() {
   revalidatePath('/en/locations');
 }
 
+async function recoverLocationConflict(id: string): Promise<AdminMutationResult> {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase
+    .from('locations')
+    .select('updated_at')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data?.updated_at) {
+    return adminMutationFailure('Địa điểm này không còn tồn tại. Hãy tải lại trang để đồng bộ dữ liệu.');
+  }
+  return adminMutationConflict(data.updated_at);
+}
+
 export async function createLocation(formData: FormData) {
   const session = await requireAdminUser();
   const payload = prepareLocationCreate(session.role, inputFromFormData(formData));
@@ -70,48 +85,65 @@ export async function createLocation(formData: FormData) {
   revalidateLocations();
 }
 
-export async function updateLocation(formData: FormData) {
-  const session = await requireAdminUser();
-  const {id, changes} = prepareLocationUpdate(
-    session.role,
-    String(formData.get('id') ?? ''),
-    inputFromFormData(formData)
-  );
-  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
-  const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase
-    .from('locations')
-    .update(changes)
-    .eq('id', id)
-    .eq('updated_at', expectedUpdatedAt)
-    .select('id')
-    .maybeSingle();
-  throwCmsError(error);
-  assertFreshAdminWrite(data);
-  revalidateLocations();
+export async function updateLocation(formData: FormData): Promise<AdminMutationResult> {
+  const id = String(formData.get('id') ?? '');
+
+  try {
+    const session = await requireAdminUser();
+    const {id: preparedId, changes} = prepareLocationUpdate(
+      session.role,
+      id,
+      inputFromFormData(formData)
+    );
+    const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    const supabase = await createSupabaseServerClient();
+    const {data, error} = await supabase
+      .from('locations')
+      .update(changes)
+      .eq('id', preparedId)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    throwCmsError(error);
+    assertFreshAdminWrite(data);
+    revalidateLocations();
+    return adminMutationSuccess();
+  } catch (error) {
+    if (!isStaleAdminWrite(error)) throw error;
+    return recoverLocationConflict(id);
+  }
 }
 
-export async function setLocationPublication(formData: FormData) {
-  const session = await requireAdminUser();
-  const {id, status} = prepareLocationPublication(
-    session.role,
-    String(formData.get('id') ?? ''),
-    String(formData.get('publish') ?? '') === 'true'
-  );
-  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
-  const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase
-    .from('locations')
-    .update({status})
-    .eq('id', id)
-    .eq('updated_at', expectedUpdatedAt)
-    .select('id')
-    .maybeSingle();
-  throwCmsError(error);
-  assertFreshAdminWrite(data);
-  revalidateLocations();
+export async function setLocationPublication(formData: FormData): Promise<AdminMutationResult> {
+  const rawId = String(formData.get('id') ?? '');
 
-  if (status === 'active' && String(formData.get('next') ?? '') === 'media') {
-    redirect('/admin/content/media?location=' + id);
+  try {
+    const session = await requireAdminUser();
+    const {id, status} = prepareLocationPublication(
+      session.role,
+      rawId,
+      String(formData.get('publish') ?? '') === 'true'
+    );
+    const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    const supabase = await createSupabaseServerClient();
+    const {data, error} = await supabase
+      .from('locations')
+      .update({status})
+      .eq('id', id)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    throwCmsError(error);
+    assertFreshAdminWrite(data);
+    revalidateLocations();
+
+    return adminMutationSuccess(
+      status === 'active' && String(formData.get('next') ?? '') === 'media'
+        ? '/admin/content/media?location=' + id
+        : undefined
+    );
+  } catch (error) {
+    if (!isStaleAdminWrite(error)) throw error;
+    return recoverLocationConflict(rawId);
   }
 }
