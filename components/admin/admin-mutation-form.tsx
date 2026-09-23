@@ -5,12 +5,15 @@ import {
   type FormEvent,
   type ReactNode,
   useContext,
+  useEffect,
+  useId,
   useRef,
   useState,
   useTransition
 } from 'react';
 import {useRouter} from 'next/navigation';
 import type {AdminMutationResult} from '@/features/admin/action-result';
+import {useAdminDraftProtection} from '@/components/admin/admin-draft-protection';
 
 type NativeAction = (formData: FormData) => void | Promise<void>;
 type RecoverableAction = (formData: FormData) => Promise<AdminMutationResult>;
@@ -25,13 +28,27 @@ export function useAdminMutationPending() {
   return useContext(AdminMutationPendingContext);
 }
 
+function adminFormSnapshot(form: HTMLFormElement) {
+  const entries = Array.from(new FormData(form).entries())
+    .filter(([name]) => name !== 'expectedUpdatedAt')
+    .map(([name, value]) => [
+      name,
+      typeof value === 'string'
+        ? 'text:' + value
+        : ['file', value.name, value.size, value.type, value.lastModified].join(':')
+    ]);
+
+  return JSON.stringify(entries);
+}
+
 export function AdminMutationForm({
   action,
   recoverableAction,
   expectedUpdatedAt,
   className,
   children,
-  validate
+  validate,
+  protectUnsavedChanges = true
 }: {
   action?: NativeAction;
   recoverableAction?: RecoverableAction;
@@ -39,6 +56,7 @@ export function AdminMutationForm({
   className?: string;
   children: ReactNode;
   validate?: (form: HTMLFormElement) => boolean;
+  protectUnsavedChanges?: boolean;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -46,13 +64,50 @@ export function AdminMutationForm({
   const version = versionOverride ?? expectedUpdatedAt ?? '';
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [pending, startTransition] = useTransition();
+  const draftId = useId();
+  const baselineRef = useRef<string | null>(null);
+  const dirtyRef = useRef(false);
+  const {setDraftDirty} = useAdminDraftProtection();
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!protectUnsavedChanges || !form) return;
+
+    baselineRef.current = adminFormSnapshot(form);
+    dirtyRef.current = false;
+    setDraftDirty(draftId, false);
+
+    return () => setDraftDirty(draftId, false);
+  }, [draftId, protectUnsavedChanges, setDraftDirty]);
+
+  function applyDirtyState(nextDirty: boolean) {
+    if (!protectUnsavedChanges || dirtyRef.current === nextDirty) return;
+    dirtyRef.current = nextDirty;
+    setDraftDirty(draftId, nextDirty);
+  }
+
+  function trackDraft(form: HTMLFormElement) {
+    if (!protectUnsavedChanges) return;
+    if (baselineRef.current === null) baselineRef.current = adminFormSnapshot(form);
+    applyDirtyState(adminFormSnapshot(form) !== baselineRef.current);
+  }
+
+  function markSaved(form: HTMLFormElement) {
+    if (!protectUnsavedChanges) return;
+    baselineRef.current = adminFormSnapshot(form);
+    applyDirtyState(false);
+  }
 
   function nativeSubmit(event: FormEvent<HTMLFormElement>) {
     if (validate && !validate(event.currentTarget)) {
       event.preventDefault();
       return;
     }
-    if (!event.currentTarget.reportValidity()) event.preventDefault();
+    if (!event.currentTarget.reportValidity()) {
+      event.preventDefault();
+      return;
+    }
+    markSaved(event.currentTarget);
   }
 
   function recoverableSubmit(event: FormEvent<HTMLFormElement>) {
@@ -80,6 +135,7 @@ export function AdminMutationForm({
 
         setFeedback(null);
         setVersionOverride(null);
+        markSaved(form);
         if (result.redirectTo) {
           router.push(result.redirectTo);
           return;
@@ -96,7 +152,13 @@ export function AdminMutationForm({
   }
 
   const form = recoverableAction ? (
-    <form ref={formRef} onSubmit={recoverableSubmit} className={className}>
+    <form
+      ref={formRef}
+      onSubmit={recoverableSubmit}
+      onInput={(event) => trackDraft(event.currentTarget)}
+      onChange={(event) => trackDraft(event.currentTarget)}
+      className={className}
+    >
       {version ? <input type="hidden" name="expectedUpdatedAt" value={version} /> : null}
       {children}
       {feedback ? (
@@ -148,7 +210,14 @@ export function AdminMutationForm({
       ) : null}
     </form>
   ) : (
-    <form ref={formRef} action={action} onSubmit={nativeSubmit} className={className}>
+    <form
+      ref={formRef}
+      action={action}
+      onSubmit={nativeSubmit}
+      onInput={(event) => trackDraft(event.currentTarget)}
+      onChange={(event) => trackDraft(event.currentTarget)}
+      className={className}
+    >
       {children}
     </form>
   );
