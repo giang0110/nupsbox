@@ -1,6 +1,8 @@
 'use client';
 
+import {ClientErrorReporter} from '@/components/ops/client-error-reporter';
 export default function PublicError({
+  error,
   reset
 }: {
   error: Error & {digest?: string};
@@ -11,6 +13,7 @@ export default function PublicError({
   return (
     <main className="bg-[var(--nupsbox-surface)] px-4 py-16 sm:px-6 sm:py-24">
       <section className="mx-auto max-w-2xl rounded-3xl border border-[var(--nupsbox-border)] bg-white p-6 text-center shadow-[var(--nupsbox-shadow-sm)] sm:p-8">
+        <ClientErrorReporter scope="public" digest={error.digest} />
         <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">
           {en ? 'TEMPORARY ISSUE' : 'SỰ CỐ TẠM THỜI'}
         </p>
