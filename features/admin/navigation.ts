@@ -30,7 +30,8 @@ const navigation: AdminNavigationGroup[] = [
       {href: '/admin/quality', label: 'Vận hành & QA', action: 'dashboard:read'},
       {href: '/admin/analytics', label: 'Lead Analytics', action: 'leads:read'},
       {href: '/admin/seo', label: 'SEO & Publish', action: 'content:read'},
-      {href: '/admin/audit', label: 'Audit log', action: 'audit:read'}
+      {href: '/admin/audit', label: 'Audit log', action: 'audit:read'},
+      {href: '/admin/users', label: 'Người dùng & quyền', action: 'roles:update'}
     ]
   },
   {
