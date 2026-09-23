@@ -8,6 +8,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminMedia} from '@/features/admin/media';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Option = {id: string; label: string};
@@ -142,9 +143,12 @@ export function MediaMetadataForm({
           </summary>
 
           <div className="pt-4">
-            <form action={updateMediaMetadata} className="grid gap-5">
+            <AdminMutationForm
+              recoverableAction={updateMediaMetadata}
+              expectedUpdatedAt={media.updatedAt}
+              className="grid gap-5"
+            >
               <input type="hidden" name="id" value={media.id} />
-              <input type="hidden" name="expectedUpdatedAt" value={media.updatedAt} />
 
               <AdminFieldGroup legend="Alt text song ngữ" disabled={!canEdit}>
                 <div className="grid gap-3">
@@ -213,7 +217,7 @@ export function MediaMetadataForm({
               ) : (
                 <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
               )}
-            </form>
+            </AdminMutationForm>
 
           </div>
         </details>
