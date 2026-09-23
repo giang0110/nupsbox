@@ -224,6 +224,19 @@ jobs:
           printf '%s' "$html" | grep -F 'rel="canonical"' >/dev/null
           printf '%s' "$html" | grep -F "${CANONICAL_ORIGIN}/" >/dev/null
 
+      - name: Verify Production security headers
+        run: |
+          headers=$(mktemp)
+          curl -fsS -o /dev/null -D "$headers" --max-time 30 "${PRODUCTION_URL}/"
+
+          grep -i '^x-content-type-options: nosniff' "$headers" >/dev/null
+          grep -i '^x-frame-options: DENY' "$headers" >/dev/null
+          grep -i '^strict-transport-security:' "$headers" >/dev/null
+          grep -i '^referrer-policy: strict-origin-when-cross-origin' "$headers" >/dev/null
+          grep -i '^content-security-policy:' "$headers" | grep -F "default-src 'self'" >/dev/null
+          grep -i '^content-security-policy:' "$headers" | grep -F "frame-ancestors 'none'" >/dev/null
+          grep -i '^content-security-policy:' "$headers" | grep -F "object-src 'none'" >/dev/null
+
       - name: Verify unauthenticated admin is not exposed on Production
         run: |
           headers=$(mktemp)
