@@ -8,6 +8,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminMedia} from '@/features/admin/media';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Option = {id: string; label: string};
 type Props = {
@@ -143,6 +144,7 @@ export function MediaMetadataForm({
           <div className="pt-4">
             <form action={updateMediaMetadata} className="grid gap-5">
               <input type="hidden" name="id" value={media.id} />
+              <input type="hidden" name="expectedUpdatedAt" value={media.updatedAt} />
 
               <AdminFieldGroup legend="Alt text song ngữ" disabled={!canEdit}>
                 <div className="grid gap-3">
