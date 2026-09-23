@@ -12,6 +12,7 @@ import {
 } from '@/components/admin/admin-primitives';
 import {getUnitTypePublicationReadiness, type AdminUnitType} from '@/features/admin/unit-types';
 import {UnitTypePreview} from '@/components/admin/unit-type-preview';
+import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
 type Props = {
   unit?: AdminUnitType;
@@ -57,6 +58,7 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
           {unit && canPublish ? (
             <form action={setUnitTypePublication}>
               <input type="hidden" name="id" value={unit.id} />
+              <input type="hidden" name="expectedUpdatedAt" value={unit.updatedAt} />
               <input type="hidden" name="publish" value={unit.active ? 'false' : 'true'} />
               {!unit.active && publication?.ready ? (
                 <input type="hidden" name="next" value="pricing" />
@@ -109,7 +111,12 @@ export function UnitTypeForm({unit, canMutate, canPublish}: Props) {
       ) : null}
 
       <form action={editing ? updateUnitType : createUnitType} className="grid gap-6">
-        {unit ? <input type="hidden" name="id" value={unit.id} /> : null}
+        {unit ? (
+          <>
+            <input type="hidden" name="id" value={unit.id} />
+            <input type="hidden" name="expectedUpdatedAt" value={unit.updatedAt} />
+          </>
+        ) : null}
         {slugLocked && unit ? <input type="hidden" name="slug" value={unit.slug} /> : null}
 
         <AdminFieldGroup legend="Thông tin chính" disabled={!canMutate}>
