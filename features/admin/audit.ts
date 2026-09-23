@@ -67,6 +67,18 @@ export function summarizeAuditMetadata(metadata: Json): string | null {
     parts.push('key: ' + source.key);
   }
 
+  if (typeof source.from_role === 'string' || typeof source.to_role === 'string') {
+    const from = typeof source.from_role === 'string' ? source.from_role : '∅';
+    const to = typeof source.to_role === 'string' ? source.to_role : '∅';
+    parts.push('role: ' + from + ' → ' + to);
+  }
+
+  if (typeof source.from_active === 'boolean' || typeof source.to_active === 'boolean') {
+    const from = typeof source.from_active === 'boolean' ? (source.from_active ? 'active' : 'inactive') : '∅';
+    const to = typeof source.to_active === 'boolean' ? (source.to_active ? 'active' : 'inactive') : '∅';
+    parts.push('status: ' + from + ' → ' + to);
+  }
+
   if (
     typeof source.from_assignee === 'string' ||
     typeof source.to_assignee === 'string'
@@ -90,6 +102,7 @@ export function auditTargetHref(tableName: string, rowId: string | null): string
     return '/admin/content/blog';
   }
   if (tableName === 'site_settings') return '/admin/content/settings';
+  if (tableName === 'profiles') return '/admin/users';
   return null;
 }
 
