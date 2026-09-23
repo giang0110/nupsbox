@@ -5,6 +5,7 @@ import {
   type FormEvent,
   type ReactNode,
   useContext,
+  useEffect,
   useRef,
   useState,
   useTransition
@@ -45,6 +46,10 @@ export function AdminMutationForm({
   const [version, setVersion] = useState(expectedUpdatedAt ?? '');
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setVersion(expectedUpdatedAt ?? '');
+  }, [expectedUpdatedAt]);
 
   function nativeSubmit(event: FormEvent<HTMLFormElement>) {
     if (validate && !validate(event.currentTarget)) {
