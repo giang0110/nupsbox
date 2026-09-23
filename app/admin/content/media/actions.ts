@@ -9,7 +9,8 @@ import {
   prepareMediaMetadataUpdate,
   prepareMediaUpload
 } from '@/features/admin/media';
-import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
+import {adminMutationConflict, adminMutationFailure, adminMutationSuccess, type AdminMutationResult} from '@/features/admin/action-result';
+import {assertFreshAdminWrite, isStaleAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -30,6 +31,21 @@ function revalidateMedia() {
   revalidatePath('/admin/content/media');
   revalidatePath('/');
   revalidatePath('/ve-nupsbox');
+}
+
+async function recoverMediaConflict(id: string): Promise<AdminMutationResult> {
+  const supabase = await createSupabaseServerClient();
+  const {data, error} = await supabase
+    .from('media_assets')
+    .select('updated_at')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data?.updated_at) {
+    return adminMutationFailure('Ảnh này không còn tồn tại. Hãy tải lại trang để đồng bộ dữ liệu.');
+  }
+  return adminMutationConflict(data.updated_at);
 }
 
 export async function uploadMediaAsset(formData: FormData) {
@@ -240,25 +256,33 @@ export async function moveMediaToFront(formData: FormData) {
   revalidateMedia();
 }
 
-export async function updateMediaMetadata(formData: FormData) {
-  const session = await requireAdminUser();
-  const {id, changes} = prepareMediaMetadataUpdate(
-    session.role,
-    String(formData.get('id') ?? ''),
-    inputFromFormData(formData)
-  );
-  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
-  const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase
-    .from('media_assets')
-    .update(changes)
-    .eq('id', id)
-    .eq('updated_at', expectedUpdatedAt)
-    .select('id')
-    .maybeSingle();
-  if (error) throw error;
-  assertFreshAdminWrite(data);
-  revalidateMedia();
+export async function updateMediaMetadata(formData: FormData): Promise<AdminMutationResult> {
+  const id = String(formData.get('id') ?? '');
+
+  try {
+    const session = await requireAdminUser();
+    const {id: preparedId, changes} = prepareMediaMetadataUpdate(
+      session.role,
+      id,
+      inputFromFormData(formData)
+    );
+    const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
+    const supabase = await createSupabaseServerClient();
+    const {data, error} = await supabase
+      .from('media_assets')
+      .update(changes)
+      .eq('id', preparedId)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    if (error) throw error;
+    assertFreshAdminWrite(data);
+    revalidateMedia();
+    return adminMutationSuccess();
+  } catch (error) {
+    if (!isStaleAdminWrite(error)) throw error;
+    return recoverMediaConflict(id);
+  }
 }
 
 
