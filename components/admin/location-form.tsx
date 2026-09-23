@@ -11,6 +11,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import {JsonTextarea} from '@/components/admin/json-textarea';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 import type {AdminLocation} from '@/features/admin/locations';
 import type {LocationLaunchReadiness} from '@/features/admin/location-launch';
@@ -29,7 +30,6 @@ const inputClass =
 export function LocationForm({location, canMutate, canPublish, launch}: Props) {
   const editing = Boolean(location);
   const slugLocked = Boolean(location?.publishedAt);
-  const action = editing ? updateLocation : createLocation;
 
   const panelActions = (
     <AdminActionBar>
@@ -61,9 +61,11 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
         </>
       ) : null}
       {location && canPublish ? (
-        <form action={setLocationPublication}>
+        <AdminMutationForm
+          recoverableAction={setLocationPublication}
+          expectedUpdatedAt={location.updatedAt}
+        >
           <input type="hidden" name="id" value={location.id} />
-          <input type="hidden" name="expectedUpdatedAt" value={location.updatedAt} />
           <input
             type="hidden"
             name="publish"
@@ -75,7 +77,7 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
             pendingLabel={location.status === 'active' ? 'Đang ngừng…' : 'Đang xuất bản…'}
             className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] px-4 text-sm font-bold text-[var(--nupsbox-navy)] disabled:cursor-wait disabled:opacity-60"
           />
-        </form>
+        </AdminMutationForm>
       ) : null}
     </AdminActionBar>
   );
@@ -124,11 +126,15 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
         </div>
       ) : null}
 
-      <form action={action} className="grid gap-6">
+      <AdminMutationForm
+        action={!editing ? createLocation : undefined}
+        recoverableAction={editing ? updateLocation : undefined}
+        expectedUpdatedAt={location?.updatedAt}
+        className="grid gap-6"
+      >
         {location ? (
           <>
             <input type="hidden" name="id" value={location.id} />
-            <input type="hidden" name="expectedUpdatedAt" value={location.updatedAt} />
           </>
         ) : null}
         {slugLocked && location ? <input type="hidden" name="slug" value={location.slug} /> : null}
@@ -233,7 +239,7 @@ export function LocationForm({location, canMutate, canPublish, launch}: Props) {
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
-      </form>
+      </AdminMutationForm>
     </AdminPanel>
   );
 }
