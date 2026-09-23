@@ -44,9 +44,11 @@ export function SiteSettingForm({setting, canEdit}: Props) {
         </AdminFieldGroup>
 
         {canEdit ? (
-          <button className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white">
-            Lưu thông tin liên hệ
-          </button>
+          <AdminSubmitButton
+            idleLabel="Lưu thông tin liên hệ"
+            pendingLabel="Đang lưu…"
+            className="min-h-11 w-fit rounded-xl bg-[var(--nupsbox-blue)] px-5 text-sm font-black text-white disabled:cursor-wait disabled:opacity-60"
+          />
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Role hiện tại chỉ có quyền xem settings.</p>
         )}
