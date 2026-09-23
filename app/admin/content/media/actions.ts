@@ -142,14 +142,23 @@ export async function promoteMediaHero(formData: FormData) {
     unitTypeId: media.unit_type_id ?? ''
   });
 
+  const {data: existingHeroes, error: heroReadError} = await supabase
+    .from('media_assets')
+    .select('id, category, sort_order, updated_at')
+    .eq('location_id', media.location_id)
+    .eq('category', 'hero')
+    .neq('id', id);
+  if (heroReadError) throw heroReadError;
+
   const {data: updated, error: updateError} = await supabase
     .from('media_assets')
     .update(changes)
     .eq('id', id)
+    .eq('updated_at', media.updated_at)
     .select('id')
-    .single();
+    .maybeSingle();
   if (updateError) throw updateError;
-  if (!updated) throw new Error('media_hero_update_noop');
+  assertFreshAdminWrite(updated);
 
   const {error: demoteError} = await supabase
     .from('media_assets')
@@ -157,7 +166,30 @@ export async function promoteMediaHero(formData: FormData) {
     .eq('location_id', media.location_id)
     .eq('category', 'hero')
     .neq('id', id);
-  if (demoteError) throw demoteError;
+
+  if (demoteError) {
+    const {error: rollbackError} = await supabase
+      .from('media_assets')
+      .update({
+        category: media.category,
+        sort_order: media.sort_order,
+        is_public: media.is_public,
+        location_id: media.location_id,
+        unit_type_id: media.unit_type_id
+      })
+      .eq('id', id);
+
+    if (rollbackError) {
+      console.error('media_hero_rollback_failed', {
+        mediaId: id,
+        demoteError: demoteError.message,
+        rollbackError: rollbackError.message,
+        previousHeroes: existingHeroes?.map(row => row.id) ?? []
+      });
+    }
+
+    throw demoteError;
+  }
 
   revalidateMedia();
 }
@@ -200,10 +232,11 @@ export async function moveMediaToFront(formData: FormData) {
     .from('media_assets')
     .update(changes)
     .eq('id', id)
+    .eq('updated_at', media.updated_at)
     .select('id')
-    .single();
+    .maybeSingle();
   if (updateError) throw updateError;
-  if (!updated) throw new Error('media_order_update_noop');
+  assertFreshAdminWrite(updated);
   revalidateMedia();
 }
 
@@ -274,6 +307,7 @@ export async function deleteMediaAsset(
       .from('media_assets')
       .delete()
       .eq('id', id)
+      .eq('updated_at', media.updated_at)
       .select('id');
 
     if (deleteMetadataError || !deletedRows || deletedRows.length !== 1) {
