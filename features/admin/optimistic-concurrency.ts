@@ -12,3 +12,8 @@ export function assertFreshAdminWrite<T>(row: T | null): T {
   if (!row) throw new Error(STALE_ADMIN_WRITE);
   return row;
 }
+
+
+export function isStaleAdminWrite(error: unknown): boolean {
+  return error instanceof Error && error.message === STALE_ADMIN_WRITE;
+}
