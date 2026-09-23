@@ -26,8 +26,8 @@ describe('P3.42 security and operational hardening', () => {
       allowScripts?: Record<string, boolean>;
     };
 
-    expect(pkg.engines?.node).toBe('>=24.21.0 <25');
-    expect(pkg.packageManager).toBe('npm@11.19.0');
+    expect(pkg.engines?.node).toBe('>=24.19.0 <25');
+    expect(pkg.packageManager).toBe('npm@11.20.0');
     expect(pkg.allowScripts).toEqual({
       '@parcel/watcher@2.6.0': true,
       '@swc/core@1.16.2': true,
