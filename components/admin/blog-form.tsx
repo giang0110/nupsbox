@@ -12,6 +12,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import {JsonTextarea} from '@/components/admin/json-textarea';
+import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {getBlogPublicationState, type AdminBlog} from '@/features/admin/blog';
 
 type MediaOption = {id: string; label: string};
@@ -152,7 +153,7 @@ export function BlogForm({
         </AdminActionBar>
       }
     >
-      <form action={editing ? updateBlogPost : createBlogPost} className="grid gap-6">
+      <AdminMutationForm action={editing ? updateBlogPost : createBlogPost} className="grid gap-6">
         {blog ? <input type="hidden" name="id" value={blog.id} /> : null}
         {slugLocked && blog ? <input type="hidden" name="slug" value={blog.slug} /> : null}
 
@@ -269,7 +270,7 @@ export function BlogForm({
         ) : (
           <p className="text-sm text-[var(--nupsbox-slate)]">Tài khoản hiện tại chỉ có quyền xem.</p>
         )}
-      </form>
+      </AdminMutationForm>
     </AdminPanel>
   );
 }
