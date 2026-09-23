@@ -7,6 +7,7 @@ import {
   prepareLocationPublication,
   prepareLocationUpdate
 } from '@/features/admin/locations';
+import {assertFreshAdminWrite, requireExpectedUpdatedAt} from '@/features/admin/optimistic-concurrency';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
 
@@ -76,10 +77,17 @@ export async function updateLocation(formData: FormData) {
     String(formData.get('id') ?? ''),
     inputFromFormData(formData)
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase.from('locations').update(changes).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('locations')
+    .update(changes)
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   throwCmsError(error);
-  if (!data) throw new Error('location_update_noop');
+  assertFreshAdminWrite(data);
   revalidateLocations();
 }
 
@@ -90,10 +98,17 @@ export async function setLocationPublication(formData: FormData) {
     String(formData.get('id') ?? ''),
     String(formData.get('publish') ?? '') === 'true'
   );
+  const expectedUpdatedAt = requireExpectedUpdatedAt(formData.get('expectedUpdatedAt'));
   const supabase = await createSupabaseServerClient();
-  const {data, error} = await supabase.from('locations').update({status}).eq('id', id).select('id').single();
+  const {data, error} = await supabase
+    .from('locations')
+    .update({status})
+    .eq('id', id)
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id')
+    .maybeSingle();
   throwCmsError(error);
-  if (!data) throw new Error('location_publication_noop');
+  assertFreshAdminWrite(data);
   revalidateLocations();
 
   if (status === 'active' && String(formData.get('next') ?? '') === 'media') {
