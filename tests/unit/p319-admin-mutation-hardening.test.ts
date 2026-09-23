@@ -55,7 +55,8 @@ describe('P3.19 admin mutation hardening', () => {
     expect(input).toContain('8 * 1024 * 1024');
     expect(input).toContain('Ảnh vượt quá giới hạn 8 MB.');
     expect(action).toContain('data.length !== command.ids.length');
-    expect(action).toContain('media_metadata_update_noop');
+    expect(action).toContain(".eq('updated_at', expectedUpdatedAt)");
+    expect(action).toContain('assertFreshAdminWrite');
   });
 
   it('checks cross-field pricing before submit', () => {
