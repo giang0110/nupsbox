@@ -1,11 +1,11 @@
 import {Link} from '@/i18n/navigation';
 import {Container} from '@/components/ui/container';
 import {buttonClassName} from '@/components/ui/button';
-import {getCommercialContent, type CommercialCopy} from '@/features/content/commercial-content';
+import {getCommercialContent, getCommercialFallback, type CommercialCopy} from '@/features/content/commercial-content';
 
 export async function FinalCta({locale, content}: {locale: 'vi' | 'en'; content?: CommercialCopy}) {
   const vi = locale === 'vi';
-  const copy = content ?? (await getCommercialContent(locale)).cta;
+  const copy = content ?? (await getCommercialContent(locale).catch(() => getCommercialFallback(locale))).cta;
 
   return (
     <section className="relative overflow-hidden bg-[var(--nupsbox-navy)] py-14 text-white sm:py-16">
