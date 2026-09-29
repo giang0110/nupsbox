@@ -3,11 +3,14 @@ import {redirect} from 'next/navigation';
 import {AdminPageHeader} from '@/components/admin/admin-page-header';
 import {AdminEmptyState, AdminPanel, AdminStatusBadge} from '@/components/admin/admin-primitives';
 import {MediaBulkManager} from '@/components/admin/media-bulk-manager';
+import {MediaEditorialManager} from '@/components/admin/media-editorial-manager';
 import {MediaMetadataForm} from '@/components/admin/media-metadata-form';
 import {MediaUploadForm} from '@/components/admin/media-upload-form';
 import {Container} from '@/components/ui/container';
+import {listAdminBlogs} from '@/features/admin/blog';
 import {listAdminLocations} from '@/features/admin/locations';
 import {listAdminMedia} from '@/features/admin/media';
+import {listAdminMediaEditorialLinks} from '@/features/admin/media-editorial';
 import {listAdminUnitTypes} from '@/features/admin/unit-types';
 import {summarizeMediaLaunch} from '@/features/admin/media-launch';
 import {can} from '@/features/auth/permissions';
@@ -25,10 +28,12 @@ export default async function AdminMediaPage({
   const requestedLocationId = Array.isArray(params.location) ? params.location[0] : params.location;
   const requestedUnitId = Array.isArray(params.unit) ? params.unit[0] : params.unit;
 
-  const [mediaRows, locations, units] = await Promise.all([
+  const [mediaRows, locations, units, editorialLinks, blogs] = await Promise.all([
     listAdminMedia(),
     listAdminLocations(),
-    listAdminUnitTypes()
+    listAdminUnitTypes(),
+    listAdminMediaEditorialLinks(),
+    listAdminBlogs()
   ]);
   const canEdit = can(session.role, 'media:update');
   const canCreate = can(session.role, 'media:create');
@@ -53,7 +58,7 @@ export default async function AdminMediaPage({
         <AdminPageHeader
           eyebrow="MEDIA CMS"
           title="Hình ảnh kho & media"
-          description="Upload ảnh, xem preview, quản lý alt text song ngữ, category, thứ tự, trạng thái public và liên kết đúng địa điểm/loại kho."
+          description="Upload ảnh, quản lý metadata/location và gán ảnh thật vào Blog, Solution hoặc chủ đề editorial mà không trộn lẫn asset gốc."
         />
 
         {selectedLocation || selectedUnit ? (
@@ -106,6 +111,13 @@ export default async function AdminMediaPage({
         {canEdit && visibleMedia.length ? (
           <MediaBulkManager media={visibleMedia} locationOptions={locationOptions} />
         ) : null}
+
+        <MediaEditorialManager
+          media={mediaRows}
+          links={editorialLinks}
+          blogs={blogs}
+          canEdit={canEdit}
+        />
 
         <section aria-labelledby="media-library-title">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
