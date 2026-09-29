@@ -21,7 +21,7 @@ export function Hero({
   copy?: CommercialCopy;
 }) {
   const vi = locale === 'vi';
-  const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2)) : null;
+  const publishedUseCases = 4;
   const facilityMedia = location ? getFacilityMedia(location.slug) : null;
 
   return (
@@ -66,24 +66,22 @@ export function Hero({
 
           <div className="home-hero-trust mt-8 grid max-w-[34rem] grid-cols-3 border-y border-white/10 py-4 text-sm">
             <div className="pr-4">
-              <p className="font-extrabold text-white">{vi ? 'Thông tin công khai' : 'Published information'}</p>
-              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Dịch vụ & cơ sở' : 'Services & facilities'}</p>
+              <p className="font-extrabold text-white">{publishedUseCases} {vi ? 'nhóm nhu cầu' : 'use cases'}</p>
+              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Shop · SME · Hàng tồn · Cá nhân' : 'Online · SME · Inventory · Personal'}</p>
             </div>
             <div className="border-l border-white/10 px-4">
-              <p className="font-extrabold text-white">{vi ? 'Quy mô tham khảo' : 'Published sizing'}</p>
-              <p className="mt-1 text-xs leading-5 text-white/52">
-                {minArea !== null ? `${minArea.toFixed(2)} m²+` : (vi ? 'Theo dữ liệu hiện có' : 'Based on current data')}
-              </p>
+              <p className="font-extrabold text-white">{location ? location.district : (vi ? 'Cơ sở thực tế' : 'Real facility')}</p>
+              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Thông tin & hình ảnh đã công bố' : 'Published facility information'}</p>
             </div>
             <div className="border-l border-white/10 pl-4">
-              <p className="font-extrabold text-white">{vi ? 'Liên hệ trực tiếp' : 'Direct contact'}</p>
-              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Xác nhận khi trao đổi' : 'Confirm when enquiring'}</p>
+              <p className="font-extrabold text-white">{vi ? 'Phân tích chuyên sâu' : 'Practical analysis'}</p>
+              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Dùng kho, tồn kho, vận hành' : 'Storage, inventory, operations'}</p>
             </div>
           </div>
         </div>
 
         {location && facilityMedia ? (
-          <figure className="home-hero-image group relative min-h-[390px] overflow-hidden rounded-[2rem] lg:h-[clamp(500px,42vw,620px)] lg:min-h-0">
+          <figure className="home-hero-image group relative min-h-[390px] overflow-hidden rounded-[2rem] lg:h-[clamp(440px,36vw,540px)] lg:min-h-0">
             <Image
               src={facilityMedia.imageUrl}
               alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
@@ -99,7 +97,7 @@ export function Hero({
             </figcaption>
           </figure>
         ) : (
-          <div className="home-hero-image relative grid min-h-[390px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,#0d2d62,#071a38_65%,#091f43)] p-7 lg:h-[clamp(500px,42vw,620px)] lg:min-h-0">
+          <div className="home-hero-image relative grid min-h-[390px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,#0d2d62,#071a38_65%,#091f43)] p-7 lg:h-[clamp(440px,36vw,540px)] lg:min-h-0">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(255,211,26,.16),transparent_28%)]" />
             <div className="relative z-10 self-end">
               <span className="grid size-12 place-items-center rounded-full border border-white/15 text-[var(--nupsbox-yellow)]">
