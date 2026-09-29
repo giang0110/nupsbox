@@ -39,8 +39,9 @@ describe('P3.16 premium brand experience', () => {
     const finalCta = source('components/marketing/final-cta.tsx');
     expect(gallery).toContain('Xem các góc kho thực tế');
     expect(gallery).not.toContain('Ảnh được lấy từ Media CMS');
-    expect(finalCta).toContain('Cần thêm thông tin? Trao đổi trực tiếp với NupsBox.');
-    expect(finalCta).toContain('LIÊN HỆ THƯƠNG MẠI');
+    expect(finalCta).toContain('getCommercialContent');
+    expect(finalCta).toContain('copy.title');
+    expect(finalCta).toContain('copy.description');
     expect(finalCta).toContain('bg-[var(--nupsbox-navy)]');
   });
 });
