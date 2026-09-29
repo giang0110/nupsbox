@@ -9,7 +9,7 @@ import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingFeaturedLocation, getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {isSupportedLocale} from '@/i18n/routing';
-import {normalizeLeadNeed, normalizeLeadVolume} from '@/features/leads/intake';
+import {normalizeLeadInquiryType, normalizeLeadNeed, normalizeLeadVolume} from '@/features/leads/intake';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
@@ -30,7 +30,7 @@ export default async function Page({
   searchParams
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{unit?: string; location?: string; need?: string; volume?: string}>;
+  searchParams: Promise<{unit?: string; location?: string; need?: string; volume?: string; inquiry?: string}>;
 }) {
   const {locale} = await params;
   if (!isSupportedLocale(locale)) notFound();
@@ -38,6 +38,7 @@ export default async function Page({
   const query = await searchParams;
   const intakeNeed = normalizeLeadNeed(query.need);
   const intakeVolume = normalizeLeadVolume(query.volume);
+  const intakeInquiryType = normalizeLeadInquiryType(query.inquiry);
 
   const [featuredLocation, requestedLocation, requestedUnit, settings] = await Promise.all([
     getMarketingFeaturedLocation(locale),
@@ -118,8 +119,8 @@ export default async function Page({
               </h2>
               <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">
                 {vi
-                  ? 'Biểu mẫu hiện tại tiếp tục ghi nhận nhu cầu lưu trữ và ngữ cảnh liên quan; NupsBox sẽ xác nhận thông tin thương mại phù hợp khi liên hệ.'
-                  : 'The current form continues to capture storage needs and related context; NupsBox will confirm the relevant commercial information when contacting you.'}
+                  ? 'Chọn loại yêu cầu trước. Thông tin chi tiết về nhu cầu kho chỉ xuất hiện khi bạn chọn tư vấn lưu trữ.'
+                  : 'Choose the enquiry type first. Storage-specific questions appear only when you select storage advice.'}
               </p>
             </div>
             <Suspense fallback={<div className="min-h-[26rem] rounded-3xl bg-white" aria-hidden="true" />}>
@@ -132,6 +133,7 @@ export default async function Page({
                 unitName={requestedUnit?.name}
                 locationId={requestedLocation?.id}
                 locationName={requestedLocation?.name}
+                inquiryType={intakeInquiryType}
                 needType={intakeNeed}
                 estimatedVolume={intakeVolume}
               />
