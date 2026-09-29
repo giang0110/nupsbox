@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {blogHeadingId} from '@/features/content/blog-structure';
 
 type BlogNode = {
   type?: unknown;
@@ -100,13 +101,14 @@ function renderNode(value: unknown, key: string): ReactNode {
   if (type === 'heading') {
     const rawLevel = Number(attrsRecord(node.attrs).level);
     const level = Number.isFinite(rawLevel) ? Math.min(Math.max(rawLevel, 2), 4) : 2;
+    const id = blogHeadingId(key);
     if (level === 3) {
-      return <h3 key={key} className="pt-2 text-xl font-black tracking-[-0.025em] text-[var(--nupsbox-navy)]">{children}</h3>;
+      return <h3 id={id} key={key} className="scroll-mt-24 pt-2 text-xl font-black tracking-[-0.025em] text-[var(--nupsbox-navy)]">{children}</h3>;
     }
     if (level === 4) {
-      return <h4 key={key} className="pt-1 text-lg font-black text-[var(--nupsbox-navy)]">{children}</h4>;
+      return <h4 id={id} key={key} className="scroll-mt-24 pt-1 text-lg font-black text-[var(--nupsbox-navy)]">{children}</h4>;
     }
-    return <h2 key={key} className="pt-3 text-2xl font-black tracking-[-0.035em] text-[var(--nupsbox-navy)]">{children}</h2>;
+    return <h2 id={id} key={key} className="scroll-mt-24 pt-3 text-2xl font-black tracking-[-0.035em] text-[var(--nupsbox-navy)]">{children}</h2>;
   }
 
   return children.length ? <div key={key}>{children}</div> : null;
