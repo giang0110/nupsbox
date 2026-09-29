@@ -1,13 +1,22 @@
+import type {Metadata} from 'next';
 import type {ReactNode} from 'react';
-import {createStaticPageMetadata} from '@/features/seo/static-page';
+import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
+import {createLocalizedMetadata} from '@/features/seo/metadata';
+import {getStaticSeoRoute} from '@/features/seo/routes';
 
-const copy = {
-  vi: {title: 'Về NupsBox', description: 'Tìm hiểu NupsBox và định hướng cung cấp kho mini linh hoạt cho nhu cầu kinh doanh và lưu trữ tại TP.HCM.'},
-  en: {title: 'About NupsBox', description: 'Learn about NupsBox and its focus on flexible mini storage for business and storage needs in Ho Chi Minh City.'}
-};
-
-export function generateMetadata({params}: {params: Promise<{locale: string}>}) {
-  return createStaticPageMetadata(params, 'about', copy);
+export async function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  const {locale: rawLocale} = await params;
+  const locale = rawLocale === 'en' ? 'en' : 'vi';
+  const commercial = await getCommercialContent(locale).catch(() => getCommercialFallback(locale));
+  const seo = commercial.pageSeo.about;
+  return createLocalizedMetadata({
+    route: getStaticSeoRoute('about'),
+    locale,
+    title: seo.title,
+    description: seo.description
+  });
 }
 
-export default function Layout({children}: {children: ReactNode}) { return children; }
+export default function Layout({children}: {children: ReactNode}) {
+  return children;
+}
