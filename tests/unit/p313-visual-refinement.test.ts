@@ -7,11 +7,12 @@ function source(path: string) {
 }
 
 describe('P3.13 premium visual refinement', () => {
-  it('keeps the commercial overview and real imagery near the top of the homepage', () => {
+  it('keeps the compact decision hub and editorial insights directly after the hero', () => {
     const home = source('app/[locale]/page.tsx');
-    expect(home.indexOf('      <CommercialOverview')).toBeGreaterThan(home.indexOf('      <Hero'));
-    expect(home.indexOf('      <WarehouseGallery')).toBeGreaterThan(home.indexOf('      <CommercialOverview'));
-    expect(home.indexOf('      <WarehouseGallery')).toBeLessThan(home.indexOf('      <HomeProofBento'));
+    expect(home.indexOf('      <HomeDecisionHub')).toBeGreaterThan(home.indexOf('      <Hero'));
+    expect(home.indexOf('      <HomeInsights')).toBeGreaterThan(home.indexOf('      <HomeDecisionHub'));
+    expect(home.indexOf('      <FinalCta')).toBeGreaterThan(home.indexOf('      <HomeInsights'));
+    expect(home).not.toContain('<WarehouseGallery');
   });
 
   it('keeps the mobile bar at two primary columns with a contact sheet', () => {

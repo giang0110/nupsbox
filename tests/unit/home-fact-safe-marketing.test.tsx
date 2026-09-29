@@ -64,12 +64,13 @@ describe('fact-safe adaptive homepage marketing', () => {
     expect(screen.queryByText(/CCTV/i)).not.toBeInTheDocument();
   });
 
-  it('uses database-backed location and area values when they exist', () => {
+  it('uses database-backed facility values when they exist', () => {
     render(<Hero locale="vi" location={location} units={[unit]} />);
 
     expect(screen.getByText('NupsBox Central')).toBeInTheDocument();
     expect(screen.getByText('Approved address')).toBeInTheDocument();
-    expect(screen.getByText('2.50 m²+')).toBeInTheDocument();
+    expect(screen.getByText('District X')).toBeInTheDocument();
+    expect(screen.getAllByText('4 nhóm nhu cầu').length).toBeGreaterThan(0);
   });
 
   it('does not invent facility security claims in the proof bento', () => {

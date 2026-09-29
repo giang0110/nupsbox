@@ -66,7 +66,7 @@ describe('P3.51 commercial CMS and general enquiry', () => {
 
     expect(home).toContain('getCommercialContent');
     expect(home).toContain('commercial.companyProfile');
-    expect(home).toContain('commercial.capabilities');
+    expect(home).toContain('commercial={commercial}');
     expect(cta).toContain('getCommercialContent');
     expect(nav).toContain('/admin/content/commercial');
   });

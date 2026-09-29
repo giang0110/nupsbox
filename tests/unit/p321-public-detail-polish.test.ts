@@ -28,7 +28,7 @@ describe('P3.21 public detail and content polish', () => {
     const blog = source('app/[locale]/blog/page.tsx');
     expect(blog).toContain('createStaticPageMetadata');
     expect(blog).toContain('<PageIntro');
-    expect(blog).toContain('<Section>');
+    expect(blog).toContain('<Section');
     expect(blog).toContain('<FinalCta');
   });
 
