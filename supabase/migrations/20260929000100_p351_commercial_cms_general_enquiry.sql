@@ -93,7 +93,34 @@ as $$
 declare
   v_lead_id uuid;
   v_appointment_id uuid;
+  v_location_id uuid := nullif(p_lead->>'locationId', '')::uuid;
+  v_unit_type_id uuid := nullif(p_lead->>'unitTypeId', '')::uuid;
 begin
+  if v_location_id is not null and not exists (
+    select 1 from public.locations l
+    where l.id = v_location_id and l.status = 'active'
+  ) then
+    raise exception 'invalid public location reference'
+      using errcode = '23514';
+  end if;
+
+  if v_unit_type_id is not null and not exists (
+    select 1 from public.unit_types u
+    where u.id = v_unit_type_id and u.active = true
+  ) then
+    raise exception 'invalid public unit reference'
+      using errcode = '23514';
+  end if;
+
+  if v_location_id is not null and v_unit_type_id is not null and not exists (
+    select 1 from public.location_unit_types lut
+    where lut.location_id = v_location_id
+      and lut.unit_type_id = v_unit_type_id
+  ) then
+    raise exception 'invalid public location unit pair'
+      using errcode = '23514';
+  end if;
+
   insert into public.leads (
     full_name,
     phone,
@@ -119,8 +146,8 @@ begin
     nullif(trim(p_lead->>'email'), ''),
     coalesce(nullif(p_lead->>'preferredLanguage', ''), 'vi'),
     coalesce(nullif(p_lead->>'inquiryType', ''), 'storage'),
-    nullif(p_lead->>'locationId', '')::uuid,
-    nullif(p_lead->>'unitTypeId', '')::uuid,
+    v_location_id,
+    v_unit_type_id,
     coalesce(nullif(p_lead->>'needType', ''), 'other')::public.need_type,
     coalesce(nullif(p_lead->>'estimatedVolume', ''), 'unknown')::public.estimated_volume,
     nullif(p_lead->>'message', ''),
@@ -147,8 +174,8 @@ begin
       created_by
     ) values (
       v_lead_id,
-      nullif(p_lead->>'locationId', '')::uuid,
-      nullif(p_lead->>'unitTypeId', '')::uuid,
+      v_location_id,
+      v_unit_type_id,
       (p_appointment->>'scheduledAt')::timestamptz,
       coalesce((p_appointment->>'durationMinutes')::integer, 30),
       'pending',
