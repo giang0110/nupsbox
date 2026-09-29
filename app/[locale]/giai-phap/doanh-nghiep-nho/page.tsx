@@ -20,6 +20,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   return (
     <SolutionPage
       locale={locale}
+      kind="small-business"
       titleVi="Kho cho doanh nghiệp nhỏ"
       titleEn="Storage for small businesses"
       bodyVi="Có thêm chỗ cho hàng mẫu, thiết bị và tồn kho mà không cần thuê thêm một văn phòng lớn."
