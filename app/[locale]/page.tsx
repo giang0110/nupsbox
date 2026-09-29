@@ -2,16 +2,12 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Hero} from '@/components/marketing/hero';
-import {CommercialOverview} from '@/components/marketing/commercial-overview';
-import {HomeProofBento} from '@/components/marketing/home-proof-bento';
-import {HomeLocationJourney} from '@/components/marketing/home-location-journey';
-import {HomeFaq} from '@/components/marketing/home-faq';
+import {HomeDecisionHub} from '@/components/marketing/home-decision-hub';
+import {HomeInsights} from '@/components/marketing/home-insights';
 import {FinalCta} from '@/components/marketing/final-cta';
-import {WarehouseGallery} from '@/components/marketing/warehouse-gallery';
 import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
-import {getMarketingFaqs} from '@/features/content/faqs';
-import {getPublicLocationGallery} from '@/features/content/public-media';
+import {getPublishedBlogCards} from '@/features/content/blog';
 import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 import {selectHomepageUnits} from '@/features/home/content';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
@@ -39,17 +35,14 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
   setRequestLocale(rawLocale);
   const locale = rawLocale;
 
-  const [units, location, faqs, commercial] = await Promise.all([
+  const [units, location, commercial, posts] = await Promise.all([
     getMarketingUnits(locale),
     getMarketingFeaturedLocation(locale),
-    getMarketingFaqs(locale),
-    getCommercialContent(locale).catch(() => getCommercialFallback(locale))
+    getCommercialContent(locale).catch(() => getCommercialFallback(locale)),
+    getPublishedBlogCards(locale)
   ]);
 
   const featuredUnits = selectHomepageUnits(units).slice(0, 3);
-  const galleryItems = location
-    ? await getPublicLocationGallery(location.id, locale)
-    : [];
 
   return (
     <main>
@@ -57,14 +50,15 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
         locale={locale}
         location={location}
         units={featuredUnits}
-        hasGallery={galleryItems.length > 0}
         copy={commercial.companyProfile}
       />
-      <CommercialOverview locale={locale} services={commercial.services} capabilities={commercial.capabilities} />
-      <WarehouseGallery locale={locale} items={galleryItems} />
-      <HomeProofBento locale={locale} location={location} units={featuredUnits} content={commercial.capabilities} />
-      <HomeLocationJourney location={location} locale={locale} />
-      <HomeFaq items={faqs} locale={locale} />
+      <HomeDecisionHub
+        locale={locale}
+        location={location}
+        units={featuredUnits}
+        commercial={commercial}
+      />
+      <HomeInsights locale={locale} posts={posts} />
       <FinalCta locale={locale} content={commercial.cta} />
     </main>
   );
