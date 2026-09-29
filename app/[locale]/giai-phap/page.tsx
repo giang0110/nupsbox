@@ -8,6 +8,7 @@ import {SectionHeading} from '@/components/ui/section-heading';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
+import {getCommercialContent} from '@/features/content/commercial-content';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
   return createStaticPageMetadata(params, 'solutions', {
@@ -27,6 +28,7 @@ export default async function SolutionsPage({params}: {params: Promise<{locale: 
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const vi = locale === 'vi';
+  const commercial = await getCommercialContent(locale);
   const items = [
     ['/giai-phap/shop-online' as const, vi ? 'Shop online' : 'Online sellers', vi ? 'Tách hàng khỏi không gian sống và vận hành shop gọn hơn.' : 'Separate inventory from living space and run the shop with less clutter.'],
     ['/giai-phap/doanh-nghiep-nho' as const, vi ? 'Doanh nghiệp nhỏ' : 'Small business', vi ? 'Thêm không gian cho hàng mẫu, thiết bị và tồn kho.' : 'Add room for samples, equipment and inventory.'],
@@ -37,11 +39,9 @@ export default async function SolutionsPage({params}: {params: Promise<{locale: 
   return (
     <main>
       <PageIntro
-        eyebrow={vi ? 'DỊCH VỤ' : 'SERVICES'}
-        title={vi ? 'Dịch vụ và giải pháp lưu trữ NupsBox' : 'NupsBox services and storage solutions'}
-        description={vi
-          ? 'Khám phá các nhóm nhu cầu NupsBox đang phục vụ, sau đó xem thêm thông tin cơ sở hoặc liên hệ để xác nhận phương án phù hợp.'
-          : 'Explore the needs NupsBox currently serves, then review facility information or contact us to confirm a suitable option.'}
+        eyebrow={commercial.services.eyebrow ?? (vi ? 'DỊCH VỤ' : 'SERVICES')}
+        title={commercial.services.title}
+        description={commercial.services.description}
       />
 
       <Section>
@@ -67,7 +67,7 @@ export default async function SolutionsPage({params}: {params: Promise<{locale: 
         </div>
       </Section>
 
-      <FinalCta locale={locale} />
+      <FinalCta locale={locale} content={commercial.cta} />
     </main>
   );
 }
