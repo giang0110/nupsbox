@@ -8,20 +8,22 @@ import {TrackedContactLink} from '@/components/marketing/tracked-contact-link';
 import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingFeaturedLocation, getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
+import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 import {isSupportedLocale} from '@/i18n/routing';
 import {normalizeLeadInquiryType, normalizeLeadNeed, normalizeLeadVolume} from '@/features/leads/intake';
-import {createStaticPageMetadata} from '@/features/seo/static-page';
+import {createLocalizedMetadata} from '@/features/seo/metadata';
+import {getStaticSeoRoute} from '@/features/seo/routes';
 
-export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
-  return createStaticPageMetadata(params, 'contact', {
-    vi: {
-      title: 'Liên hệ thương mại & tư vấn',
-      description: 'Liên hệ NupsBox để hỏi về dịch vụ, cơ sở, mức giá tham khảo, khả năng đáp ứng và các thông tin thương mại liên quan.'
-    },
-    en: {
-      title: 'Commercial enquiries & advice',
-      description: 'Contact NupsBox about services, facilities, indicative pricing, availability and related commercial information.'
-    }
+export async function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  const {locale: rawLocale} = await params;
+  const locale = rawLocale === 'en' ? 'en' : 'vi';
+  const commercial = await getCommercialContent(locale).catch(() => getCommercialFallback(locale));
+  const seo = commercial.pageSeo.contact;
+  return createLocalizedMetadata({
+    route: getStaticSeoRoute('contact'),
+    locale,
+    title: seo.title,
+    description: seo.description
   });
 }
 
