@@ -79,7 +79,7 @@ describe('P3.53 editorial experience', () => {
     const article = source('app/[locale]/blog/[slug]/page.tsx');
     expect(article).toContain("'@type': 'Article'");
     expect(article).toContain('estimateBlogReadingMinutes');
-    expect(article).toContain('CONTINUE READING');
+    expect(article).toContain('CONTINUE BY TOPIC');
     expect(article).toContain('Reference for selected principles');
   });
 });
