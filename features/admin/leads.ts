@@ -6,6 +6,7 @@ import {
 } from '@/features/admin/lead-status';
 import {can} from '@/features/auth/permissions';
 import {createSupabaseServerClient} from '@/lib/supabase/server';
+import type {LeadInquiryType} from '@/features/leads/intake';
 import type {AppRole} from '@/types/database';
 
 export {isOperationalLeadStatus, leadStatuses, operationalLeadStatuses};
@@ -31,6 +32,7 @@ export type AdminLeadRow = {
 
 export type AdminLeadListOptions = {
   status?: OperationalLeadStatus;
+  inquiryType?: LeadInquiryType;
   assignee?: string;
   source?: string;
   q?: string;
@@ -182,6 +184,7 @@ export async function listAdminLeads(
     .limit(limit);
 
   if (options.status) query = query.eq('status', options.status);
+  if (options.inquiryType) query = query.eq('inquiry_type', options.inquiryType);
   if (options.assignee) query = query.eq('assigned_to', options.assignee);
   if (options.source) query = query.eq('source', options.source);
 
