@@ -24,22 +24,26 @@ describe('P3.53 editorial experience', () => {
     expect(insights).toContain('Hiểu cách dùng kho, không chỉ biết có kho.');
   });
 
-  it('gives every solution route a tailored decision profile', () => {
+  it('gives every solution route its own operating model, checklist and editorial link', () => {
     const cases = [
-      ['app/[locale]/giai-phap/shop-online/page.tsx', 'shop-online'],
-      ['app/[locale]/giai-phap/doanh-nghiep-nho/page.tsx', 'small-business'],
-      ['app/[locale]/giai-phap/chua-hang/page.tsx', 'inventory'],
-      ['app/[locale]/giai-phap/ca-nhan/page.tsx', 'personal']
+      ['app/[locale]/giai-phap/shop-online/page.tsx', 'kho-cho-shop-online-tu-nha-ra-kho-rieng'],
+      ['app/[locale]/giai-phap/doanh-nghiep-nho/page.tsx', 'kho-hay-mo-rong-van-phong'],
+      ['app/[locale]/giai-phap/chua-hang/page.tsx', 'quan-ly-hang-ton-cham-luan-chuyen'],
+      ['app/[locale]/giai-phap/ca-nhan/page.tsx', 'kho-ca-nhan-chuyen-nha-sua-nha']
     ];
 
-    for (const [path, kind] of cases) {
-      expect(source(path)).toContain(`kind="${kind}"`);
+    for (const [path, slug] of cases) {
+      const page = source(path);
+      expect(page).toContain('fitVi={[');
+      expect(page).toContain('operatingVi={[');
+      expect(page).toContain('checklistVi={[');
+      expect(page).toContain(`relatedBlogSlug="${slug}"`);
     }
 
     const solution = source('components/marketing/solution-page.tsx');
-    expect(solution).toContain('checklistTitle');
-    expect(solution).toContain('insightSlug');
-    expect(solution).toContain('Đọc bài chuyên sâu');
+    expect(solution).toContain('Pre-rental checklist');
+    expect(solution).toContain('EDITORIAL INSIGHT');
+    expect(solution).toContain('relatedBlogSlug');
   });
 
   it('seeds six bilingual long-form editorial articles with external references where relevant', () => {
