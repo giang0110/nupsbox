@@ -29,6 +29,7 @@ describe('lead CSV export contracts', () => {
     const href = buildLeadExportHref({
       view: 'pipeline',
       status: 'new',
+      inquiryType: 'quote',
       assignee: 'b8ba1e58-ece7-4a8a-844c-3b5edcbf8ab1',
       source: 'facebook',
       q: 'Nguyen'
@@ -36,6 +37,7 @@ describe('lead CSV export contracts', () => {
 
     expect(href).toContain('/admin/leads/export?');
     expect(href).toContain('status=new');
+    expect(href).toContain('inquiry=quote');
     expect(href).toContain('source=facebook');
     expect(href).toContain('q=Nguyen');
     expect(href).not.toContain('view=');
