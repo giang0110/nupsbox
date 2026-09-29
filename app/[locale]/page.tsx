@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {Hero} from '@/components/marketing/hero';
-import {HomeChoiceHub} from '@/components/marketing/home-choice-hub';
+import {CommercialOverview} from '@/components/marketing/commercial-overview';
 import {HomeProofBento} from '@/components/marketing/home-proof-bento';
 import {HomeLocationJourney} from '@/components/marketing/home-location-journey';
 import {HomeFaq} from '@/components/marketing/home-faq';
@@ -22,10 +22,12 @@ export async function generateMetadata({params}: {params: Promise<{locale: strin
   return createLocalizedMetadata({
     route: getStaticSeoRoute('home'),
     locale,
-    title: locale === 'vi' ? 'Kho mini cho kinh doanh tại TP.HCM' : 'Mini storage for business in Ho Chi Minh City',
+    title: locale === 'vi'
+      ? 'Thông tin thương mại & giải pháp lưu trữ tại TP.HCM'
+      : 'Commercial information & storage solutions in Ho Chi Minh City',
     description: locale === 'vi'
-      ? 'Kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và cá nhân tại TP.HCM. Tìm loại kho phù hợp và gửi yêu cầu báo giá cho NupsBox.'
-      : 'Flexible mini storage for online sellers, small businesses and individuals in Ho Chi Minh City. Find a suitable unit and request a quote from NupsBox.'
+      ? 'Website thông tin thương mại của NupsBox: dịch vụ lưu trữ, cơ sở, hình ảnh thực tế, bài viết và kênh liên hệ tại TP.HCM.'
+      : 'NupsBox commercial information website covering storage services, facilities, real imagery, articles and contact channels in Ho Chi Minh City.'
   });
 }
 
@@ -41,13 +43,6 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
     getMarketingFaqs(locale)
   ]);
 
-  const finderUnits = units.map(({id, slug, name, areaM2, sortOrder}) => ({
-    id,
-    slug,
-    name,
-    areaM2,
-    sortOrder
-  }));
   const featuredUnits = selectHomepageUnits(units).slice(0, 3);
   const galleryItems = location
     ? await getPublicLocationGallery(location.id, locale)
@@ -61,8 +56,8 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
         units={featuredUnits}
         hasGallery={galleryItems.length > 0}
       />
+      <CommercialOverview locale={locale} />
       <WarehouseGallery locale={locale} items={galleryItems} />
-      <HomeChoiceHub units={featuredUnits} finderUnits={finderUnits} locale={locale} />
       <HomeProofBento locale={locale} location={location} units={featuredUnits} />
       <HomeLocationJourney location={location} locale={locale} />
       <HomeFaq items={faqs} locale={locale} />
