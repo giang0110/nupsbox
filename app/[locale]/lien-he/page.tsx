@@ -15,12 +15,12 @@ import {createStaticPageMetadata} from '@/features/seo/static-page';
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
   return createStaticPageMetadata(params, 'contact', {
     vi: {
-      title: 'Liên hệ & nhận tư vấn',
-      description: 'Gửi nhu cầu lưu trữ để NupsBox tư vấn loại kho, mức giá hiện hành và bước tiếp theo phù hợp.'
+      title: 'Liên hệ thương mại & tư vấn',
+      description: 'Liên hệ NupsBox để hỏi về dịch vụ, cơ sở, mức giá tham khảo, khả năng đáp ứng và các thông tin thương mại liên quan.'
     },
     en: {
-      title: 'Contact & storage advice',
-      description: 'Send your storage requirements so NupsBox can help confirm a suitable unit, current pricing and the next step.'
+      title: 'Commercial enquiries & advice',
+      description: 'Contact NupsBox about services, facilities, indicative pricing, availability and related commercial information.'
     }
   });
 }
@@ -55,15 +55,15 @@ export default async function Page({
         <div className="grid gap-8 lg:grid-cols-[.84fr_1.16fr] lg:items-start lg:gap-12">
           <div className="lg:sticky lg:top-24">
             <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">
-              {vi ? 'BÁO GIÁ & TƯ VẤN' : 'QUOTE & ADVICE'}
+              {vi ? 'LIÊN HỆ THƯƠNG MẠI' : 'COMMERCIAL ENQUIRIES'}
             </p>
             <h1 className="mt-3 max-w-3xl text-[clamp(2.65rem,4.6vw,4.2rem)] font-extrabold leading-[1.02] tracking-[-0.045em] text-[var(--nupsbox-navy)]">
-              {vi ? 'Nhận tư vấn kho phù hợp' : 'Get help choosing the right storage'}
+              {vi ? 'Trao đổi trực tiếp với NupsBox' : 'Talk directly with NupsBox'}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--nupsbox-slate)] sm:text-lg">
               {vi
-                ? 'Cho NupsBox biết nhu cầu của bạn. Nếu bạn đến từ Storage Finder hoặc một loại kho cụ thể, lựa chọn đó sẽ được giữ làm ngữ cảnh cho yêu cầu.'
-                : 'Tell NupsBox what you need. If you arrived from Storage Finder or a specific unit, that selection stays attached as context for your enquiry.'}
+                ? 'Gửi nhu cầu hoặc câu hỏi về dịch vụ, cơ sở, mức giá và khả năng đáp ứng. Nếu bạn đến từ một trang dịch vụ hoặc loại kho cụ thể, thông tin đó vẫn được giữ làm ngữ cảnh.'
+                : 'Send your requirements or questions about services, facilities, pricing and availability. If you arrived from a specific service or unit page, that context is preserved.'}
             </p>
 
             {location ? (
@@ -114,12 +114,12 @@ export default async function Page({
           <div id="lead-request">
             <div className="mb-4">
               <h2 className="text-xl font-extrabold tracking-[-0.025em] text-[var(--nupsbox-navy)]">
-                {vi ? 'Không cần tự đoán diện tích.' : 'You do not need to guess the size.'}
+                {vi ? 'Gửi thông tin cần thiết để NupsBox phản hồi.' : 'Send the information NupsBox needs to respond.'}
               </h2>
               <p className="mt-2 text-sm leading-6 text-[var(--nupsbox-slate)]">
                 {vi
-                  ? 'Gửi thông tin tối thiểu cần thiết. NupsBox sẽ xác nhận nhu cầu, loại kho và mức giá hiện hành trước bước tiếp theo.'
-                  : 'Send only the information needed. NupsBox will confirm your needs, suitable unit and current quote before the next step.'}
+                  ? 'Biểu mẫu hiện tại tiếp tục ghi nhận nhu cầu lưu trữ và ngữ cảnh liên quan; NupsBox sẽ xác nhận thông tin thương mại phù hợp khi liên hệ.'
+                  : 'The current form continues to capture storage needs and related context; NupsBox will confirm the relevant commercial information when contacting you.'}
               </p>
             </div>
             <Suspense fallback={<div className="min-h-[26rem] rounded-3xl bg-white" aria-hidden="true" />}>
