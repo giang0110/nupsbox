@@ -9,6 +9,7 @@ import {StorageFinder} from '@/components/storage-finder/storage-finder';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {EmptyCatalogConversion} from '@/components/marketing/empty-catalog-conversion';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
+import {getPublicUnitMediaMap} from '@/features/content/public-media';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
@@ -30,6 +31,7 @@ export default async function StorageIndexPage({params}: {params: Promise<{local
   if (!isSupportedLocale(rawLocale)) notFound();
   setRequestLocale(rawLocale);
   const units = await getMarketingUnits(rawLocale);
+  const unitVisuals = await getPublicUnitMediaMap(units.map(unit => unit.id), rawLocale);
   const vi = rawLocale === 'vi';
   const finderUnits = units.map(({id, slug, name, areaM2, sortOrder}) => ({
     id,
@@ -76,7 +78,7 @@ export default async function StorageIndexPage({params}: {params: Promise<{local
                 : 'Each card shows only information currently available in the system. Select up to 3 unit types to compare side by side.'}
             />
             <div className="mt-8">
-              <UnitCompare units={units} locale={rawLocale} />
+              <UnitCompare units={units} locale={rawLocale} visuals={unitVisuals} />
             </div>
           </Section>
         </>
