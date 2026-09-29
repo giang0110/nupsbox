@@ -2,15 +2,15 @@ import {Menu} from 'lucide-react';
 import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {Container} from '@/components/ui/container';
-import {ConversionCta} from './conversion-cta';
+import {buttonClassName} from '@/components/ui/button';
 import {LocaleSwitcher} from './locale-switcher';
 
 const navigation = [
-  {href: '/kho-mini' as const, key: 'storage'},
-  {href: '/bang-gia' as const, key: 'pricing'},
-  {href: '/giai-phap' as const, key: 'solutions'},
-  {href: '/dia-diem' as const, key: 'locations'},
-  {href: '/ve-nupsbox' as const, key: 'about'}
+  {href: '/giai-phap' as const, key: 'services'},
+  {href: '/dia-diem' as const, key: 'facilities'},
+  {href: '/blog' as const, key: 'news'},
+  {href: '/ve-nupsbox' as const, key: 'about'},
+  {href: '/lien-he' as const, key: 'contact'}
 ] as const;
 
 export async function SiteHeader() {
@@ -41,15 +41,12 @@ export async function SiteHeader() {
 
         <div className="flex items-center gap-1.5">
           <LocaleSwitcher />
-          <ConversionCta
-            locale={locale}
-            intent="finder"
-            placement="header"
-            size="md"
-            className="hidden min-h-11 px-4 sm:inline-flex"
+          <Link
+            href="/lien-he"
+            className={buttonClassName({variant: 'primary', size: 'md', className: 'hidden min-h-11 px-4 sm:inline-flex'})}
           >
-            {t('findStorage')}
-          </ConversionCta>
+            {t('commercialContact')}
+          </Link>
 
           <details className="relative lg:hidden">
             <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-full border border-white/15 text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label={locale === 'vi' ? 'Mở menu điều hướng' : 'Open navigation menu'}>
@@ -61,9 +58,12 @@ export async function SiteHeader() {
                   {t(key)}
                 </Link>
               ))}
-              <ConversionCta locale={locale} intent="finder" placement="mobile-menu" size="md" className="mt-2 w-full">
-                {t('findStorage')}
-              </ConversionCta>
+              <Link
+                href="/lien-he"
+                className={buttonClassName({variant: 'primary', size: 'md', className: 'mt-2 w-full'})}
+              >
+                {t('commercialContact')}
+              </Link>
             </nav>
           </details>
         </div>
