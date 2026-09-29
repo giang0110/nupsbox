@@ -22,10 +22,14 @@ function revalidateEditorialMedia() {
 
 export async function createMediaEditorialLink(formData: FormData) {
   const session = await requireAdminUser();
+  const context = String(formData.get('context') ?? '');
+  const separator = context.indexOf(':');
+  if (separator <= 0) throw new Error('invalid_media_editorial_context');
+
   const payload = prepareMediaEditorialLinkCreate(session.role, {
     mediaId: String(formData.get('mediaId') ?? ''),
-    contextType: String(formData.get('contextType') ?? ''),
-    contextKey: String(formData.get('contextKey') ?? ''),
+    contextType: context.slice(0, separator),
+    contextKey: context.slice(separator + 1),
     role: String(formData.get('role') ?? ''),
     sortOrder: String(formData.get('sortOrder') ?? '0')
   });
