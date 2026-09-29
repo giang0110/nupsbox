@@ -24,6 +24,15 @@ const needLabels: Record<string, string> = {
   other: 'Khác'
 };
 
+const inquiryLabels: Record<string, string> = {
+  service_advice: 'Tư vấn dịch vụ',
+  quote: 'Báo giá',
+  partnership: 'Hợp tác',
+  facility_info: 'Thông tin cơ sở',
+  storage: 'Tư vấn lưu trữ',
+  other: 'Yêu cầu khác'
+};
+
 function percent(value: number) {
   return new Intl.NumberFormat('vi-VN', {
     style: 'percent',
@@ -190,32 +199,45 @@ export default async function AdminAnalyticsPage({
 
             <section className="grid gap-4 xl:grid-cols-2">
               <AdminPanel
-                title="Nhu cầu lưu trữ"
-                description="Nhóm nhu cầu mà khách đã chọn khi gửi yêu cầu."
+                title="Loại yêu cầu thương mại"
+                description="Phân loại lead theo mục đích liên hệ đã chọn trên form public."
               >
                 <BarList
-                  items={analytics.byNeedType}
-                  emptyLabel="Chưa có dữ liệu nhu cầu."
-                  labelFor={item => needLabels[item.key] ?? item.label}
+                  items={analytics.byInquiryType}
+                  emptyLabel="Chưa có dữ liệu loại yêu cầu."
+                  labelFor={item => inquiryLabels[item.key] ?? item.label}
                 />
               </AdminPanel>
 
+              <AdminPanel
+                title="Nhu cầu lưu trữ"
+                description="Chỉ tính lead tư vấn lưu trữ; các yêu cầu báo giá, hợp tác và thông tin cơ sở không làm sai cơ cấu nhu cầu kho."
+              >
+                <BarList
+                  items={analytics.byNeedType}
+                  emptyLabel="Chưa có dữ liệu nhu cầu lưu trữ."
+                  labelFor={item => needLabels[item.key] ?? item.label}
+                />
+              </AdminPanel>
+            </section>
+
+            <section className="grid gap-4 xl:grid-cols-2">
               <AdminPanel
                 title="Landing page"
                 description="Top đường dẫn tạo lead. Query string và fragment được loại bỏ trước khi tổng hợp."
               >
                 <BarList items={analytics.byLandingPage} emptyLabel="Chưa có landing page." />
               </AdminPanel>
-            </section>
 
-            <section className="grid gap-4 xl:grid-cols-2">
               <AdminPanel
                 title="Campaign"
                 description="UTM campaign của lead; “Không có campaign” gồm direct hoặc traffic chưa gắn campaign."
               >
                 <BarList items={analytics.byCampaign} emptyLabel="Chưa có campaign." />
               </AdminPanel>
+            </section>
 
+            <section>
               <AdminPanel
                 title="Ngôn ngữ"
                 description="Ngôn ngữ public flow tại thời điểm khách gửi lead."
