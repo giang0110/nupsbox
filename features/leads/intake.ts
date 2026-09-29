@@ -17,7 +17,7 @@ export function normalizeLeadInquiryType(value: string | undefined): LeadInquiry
     case 'storage':
       return value;
     default:
-      return 'other';
+      return 'service_advice';
   }
 }
 
