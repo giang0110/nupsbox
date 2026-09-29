@@ -60,7 +60,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
       ]}
       analysisVi="Với shop online, chi phí thật không chỉ là tiền thuê kho. Mỗi phút tìm SKU, xử lý hàng hoàn hoặc kiểm đếm lại vì sai vị trí đều là chi phí vận hành. Một kho nhỏ nhưng được chia theo tốc độ bán và luồng hàng có thể hiệu quả hơn một không gian lớn nhưng không có quy tắc."
       analysisEn="For an online seller, the real cost is not only rent. Every minute spent searching for SKUs, sorting returns or recounting misplaced stock is an operating cost. A smaller unit organized around sales velocity and stock flows can outperform a larger but unstructured space."
-      relatedBlogSlug="kho-mini-cho-shop-online"
+      relatedBlogSlug="kho-cho-shop-online-tu-nha-ra-kho-rieng"
       relatedBlogTitleVi="Đọc phân tích: Khi nào shop online nên tách tồn kho khỏi nhà →"
       relatedBlogTitleEn="Read: When should an online seller move inventory out of the home? →"
     />
