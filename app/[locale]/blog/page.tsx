@@ -11,6 +11,7 @@ import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {isSupportedLocale} from '@/i18n/routing';
 import {getPublishedBlogCards} from '@/features/content/blog';
+import {getBlogVisualMap} from '@/features/content/blog-visuals';
 import {getEditorialProfile, getEditorialTopicLabel} from '@/features/content/editorial-taxonomy';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
@@ -37,10 +38,12 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
 
   const vi = locale === 'vi';
   const posts = await getPublishedBlogCards(locale);
+  const visuals = await getBlogVisualMap(posts.map(post => post.slug), locale);
   const [featured, ...rest] = posts;
   const hrefFor = (slug: string) => vi ? '/blog/' + slug : '/en/blog/' + slug;
   const formatter = vi ? dateFormatVi : dateFormatEn;
   const featuredProfile = featured ? getEditorialProfile(featured.slug) : null;
+  const featuredVisual = featured ? visuals[featured.slug] : undefined;
 
   return (
     <main>
@@ -65,6 +68,15 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
                   sizes="(max-width: 1024px) 100vw, 48vw"
                   className="object-cover"
                 />
+              ) : featuredVisual ? (
+                <Image
+                  src={featuredVisual.url}
+                  alt={featuredVisual.alt}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 48vw"
+                  className="object-cover"
+                />
               ) : (
                 <EditorialCover slug={featured.slug} locale={locale} className="absolute inset-0" />
               )}
@@ -72,6 +84,11 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
               <div className="absolute left-5 top-5 rounded-full border border-white/15 bg-black/20 px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)] backdrop-blur">
                 {vi ? 'BÀI PHÂN TÍCH NỔI BẬT' : 'FEATURED ANALYSIS'}
               </div>
+              {!featured.coverUrl && featuredVisual ? (
+                <div className="absolute right-5 top-5 rounded-full border border-white/15 bg-black/35 px-3 py-2 text-[0.62rem] font-black uppercase tracking-[0.12em] text-white/85 backdrop-blur">
+                  {vi ? 'ẢNH CƠ SỞ NUPSBOX' : 'REAL NUPSBOX IMAGERY'}
+                </div>
+              ) : null}
             </div>
 
             <article className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
@@ -138,7 +155,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
         </div>
 
         {rest.length ? (
-          <BlogLibrary cards={rest} locale={locale} />
+          <BlogLibrary cards={rest} locale={locale} visuals={visuals} />
         ) : featured ? null : (
           <div className="mt-8 rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-7 text-[var(--nupsbox-slate)]">
             <p className="font-extrabold text-[var(--nupsbox-navy)]">
