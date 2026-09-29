@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(38);
+select plan(42);
 
 select policies_are('public', 'leads', array['leads_authenticated_read', 'leads_staff_update'], 'leads exposes Phase 2 read/update policies');
 select policies_are('public', 'audit_log', array['audit_log_admin_read'], 'audit log is admin-only');
@@ -12,6 +12,7 @@ select policies_are('public', 'locations', array['locations_authenticated_read',
 select policies_are('public', 'unit_types', array['unit_types_authenticated_read', 'unit_types_public_read', 'unit_types_staff_insert', 'unit_types_staff_update'], 'unit types use explicit Phase 2 CMS policies');
 select policies_are('public', 'location_unit_types', array['location_unit_types_authenticated_read', 'location_unit_types_public_read', 'location_unit_types_staff_insert', 'location_unit_types_staff_update'], 'pricing uses explicit Phase 2 CMS policies');
 select policies_are('public', 'media_assets', array['media_assets_admin_delete', 'media_assets_authenticated_read', 'media_assets_public_read', 'media_assets_staff_insert', 'media_assets_staff_update'], 'media uses explicit CMS policies including admin-only delete');
+select policies_are('public', 'media_editorial_links', array['media_editorial_links_authenticated_read', 'media_editorial_links_public_read', 'media_editorial_links_staff_delete', 'media_editorial_links_staff_insert', 'media_editorial_links_staff_update'], 'editorial media links expose public-safe reads and staff mapping writes');
 select policies_are('public', 'faqs', array['faqs_authenticated_read', 'faqs_public_read', 'faqs_staff_insert', 'faqs_staff_update'], 'faqs use explicit Phase 2 CMS policies');
 select policies_are('public', 'blog_posts', array['blog_posts_authenticated_read', 'blog_posts_public_read', 'blog_posts_staff_insert', 'blog_posts_staff_update'], 'blog posts use explicit Phase 2 CMS policies');
 select policies_are('public', 'blog_translations', array['blog_translations_authenticated_read', 'blog_translations_public_read', 'blog_translations_staff_insert', 'blog_translations_staff_update'], 'blog translations use explicit Phase 2 CMS policies');
@@ -20,6 +21,8 @@ select policies_are('public', 'content_blocks', array['content_blocks_authentica
 select policy_roles_are('public', 'locations', 'locations_public_read', array['anon'], 'catalog anonymous read remains public');
 select policy_roles_are('public', 'locations', 'locations_authenticated_read', array['authenticated'], 'internal location read is authenticated only');
 select policy_roles_are('public', 'content_blocks', 'content_blocks_authenticated_read', array['authenticated'], 'internal content block read is authenticated only');
+select policy_roles_are('public', 'media_editorial_links', 'media_editorial_links_public_read', array['anon'], 'editorial media public mapping read is anonymous');
+select policy_roles_are('public', 'media_editorial_links', 'media_editorial_links_staff_insert', array['authenticated'], 'editorial media mapping insert is authenticated');
 select policy_roles_are('public', 'leads', 'leads_authenticated_read', array['authenticated'], 'lead read is authenticated only');
 select policy_roles_are('public', 'leads', 'leads_staff_update', array['authenticated'], 'lead update is authenticated only');
 select policy_roles_are('public', 'lead_notes', 'lead_notes_authenticated_read', array['authenticated'], 'lead note read is authenticated only');
@@ -36,14 +39,14 @@ select is(
     from pg_catalog.pg_policies
     where schemaname = 'public'
       and tablename = any(array[
-        'locations','unit_types','location_unit_types','media_assets','faqs',
+        'locations','unit_types','location_unit_types','media_assets','media_editorial_links','faqs',
         'blog_posts','blog_translations','content_blocks','site_settings'
       ])
       and cmd = 'DELETE'
       and 'authenticated' = any(roles)
   ),
-  1,
-  'media assets are the only authenticated CMS table exposing DELETE'
+  2,
+  'media assets and editorial media mappings are the only authenticated CMS tables exposing DELETE'
 );
 select is(
   (
@@ -118,6 +121,16 @@ select ok(
     where n.nspname = 'public' and c.relname = 'site_settings'
   ), false),
   'RLS enabled on site settings'
+);
+
+select ok(
+  coalesce((
+    select c.relrowsecurity
+    from pg_catalog.pg_class c
+    join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'media_editorial_links'
+  ), false),
+  'RLS enabled on editorial media links'
 );
 
 select * from finish();

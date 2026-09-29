@@ -25,6 +25,8 @@ export type NeedType = 'shop_online' | 'sme' | 'inventory' | 'personal' | 'docum
 export type EstimatedVolume = 'under_20_boxes' | 'boxes_20_50' | 'over_50_boxes' | 'unknown';
 export type InquiryType = 'service_advice' | 'quote' | 'partnership' | 'facility_info' | 'storage' | 'other';
 export type MediaCategory = 'hero' | 'location' | 'unit' | 'security' | 'exterior' | 'lifestyle' | 'blog';
+export type MediaEditorialContextType = 'blog' | 'solution' | 'topic';
+export type MediaEditorialRole = 'feature' | 'inline' | 'gallery';
 
 export type Database = {
   __InternalSupabase: {
@@ -561,6 +563,47 @@ export type Database = {
           zalo_url?: string | null;
         };
         Relationships: [];
+      };
+      media_editorial_links: {
+        Row: {
+          context_key: string;
+          context_type: MediaEditorialContextType;
+          created_at: string;
+          id: string;
+          media_id: string;
+          role: MediaEditorialRole;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          context_key: string;
+          context_type: MediaEditorialContextType;
+          created_at?: string;
+          id?: string;
+          media_id: string;
+          role?: MediaEditorialRole;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          context_key?: string;
+          context_type?: MediaEditorialContextType;
+          created_at?: string;
+          id?: string;
+          media_id?: string;
+          role?: MediaEditorialRole;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'media_editorial_links_media_id_fkey';
+            columns: ['media_id'];
+            isOneToOne: false;
+            referencedRelation: 'media_assets';
+            referencedColumns: ['id'];
+          }
+        ];
       };
       media_assets: {
         Row: {

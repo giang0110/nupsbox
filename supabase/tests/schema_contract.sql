@@ -1,12 +1,13 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(45);
+select plan(47);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
 select has_table('public', 'unit_types', 'unit types exists');
 select has_table('public', 'location_unit_types', 'location pricing exists');
 select has_table('public', 'media_assets', 'media assets exists');
+select has_table('public', 'media_editorial_links', 'editorial media links exist');
 select has_table('public', 'faqs', 'faqs exists');
 select has_table('public', 'content_blocks', 'content blocks exists');
 select has_table('public', 'blog_posts', 'blog posts exists');
@@ -131,6 +132,7 @@ select has_trigger('public', 'locations', 'locations_cms_audit', 'locations muta
 select has_trigger('public', 'unit_types', 'unit_types_cms_audit', 'unit type mutations are audited');
 select has_trigger('public', 'location_unit_types', 'location_unit_types_cms_audit', 'pricing mutations are audited');
 select has_trigger('public', 'media_assets', 'media_assets_cms_audit', 'media metadata mutations are audited');
+select has_trigger('public', 'media_editorial_links', 'media_editorial_links_cms_audit', 'editorial media mappings are audited');
 select has_trigger('public', 'faqs', 'faqs_cms_audit', 'faq mutations are audited');
 select has_trigger('public', 'blog_posts', 'blog_posts_cms_audit', 'blog post mutations are audited');
 select has_trigger('public', 'blog_translations', 'blog_translations_cms_audit', 'blog translation mutations are audited');

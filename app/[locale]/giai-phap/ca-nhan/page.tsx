@@ -20,6 +20,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   return (
     <SolutionPage
       locale={locale}
+      storyKey="personal"
       titleVi="Kho mini cho cá nhân"
       titleEn="Mini storage for personal use"
       bodyVi="Dùng kho như một phần mở rộng có tổ chức của ngôi nhà: chỉ giữ những thứ còn giá trị sử dụng, biết chúng nằm ở đâu và vẫn lấy được khi cần."
