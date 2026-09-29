@@ -146,7 +146,7 @@ export function CommercialContentForm({
                 defaultChecked={block.active}
                 className="size-4 accent-[var(--nupsbox-blue)]"
               />
-              Hiển thị khối này trên website
+              Dùng nội dung CMS này trên website (tắt = dùng nội dung fallback an toàn)
             </label>
             <label className="text-sm font-semibold">
               Thứ tự
