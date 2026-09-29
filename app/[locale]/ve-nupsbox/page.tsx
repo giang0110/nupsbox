@@ -10,7 +10,7 @@ import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {getPublicLocationGallery} from '@/features/content/public-media';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
-import {getCommercialContent} from '@/features/content/commercial-content';
+import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
@@ -34,7 +34,7 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
   const [location, settings, commercial] = await Promise.all([
     getMarketingFeaturedLocation(locale),
     getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, facebookUrl: null, openingHours: {}})),
-    getCommercialContent(locale)
+    getCommercialContent(locale).catch(() => getCommercialFallback(locale))
   ]);
   const galleryItems = location ? await getPublicLocationGallery(location.id, locale) : [];
 
