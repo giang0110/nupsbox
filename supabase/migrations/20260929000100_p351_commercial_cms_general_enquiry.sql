@@ -18,14 +18,14 @@ create policy content_blocks_staff_insert
 on public.content_blocks
 for insert
 to authenticated
-with check (public.current_app_role() in ('admin', 'staff'));
+with check ((select private.current_app_role()) in ('admin', 'staff'));
 
 create policy content_blocks_staff_update
 on public.content_blocks
 for update
 to authenticated
-using (public.current_app_role() in ('admin', 'staff'))
-with check (public.current_app_role() in ('admin', 'staff'));
+using ((select private.current_app_role()) in ('admin', 'staff'))
+with check ((select private.current_app_role()) in ('admin', 'staff'));
 
 create trigger content_blocks_cms_audit
 after insert or update on public.content_blocks
