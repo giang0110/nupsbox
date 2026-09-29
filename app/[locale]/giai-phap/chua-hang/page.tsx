@@ -20,6 +20,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   return (
     <SolutionPage
       locale={locale}
+      storyKey="inventory"
       titleVi="Kho chứa hàng linh hoạt"
       titleEn="Flexible inventory storage"
       bodyVi="Đưa phần tồn kho không cần nằm ngay tại điểm bán ra một khu lưu trữ có cấu trúc, nhưng vẫn giữ khả năng kiểm soát, kiểm kê và bổ sung hàng."
