@@ -60,7 +60,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
       ]}
       analysisVi="Kho cá nhân có giá trị nhất khi nó trả lại diện tích sống mà không làm bạn mất kiểm soát đồ đạc. Nếu mọi thứ chỉ được chất vào thùng mà không có danh sách, vài tháng sau bạn có thêm một vấn đề tìm kiếm. Tổ chức từ lúc đóng gói thường quan trọng hơn việc cố nhồi thêm vài hộp vào cùng diện tích."
       analysisEn="Personal storage is most valuable when it gives living space back without making belongings harder to control. If everything is boxed without an inventory, months later the storage unit becomes a search problem. Organization at packing time is usually more valuable than squeezing a few extra boxes into the same footprint."
-      relatedBlogSlug="kho-ca-nhan-khi-chuyen-nha-sua-nha"
+      relatedBlogSlug="kho-ca-nhan-chuyen-nha-sua-nha"
       relatedBlogTitleVi="Đọc phân tích: Cách dùng kho cá nhân khi chuyển nhà, sửa nhà và xoay vòng đồ →"
       relatedBlogTitleEn="Read: Personal storage for moving, renovation and seasonal rotation →"
     />
