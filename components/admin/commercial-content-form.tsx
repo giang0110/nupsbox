@@ -15,9 +15,16 @@ const textareaClass = inputClass + ' min-h-28';
 const labels: Record<AdminCommercialBlock['blockKey'], string> = {
   company_profile: 'Hồ sơ doanh nghiệp / Hero',
   services: 'Dịch vụ',
+  service_shop_online: 'Dịch vụ · Shop online',
+  service_small_business: 'Dịch vụ · Doanh nghiệp nhỏ',
+  service_inventory: 'Dịch vụ · Chứa hàng',
+  service_personal: 'Dịch vụ · Cá nhân',
   capabilities: 'Cơ sở & năng lực',
   commercial_cta: 'CTA thương mại',
-  seo: 'SEO trang chủ'
+  seo: 'SEO trang chủ',
+  seo_solutions: 'SEO · Dịch vụ',
+  seo_about: 'SEO · Về NupsBox',
+  seo_contact: 'SEO · Liên hệ'
 };
 
 function LocaleFields({
@@ -32,7 +39,7 @@ function LocaleFields({
   disabled: boolean;
 }) {
   const content = suffix === 'Vi' ? block.contentVi : block.contentEn;
-  const showEyebrow = block.blockKey !== 'seo';
+  const showEyebrow = !block.blockKey.startsWith('seo');
   const showCta = block.blockKey === 'commercial_cta';
 
   return (
