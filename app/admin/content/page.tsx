@@ -29,7 +29,8 @@ export default async function AdminContentPage() {
           description="Rà soát nhanh FAQ song ngữ, alt text media và settings mà role hiện tại được phép xem."
         />
 
-        <section aria-label="Chỉ số nội dung" className="grid gap-4 sm:grid-cols-3">
+        <section aria-label="Chỉ số nội dung" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AdminStatCard label="Commercial CMS" value={5} href="/admin/content/commercial" />
           <AdminStatCard label="FAQ" value={content.faqs.length} href="/admin/content/faq" />
           <AdminStatCard label="Media" value={content.media.length} href="/admin/content/media" />
           <AdminStatCard label="Media thiếu alt VI/EN" value={incompleteMedia.length} href="/admin/content/media" />
