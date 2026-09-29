@@ -1,8 +1,20 @@
 import {expect, test} from '@playwright/test';
 
-test('quote flow shows selected context without adding required fields', async ({page}) => {
+test('general contact form hides storage questions until storage advice is selected', async ({page}) => {
+  await page.goto('/lien-he');
+  await expect(page.getByLabel(/bạn muốn liên hệ về/i)).toBeVisible();
+  await expect(page.getByLabel(/bạn cần kho cho/i)).toHaveCount(0);
+  await expect(page.getByLabel(/lượng hàng ước tính/i)).toHaveCount(0);
+
+  await page.getByLabel(/bạn muốn liên hệ về/i).selectOption('storage');
+  await expect(page.getByLabel(/bạn cần kho cho/i)).toBeVisible();
+  await expect(page.getByLabel(/lượng hàng ước tính/i)).toBeVisible();
+});
+
+test('selected storage context keeps storage-specific fields visible without adding required fields', async ({page}) => {
   await page.goto('/lien-he?unit=s');
   await expect(page.getByText(/Kho S/i)).toBeVisible();
+  await expect(page.getByLabel(/bạn cần kho cho/i)).toBeVisible();
   await expect(page.getByLabel(/tên/i)).toHaveAttribute('required', '');
   await expect(page.getByLabel(/số điện thoại/i)).toHaveAttribute('required', '');
   await expect(page.getByLabel(/^Email/)).not.toHaveAttribute('required', '');
