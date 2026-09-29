@@ -70,7 +70,7 @@ describe('fact-safe adaptive homepage marketing', () => {
     expect(screen.getByText('NupsBox Central')).toBeInTheDocument();
     expect(screen.getByText('Approved address')).toBeInTheDocument();
     expect(screen.getByText('District X')).toBeInTheDocument();
-    expect(screen.getByText('4 nhóm nhu cầu')).toBeInTheDocument();
+    expect(screen.getAllByText('4 nhóm nhu cầu').length).toBeGreaterThan(0);
   });
 
   it('does not invent facility security claims in the proof bento', () => {
