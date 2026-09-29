@@ -2,15 +2,18 @@ import {BadgeCheck, Camera, Ruler, MessageCircleMore} from 'lucide-react';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
+import type {CommercialCopy} from '@/features/content/commercial-content';
 
 export function HomeProofBento({
   locale,
   location,
-  units
+  units,
+  content
 }: {
   locale: 'vi' | 'en';
   location: PublicLocation | null;
   units: PublicUnitType[];
+  content?: CommercialCopy;
 }) {
   const vi = locale === 'vi';
   const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2)) : null;
@@ -53,11 +56,11 @@ export function HomeProofBento({
     <Section size="compact">
       <div className="grid gap-8 lg:grid-cols-[.72fr_1.28fr] lg:items-start lg:gap-12">
         <SectionHeading
-          eyebrow={vi ? 'VÌ SAO NUPSBOX' : 'WHY NUPSBOX'}
-          title={vi ? 'Ít lời hứa. Nhiều thông tin hữu ích hơn.' : 'Fewer promises. More useful information.'}
-          description={vi
+          eyebrow={content?.eyebrow ?? (vi ? 'VÌ SAO NUPSBOX' : 'WHY NUPSBOX')}
+          title={content?.title ?? (vi ? 'Ít lời hứa. Nhiều thông tin hữu ích hơn.' : 'Fewer promises. More useful information.')}
+          description={content?.description ?? (vi
             ? 'NupsBox tập trung vào những điều bạn cần để ra quyết định: hình ảnh, diện tích, địa điểm và bước xác nhận tiếp theo.'
-            : 'NupsBox focuses on what helps you decide: imagery, sizing, location and the next confirmation step.'}
+            : 'NupsBox focuses on what helps you decide: imagery, sizing, location and the next confirmation step.')}
         />
 
         <div className="divide-y divide-[var(--nupsbox-border)] border-y border-[var(--nupsbox-border)]">
