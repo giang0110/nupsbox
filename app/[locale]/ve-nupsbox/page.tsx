@@ -16,11 +16,11 @@ export function generateMetadata({params}: {params: Promise<{locale: string}>}):
   return createStaticPageMetadata(params, 'about', {
     vi: {
       title: 'Về NupsBox',
-      description: 'Tìm hiểu cách NupsBox xây dựng trải nghiệm kho mini với thông tin minh bạch trước khi thuê.'
+      description: 'Tìm hiểu NupsBox, định hướng dịch vụ lưu trữ và cách website công bố thông tin thương mại, cơ sở và kênh liên hệ.'
     },
     en: {
       title: 'About NupsBox',
-      description: 'Learn how NupsBox approaches mini storage with clear information before you rent.'
+      description: 'Learn about NupsBox, its storage-service focus and how the website publishes commercial, facility and contact information.'
     }
   });
 }
@@ -41,16 +41,16 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
       <PageIntro
         tone="navy"
         eyebrow="SAVE SPACE. LIVE LARGE."
-        title={vi ? 'NupsBox — kho mini cho nhu cầu đang tăng.' : 'NupsBox — mini storage for needs that are growing.'}
+        title={vi ? 'NupsBox — dịch vụ lưu trữ với thông tin rõ ràng.' : 'NupsBox — storage services with clear information.'}
         description={vi
-          ? 'NupsBox tập trung vào kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và nhu cầu lưu trữ tại TP.HCM.'
-          : 'NupsBox focuses on flexible mini storage for online sellers, small businesses and storage needs in Ho Chi Minh City.'}
+          ? 'NupsBox cung cấp thông tin về giải pháp lưu trữ, cơ sở và kênh liên hệ cho khách hàng có nhu cầu tại TP.HCM.'
+          : 'NupsBox publishes information about storage solutions, facilities and contact channels for customers in Ho Chi Minh City.'}
       />
 
       <Section>
         <SectionHeading
-          eyebrow={vi ? 'CÁCH CHÚNG TÔI THIẾT KẾ DỊCH VỤ' : 'HOW THE SERVICE IS DESIGNED'}
-          title={vi ? 'Minh bạch trước khi thuê.' : 'Clarity before you rent.'}
+          eyebrow={vi ? 'CÁCH NUPSBOX CÔNG BỐ THÔNG TIN' : 'HOW NUPSBOX PUBLISHES INFORMATION'}
+          title={vi ? 'Thông tin trước, trao đổi sau.' : 'Information first, conversation next.'}
           description={vi
             ? 'Website chỉ hiển thị loại kho, giá và thông tin vận hành khi có dữ liệu tương ứng; những gì cần xác nhận sẽ được ghi rõ là cần xác nhận.'
             : 'The website displays unit, pricing and operational details only when the corresponding data exists; anything requiring confirmation is labeled accordingly.'}

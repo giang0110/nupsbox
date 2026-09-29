@@ -10,21 +10,28 @@
     "about": "About NupsBox",
     "contact": "Contact",
     "quote": "Get a quote",
-    "findStorage": "Find storage"
+    "findStorage": "Find storage",
+    "services": "Services",
+    "facilities": "Facilities & capability",
+    "news": "News",
+    "commercialContact": "Contact us"
   },
   "home": {
-    "eyebrow": "MINI STORAGE • HO CHI MINH CITY",
-    "title": "Your business needs space. Not another expensive office.",
-    "subtitle": "Flexible private storage for online sellers and growing businesses — close to customers, cost-efficient, and ready to scale with you.",
-    "primaryCta": "Find your storage",
-    "secondaryCta": "View pricing"
+    "eyebrow": "COMMERCIAL INFORMATION • HO CHI MINH CITY",
+    "title": "NupsBox — understand the service before you decide.",
+    "subtitle": "Information about NupsBox storage services, facilities, real imagery, articles and contact channels.",
+    "primaryCta": "Explore services",
+    "secondaryCta": "Contact NupsBox"
   },
   "actions": {
     "phone": "Call",
     "zalo": "Zalo",
     "findStorage": "Find storage",
     "quote": "Get quote",
-    "viewing": "View storage"
+    "viewing": "View storage",
+    "services": "Services",
+    "contact": "Contact",
+    "inquiry": "Send enquiry"
   },
   "storageFinder": {}
 }

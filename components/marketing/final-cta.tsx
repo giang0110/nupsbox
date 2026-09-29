@@ -1,5 +1,6 @@
+import {Link} from '@/i18n/navigation';
 import {Container} from '@/components/ui/container';
-import {ConversionCta} from './conversion-cta';
+import {buttonClassName} from '@/components/ui/button';
 
 export function FinalCta({locale}: {locale: 'vi' | 'en'}) {
   const vi = locale === 'vi';
@@ -10,19 +11,24 @@ export function FinalCta({locale}: {locale: 'vi' | 'en'}) {
       <Container className="relative">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-[var(--nupsbox-yellow)]">
-            {vi ? 'BẮT ĐẦU TỪ NHU CẦU CỦA BẠN' : 'START WITH WHAT YOU NEED'}
+            {vi ? 'LIÊN HỆ THƯƠNG MẠI' : 'COMMERCIAL ENQUIRIES'}
           </p>
           <h2 className="mx-auto mt-4 max-w-3xl text-[clamp(2rem,4vw,3.3rem)] font-extrabold leading-[1.02] tracking-[-0.045em]">
-            {vi ? 'Chọn đúng không gian trước khi trả tiền cho phần bạn không dùng.' : 'Choose the right amount of space before paying for what you do not use.'}
+            {vi ? 'Cần thêm thông tin? Trao đổi trực tiếp với NupsBox.' : 'Need more information? Talk directly with NupsBox.'}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-white/66 sm:text-base">
             {vi
-              ? 'Trả lời vài câu hỏi ngắn để có gợi ý ban đầu, sau đó nhận báo giá hoặc đề xuất lịch xem kho.'
-              : 'Answer a few quick questions for an initial recommendation, then request pricing or a facility viewing.'}
+              ? 'Gửi nhu cầu hoặc câu hỏi về dịch vụ, cơ sở, mức giá tham khảo và khả năng đáp ứng. NupsBox sẽ xác nhận thông tin phù hợp tại thời điểm liên hệ.'
+              : 'Send your requirements or questions about services, facilities, indicative pricing and availability. NupsBox will confirm the relevant information when you enquire.'}
           </p>
-          <ConversionCta locale={locale} intent="finder" placement="final-cta" size="lg" className="mt-7">
-            {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
-          </ConversionCta>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Link href="/lien-he" className={buttonClassName({variant: 'primary', size: 'lg'})}>
+              {vi ? 'Liên hệ NupsBox' : 'Contact NupsBox'}
+            </Link>
+            <Link href="/giai-phap" className={buttonClassName({variant: 'secondary', size: 'lg'})}>
+              {vi ? 'Xem dịch vụ' : 'View services'}
+            </Link>
+          </div>
         </div>
       </Container>
     </section>

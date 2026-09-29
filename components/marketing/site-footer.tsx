@@ -30,23 +30,24 @@ export async function SiteFooter({
               <span className="grid size-10 place-items-center rounded-xl bg-[var(--nupsbox-yellow)] text-sm font-black tracking-[-0.08em] text-[var(--nupsbox-navy)]">NB</span>
               <div>
                 <p className="text-xl font-extrabold tracking-[-0.04em]">NUPSBOX</p>
-                <p className="mt-0.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/38">Mini Storage · TP.HCM</p>
+                <p className="mt-0.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/38">
+                  {vi ? 'Thông tin thương mại · TP.HCM' : 'Commercial information · HCMC'}
+                </p>
               </div>
             </div>
             <p className="mt-5 max-w-md text-sm leading-6 text-white/66">{brand('tagline')}</p>
             <p className="mt-5 max-w-sm text-sm leading-6 text-white/50">
               {vi
-                ? 'Kho mini linh hoạt cho hàng hóa kinh doanh và nhu cầu cá nhân tại TP.HCM.'
-                : 'Flexible mini storage for business inventory and personal needs in Ho Chi Minh City.'}
+                ? 'Thông tin về dịch vụ lưu trữ, cơ sở, hình ảnh, nội dung hướng dẫn và kênh liên hệ của NupsBox.'
+                : 'Information about NupsBox storage services, facilities, imagery, guidance and contact channels.'}
             </p>
           </div>
 
           <nav className="grid content-start gap-3 text-sm text-white/70" aria-label={vi ? 'Điều hướng chân trang' : 'Footer navigation'}>
-            <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">{vi ? 'Khám phá' : 'Explore'}</p>
-            <Link href="/kho-mini" className="hover:text-white">{nav('storage')}</Link>
-            <Link href="/bang-gia" className="hover:text-white">{nav('pricing')}</Link>
-            <Link href="/giai-phap" className="hover:text-white">{nav('solutions')}</Link>
-            <Link href="/dia-diem" className="hover:text-white">{nav('locations')}</Link>
+            <p className="mb-1 text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-white/40">{vi ? 'Thông tin' : 'Information'}</p>
+            <Link href="/giai-phap" className="hover:text-white">{nav('services')}</Link>
+            <Link href="/dia-diem" className="hover:text-white">{nav('facilities')}</Link>
+            <Link href="/blog" className="hover:text-white">{nav('news')}</Link>
             <Link href="/ve-nupsbox" className="hover:text-white">{nav('about')}</Link>
             <Link href="/lien-he" className="hover:text-white">{nav('contact')}</Link>
           </nav>
@@ -89,7 +90,7 @@ export async function SiteFooter({
         </div>
         <div className="flex flex-col gap-2 pt-6 text-xs text-white/42 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} NupsBox. All rights reserved.</p>
-          <p>{vi ? 'Thông tin giá và tình trạng được xác nhận tại thời điểm liên hệ.' : 'Pricing and availability are confirmed at enquiry time.'}</p>
+          <p>{vi ? 'Giá, tình trạng và khả năng đáp ứng được xác nhận tại thời điểm liên hệ.' : 'Pricing, availability and service capacity are confirmed at enquiry time.'}</p>
         </div>
       </Container>
     </footer>

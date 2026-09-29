@@ -2,7 +2,7 @@ import Image from 'next/image';
 import {ArrowRight, Boxes, MapPin} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {Container} from '@/components/ui/container';
-import {ConversionCta} from './conversion-cta';
+import {buttonClassName} from '@/components/ui/button';
 import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
 import {getFacilityMedia} from '@/features/content/facility-media';
 
@@ -28,53 +28,53 @@ export function Hero({
         <div className="home-hero-copy relative z-10 max-w-[40rem]">
           <p className="flex items-center gap-2 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-white/58">
             <MapPin size={13} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />
-            {vi ? 'MINI STORAGE TẠI TP.HCM' : 'MINI STORAGE IN HO CHI MINH CITY'}
+            {vi ? 'THÔNG TIN THƯƠNG MẠI • TP.HCM' : 'COMMERCIAL INFORMATION • HO CHI MINH CITY'}
           </p>
 
           <h1
             id="home-hero-title"
-            className="home-hero-title mt-4 max-w-[10.5em] text-[clamp(3rem,5vw,4.75rem)] font-extrabold leading-[.98] tracking-[-0.052em]"
+            className="home-hero-title mt-4 max-w-[11.5em] text-[clamp(3rem,5vw,4.75rem)] font-extrabold leading-[.98] tracking-[-0.052em]"
           >
-            {vi ? 'Không gian vừa đủ. Vận hành nhẹ hơn.' : 'The right amount of space. Less overhead.'}
+            {vi ? 'NupsBox — hiểu dịch vụ trước khi quyết định.' : 'NupsBox — understand the service before you decide.'}
           </h1>
 
           <p className="home-hero-description mt-5 max-w-[36rem] text-base leading-7 text-white/68 sm:text-[1.05rem]">
             {vi
-              ? 'Kho mini linh hoạt cho hàng hóa kinh doanh và nhu cầu cá nhân. Chọn diện tích phù hợp, xem hình ảnh thực tế và nhận báo giá trước khi quyết định.'
-              : 'Flexible mini storage for business inventory and personal needs. Choose a suitable size, view real facility imagery and request pricing before deciding.'}
+              ? 'Khám phá giải pháp lưu trữ, cơ sở, hình ảnh thực tế và thông tin liên hệ của NupsBox. Website ưu tiên thông tin rõ ràng để bạn chủ động đánh giá trước khi trao đổi.'
+              : 'Explore NupsBox storage solutions, facilities, real imagery and contact information. The website prioritizes clear information so you can assess the service before getting in touch.'}
           </p>
 
           <div className="home-hero-actions mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <ConversionCta locale={locale} intent="finder" placement="hero" size="lg" className="group">
-              {vi ? 'Tìm kho phù hợp' : 'Find suitable storage'}
+            <Link href="/giai-phap" className={buttonClassName({variant: 'primary', size: 'lg', className: 'group'})}>
+              {vi ? 'Khám phá dịch vụ' : 'Explore services'}
               <ArrowRight size={18} aria-hidden="true" className="transition group-hover:translate-x-0.5" />
-            </ConversionCta>
+            </Link>
 
             {hasGallery ? (
               <a href="#warehouse-gallery" className="inline-flex min-h-11 items-center text-sm font-bold text-white/78 underline-offset-4 transition hover:text-white hover:underline">
                 {vi ? 'Xem hình ảnh thực tế →' : 'View real facility photos →'}
               </a>
             ) : (
-              <Link href="/bang-gia" className="inline-flex min-h-11 items-center text-sm font-bold text-white/78 underline-offset-4 transition hover:text-white hover:underline">
-                {vi ? 'Xem bảng giá →' : 'View pricing →'}
+              <Link href="/lien-he" className="inline-flex min-h-11 items-center text-sm font-bold text-white/78 underline-offset-4 transition hover:text-white hover:underline">
+                {vi ? 'Liên hệ NupsBox →' : 'Contact NupsBox →'}
               </Link>
             )}
           </div>
 
           <div className="home-hero-trust mt-8 grid max-w-[34rem] grid-cols-3 border-y border-white/10 py-4 text-sm">
             <div className="pr-4">
-              <p className="font-extrabold text-white">{vi ? 'Ảnh thực tế' : 'Real photos'}</p>
-              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Từ Media CMS' : 'From Media CMS'}</p>
+              <p className="font-extrabold text-white">{vi ? 'Thông tin công khai' : 'Published information'}</p>
+              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Dịch vụ & cơ sở' : 'Services & facilities'}</p>
             </div>
             <div className="border-l border-white/10 px-4">
-              <p className="font-extrabold text-white">{vi ? 'Diện tích rõ ràng' : 'Clear sizing'}</p>
+              <p className="font-extrabold text-white">{vi ? 'Quy mô tham khảo' : 'Published sizing'}</p>
               <p className="mt-1 text-xs leading-5 text-white/52">
                 {minArea !== null ? `${minArea.toFixed(2)} m²+` : (vi ? 'Theo dữ liệu hiện có' : 'Based on current data')}
               </p>
             </div>
             <div className="border-l border-white/10 pl-4">
-              <p className="font-extrabold text-white">{vi ? 'Xác nhận trước thuê' : 'Confirmed first'}</p>
-              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Giá & tình trạng' : 'Price & availability'}</p>
+              <p className="font-extrabold text-white">{vi ? 'Liên hệ trực tiếp' : 'Direct contact'}</p>
+              <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Xác nhận khi trao đổi' : 'Confirm when enquiring'}</p>
             </div>
           </div>
         </div>
@@ -111,8 +111,8 @@ export function Hero({
                 {location
                   ? location.address
                   : (vi
-                      ? 'Bạn vẫn có thể dùng công cụ tìm kho để chọn diện tích phù hợp và gửi nhu cầu.'
-                      : 'You can still use the storage finder to choose a suitable size and send your requirements.')}
+                      ? 'Thông tin cơ sở, dịch vụ và hình ảnh được công bố khi dữ liệu đã sẵn sàng.'
+                      : 'Facility, service and imagery details are published when the information is ready.')}
               </p>
             </div>
           </div>
