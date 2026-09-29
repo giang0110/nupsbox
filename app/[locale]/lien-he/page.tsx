@@ -9,7 +9,6 @@ import {LeadForm} from '@/components/forms/lead-form';
 import {getMarketingFeaturedLocation, getMarketingLocationBySlug, getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
-import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 import {isSupportedLocale} from '@/i18n/routing';
 import {normalizeLeadInquiryType, normalizeLeadNeed, normalizeLeadVolume} from '@/features/leads/intake';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
