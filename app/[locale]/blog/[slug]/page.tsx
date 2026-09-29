@@ -8,10 +8,12 @@ import {BlogBody} from '@/components/marketing/blog-body';
 import {BlogTableOfContents} from '@/components/marketing/blog-table-of-contents';
 import {EditorialCover} from '@/components/marketing/editorial-cover';
 import {FinalCta} from '@/components/marketing/final-cta';
+import {RealMediaStory} from '@/components/marketing/real-media-story';
 import {JsonLd} from '@/components/seo/json-ld';
 import {Container} from '@/components/ui/container';
 import {estimateBlogReadingMinutes, getPublishedBlogBySlug, getPublishedBlogCards} from '@/features/content/blog';
 import {extractBlogOutline} from '@/features/content/blog-structure';
+import {getPublicEditorialMedia} from '@/features/content/editorial-media';
 import {
   getEditorialProfile,
   getEditorialTopicLabel,
@@ -48,9 +50,10 @@ export default async function BlogArticlePage({params}: {params: Params}) {
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
 
-  const [article, cards] = await Promise.all([
+  const [article, cards, storyMedia] = await Promise.all([
     getPublishedBlogBySlug(slug, locale),
-    getPublishedBlogCards(locale)
+    getPublishedBlogCards(locale),
+    getPublicEditorialMedia('blog', slug, locale, 2)
   ]);
   if (!article) notFound();
 
@@ -165,6 +168,12 @@ export default async function BlogArticlePage({params}: {params: Params}) {
                 </p>
               </div>
             </div>
+
+            {storyMedia.length ? (
+              <div className="mx-auto mt-6 max-w-5xl">
+                <RealMediaStory items={storyMedia} locale={locale} />
+              </div>
+            ) : null}
 
             <div className="mx-auto mt-8 max-w-5xl lg:hidden">
               <BlogTableOfContents items={outline} locale={locale} />
