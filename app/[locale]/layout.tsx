@@ -22,12 +22,12 @@ export async function generateMetadata({params}: {params: Promise<{locale: strin
     metadataBase: new URL(SITE_ORIGIN),
     applicationName: 'NupsBox',
     title: {
-      default: vi ? 'NupsBox | Kho mini cho kinh doanh tại TP.HCM' : 'NupsBox | Mini storage for business in Ho Chi Minh City',
+      default: vi ? 'NupsBox | Thông tin thương mại & giải pháp lưu trữ tại TP.HCM' : 'NupsBox | Commercial information & storage solutions in Ho Chi Minh City',
       template: '%s | NupsBox'
     },
     description: vi
-      ? 'Kho mini linh hoạt cho shop online, doanh nghiệp nhỏ và cá nhân tại TP.HCM.'
-      : 'Flexible mini storage for online sellers, small businesses and individuals in Ho Chi Minh City.'
+      ? 'Thông tin thương mại về dịch vụ lưu trữ, cơ sở, hình ảnh, bài viết và kênh liên hệ của NupsBox tại TP.HCM.'
+      : 'Commercial information about NupsBox storage services, facilities, imagery, articles and contact channels in Ho Chi Minh City.'
   };
 }
 
