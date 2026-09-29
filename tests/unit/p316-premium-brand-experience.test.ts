@@ -7,12 +7,13 @@ function source(path: string) {
 }
 
 describe('P3.16 premium brand experience', () => {
-  it('uses an editorial hero with one dominant CTA and a text secondary action', () => {
+  it('uses an editorial commercial-information hero with one dominant CTA and a text secondary action', () => {
     const hero = source('components/marketing/hero.tsx');
-    expect(hero).toContain('Không gian vừa đủ. Vận hành nhẹ hơn.');
+    expect(hero).toContain('NupsBox — hiểu dịch vụ trước khi quyết định.');
+    expect(hero).toContain('Khám phá dịch vụ');
     expect(hero).toContain('Xem hình ảnh thực tế →');
     expect(hero).toContain('home-hero-trust');
-    expect(hero).not.toContain('buttonClassName');
+    expect(hero).toContain('buttonClassName');
     expect(hero).not.toContain('BadgeCheck');
     expect(hero).not.toContain('Sparkles');
   });
@@ -33,12 +34,13 @@ describe('P3.16 premium brand experience', () => {
     expect(journey).not.toContain('LocationCard');
   });
 
-  it('uses customer-facing gallery language and premium final CTA', () => {
+  it('uses customer-facing gallery language and a commercial contact final CTA', () => {
     const gallery = source('components/marketing/warehouse-gallery.tsx');
     const finalCta = source('components/marketing/final-cta.tsx');
     expect(gallery).toContain('Xem các góc kho thực tế');
     expect(gallery).not.toContain('Ảnh được lấy từ Media CMS');
-    expect(finalCta).toContain('Chọn đúng không gian trước khi trả tiền');
+    expect(finalCta).toContain('Cần thêm thông tin? Trao đổi trực tiếp với NupsBox.');
+    expect(finalCta).toContain('LIÊN HỆ THƯƠNG MẠI');
     expect(finalCta).toContain('bg-[var(--nupsbox-navy)]');
   });
 });
