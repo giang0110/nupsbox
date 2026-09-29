@@ -11,10 +11,12 @@ test('general contact form hides storage questions until storage advice is selec
   await expect(page.getByLabel(/lượng hàng ước tính/i)).toBeVisible();
 });
 
-test('selected storage context keeps storage-specific fields visible without adding required fields', async ({page}) => {
-  await page.goto('/lien-he?unit=s');
+test('quote context preserves selected unit without exposing storage-volume questions', async ({page}) => {
+  await page.goto('/lien-he?unit=s&inquiry=quote');
   await expect(page.getByText(/Kho S/i)).toBeVisible();
-  await expect(page.getByLabel(/bạn cần kho cho/i)).toBeVisible();
+  await expect(page.getByLabel(/bạn muốn liên hệ về/i)).toHaveValue('quote');
+  await expect(page.getByLabel(/bạn cần kho cho/i)).toHaveCount(0);
+  await expect(page.getByLabel(/lượng hàng ước tính/i)).toHaveCount(0);
   await expect(page.getByLabel(/tên/i)).toHaveAttribute('required', '');
   await expect(page.getByLabel(/số điện thoại/i)).toHaveAttribute('required', '');
   await expect(page.getByLabel(/^Email/)).not.toHaveAttribute('required', '');
