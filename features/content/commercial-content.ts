@@ -93,6 +93,17 @@ export function getCommercialDefaults(locale: Locale) {
   return defaults[locale];
 }
 
+export function getCommercialFallback(locale: Locale): CommercialContent {
+  const fallback = defaults[locale];
+  return {
+    companyProfile: fallback.company_profile,
+    services: fallback.services,
+    capabilities: fallback.capabilities,
+    cta: fallback.commercial_cta,
+    seo: fallback.seo
+  };
+}
+
 function text(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
@@ -115,13 +126,7 @@ export async function getCommercialContent(locale: Locale): Promise<CommercialCo
   const fallback = defaults[locale];
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
   if (!url || url.includes('example.supabase.co')) {
-    return {
-      companyProfile: fallback.company_profile,
-      services: fallback.services,
-      capabilities: fallback.capabilities,
-      cta: fallback.commercial_cta,
-      seo: fallback.seo
-    };
+    return getCommercialFallback(locale);
   }
 
   const supabase = await createSupabaseServerClient();
