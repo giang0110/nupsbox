@@ -38,7 +38,7 @@ export default async function Page({
   const query = await searchParams;
   const intakeNeed = normalizeLeadNeed(query.need);
   const intakeVolume = normalizeLeadVolume(query.volume);
-  const intakeInquiryType = normalizeLeadInquiryType(query.inquiry);
+  const explicitInquiryType = query.inquiry ? normalizeLeadInquiryType(query.inquiry) : null;
 
   const [featuredLocation, requestedLocation, requestedUnit, settings] = await Promise.all([
     getMarketingFeaturedLocation(locale),
@@ -133,7 +133,7 @@ export default async function Page({
                 unitName={requestedUnit?.name}
                 locationId={requestedLocation?.id}
                 locationName={requestedLocation?.name}
-                inquiryType={intakeInquiryType}
+                inquiryType={explicitInquiryType ?? (requestedUnit ? 'storage' : 'service_advice')}
                 needType={intakeNeed}
                 estimatedVolume={intakeVolume}
               />
