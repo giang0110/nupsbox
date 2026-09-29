@@ -15,6 +15,15 @@ function formatDateTime(value: string) {
   return Number.isNaN(parsed.getTime()) ? value : crmDateTime.format(parsed);
 }
 
+const inquiryLabels: Record<string, string> = {
+  service_advice: 'Tư vấn dịch vụ',
+  quote: 'Báo giá',
+  partnership: 'Hợp tác',
+  facility_info: 'Thông tin cơ sở',
+  storage: 'Tư vấn lưu trữ',
+  other: 'Yêu cầu khác'
+};
+
 function sourceLabel(lead: AdminLeadRow) {
   return lead.source ?? lead.utmSource ?? 'Trực tiếp / chưa rõ';
 }
@@ -69,7 +78,7 @@ export function LeadList({
           <thead className="bg-[var(--nupsbox-surface)] text-xs uppercase tracking-[0.08em] text-[var(--nupsbox-slate)]">
             <tr>
               <th className="px-4 py-4">Lead</th>
-              <th className="px-4 py-4">Nhu cầu</th>
+              <th className="px-4 py-4">Loại yêu cầu</th>
               <th className="px-4 py-4">Nguồn</th>
               <th className="px-4 py-4">Trạng thái</th>
               <th className="px-4 py-4">Phụ trách</th>
@@ -100,7 +109,7 @@ export function LeadList({
                   </p>
                 </td>
                 <td className="max-w-sm px-4 py-5">
-                  <p className="font-bold text-[var(--nupsbox-navy)]">{lead.needType}</p>
+                  <p className="font-bold text-[var(--nupsbox-navy)]">{inquiryLabels[lead.inquiryType] ?? lead.inquiryType}</p>
                   {lead.message ? (
                     <p className="mt-2 max-h-12 overflow-hidden text-sm leading-6 text-[var(--nupsbox-slate)]">
                       {lead.message}
@@ -160,8 +169,8 @@ export function LeadList({
 
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <div>
-                <dt className="text-xs font-bold text-[var(--nupsbox-slate)]">Nhu cầu</dt>
-                <dd className="mt-1 font-bold text-[var(--nupsbox-navy)]">{lead.needType}</dd>
+                <dt className="text-xs font-bold text-[var(--nupsbox-slate)]">Loại yêu cầu</dt>
+                <dd className="mt-1 font-bold text-[var(--nupsbox-navy)]">{inquiryLabels[lead.inquiryType] ?? lead.inquiryType}</dd>
               </div>
               <div>
                 <dt className="text-xs font-bold text-[var(--nupsbox-slate)]">Nguồn</dt>
