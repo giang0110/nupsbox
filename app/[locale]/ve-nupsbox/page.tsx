@@ -11,18 +11,19 @@ import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {getPublicLocationGallery} from '@/features/content/public-media';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
 import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
-import {createStaticPageMetadata} from '@/features/seo/static-page';
+import {createLocalizedMetadata} from '@/features/seo/metadata';
+import {getStaticSeoRoute} from '@/features/seo/routes';
 
-export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
-  return createStaticPageMetadata(params, 'about', {
-    vi: {
-      title: 'Về NupsBox',
-      description: 'Tìm hiểu NupsBox, định hướng dịch vụ lưu trữ và cách website công bố thông tin thương mại, cơ sở và kênh liên hệ.'
-    },
-    en: {
-      title: 'About NupsBox',
-      description: 'Learn about NupsBox, its storage-service focus and how the website publishes commercial, facility and contact information.'
-    }
+export async function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
+  const {locale: rawLocale} = await params;
+  const locale = rawLocale === 'en' ? 'en' : 'vi';
+  const commercial = await getCommercialContent(locale).catch(() => getCommercialFallback(locale));
+  const seo = commercial.pageSeo.about;
+  return createLocalizedMetadata({
+    route: getStaticSeoRoute('about'),
+    locale,
+    title: seo.title,
+    description: seo.description
   });
 }
 
