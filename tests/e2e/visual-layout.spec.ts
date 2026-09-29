@@ -16,7 +16,7 @@ for (const viewport of desktopViewports) {
     const heading = hero.getByRole('heading', {level: 1});
     const primary = hero.getByRole('link', {name: /khám phá dịch vụ|explore services/i});
     const secondary = hero.getByRole('link', {name: /xem hình ảnh thực tế|liên hệ NupsBox|view real facility photos|contact NupsBox/i});
-    const trust = hero.getByText(/^(thông tin công khai|published information)$/i);
+    const trust = hero.getByText(/^(4 nhóm nhu cầu|4 use cases)$/i);
 
     const headerBox = await header.boundingBox();
     const headingBox = await heading.boundingBox();
@@ -147,7 +147,7 @@ test('commercial homepage hero stays complete in a low-height desktop viewport',
   const description = hero.locator('p').filter({hasText: /Khám phá giải pháp lưu trữ|Explore NupsBox storage solutions/i}).first();
   const primary = hero.getByRole('link', {name: /khám phá dịch vụ|explore services/i});
   const secondary = hero.getByRole('link', {name: /xem hình ảnh thực tế|liên hệ NupsBox|view real facility photos|contact NupsBox/i});
-  const trust = hero.getByText(/^(thông tin công khai|published information)$/i);
+  const trust = hero.getByText(/^(4 nhóm nhu cầu|4 use cases)$/i);
 
   const headingBox = await heading.boundingBox();
   const descriptionBox = await description.boundingBox();
