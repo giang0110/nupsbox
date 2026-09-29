@@ -11,7 +11,7 @@ import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {WarehouseGallery} from '@/components/marketing/warehouse-gallery';
 import {getMarketingLocationBySlug} from '@/features/catalog/public-catalog';
-import {getPublicLocationGallery} from '@/features/content/public-media';
+import {getPublicLocationGallery, getPublicUnitMediaMap} from '@/features/content/public-media';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
 import {absoluteUrl, getStaticSeoRoute, locationSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
@@ -39,7 +39,10 @@ export default async function LocationDetailPage({params}: {params: Promise<{loc
   setRequestLocale(rawLocale);
   const location = await getMarketingLocationBySlug(slug, rawLocale);
   if (!location) notFound();
-  const galleryItems = await getPublicLocationGallery(location.id, rawLocale);
+  const [galleryItems, unitVisuals] = await Promise.all([
+    getPublicLocationGallery(location.id, rawLocale),
+    getPublicUnitMediaMap(location.unitTypes.map(unit => unit.id), rawLocale)
+  ]);
 
   const vi = rawLocale === 'vi';
   const homeRoute = getStaticSeoRoute('home');
@@ -93,7 +96,7 @@ export default async function LocationDetailPage({params}: {params: Promise<{loc
         />
         {location.unitTypes.length ? (
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {location.unitTypes.map((unit) => <UnitCard key={unit.id} unit={unit} locale={rawLocale} />)}
+            {location.unitTypes.map((unit) => <UnitCard key={unit.id} unit={unit} locale={rawLocale} visual={unitVisuals[unit.id]} />)}
           </div>
         ) : (
           <div className="mt-8 rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-6 shadow-[0_14px_38px_rgba(7,26,56,.05)] sm:p-7" role="status">
