@@ -4,12 +4,36 @@ import {
   type OperationalLeadStatus
 } from '@/features/admin/lead-status';
 import type {AdminLeadRow} from '@/features/admin/leads';
+import type {LeadInquiryType} from '@/features/leads/intake';
 
 export type LeadWorkspaceView = 'table' | 'pipeline';
+
+export const leadInquiryTypes: LeadInquiryType[] = [
+  'service_advice',
+  'quote',
+  'partnership',
+  'facility_info',
+  'storage',
+  'other'
+];
+
+export const leadInquiryTypeLabels: Record<LeadInquiryType, string> = {
+  service_advice: 'Tư vấn dịch vụ',
+  quote: 'Báo giá',
+  partnership: 'Hợp tác',
+  facility_info: 'Thông tin cơ sở',
+  storage: 'Tư vấn lưu trữ',
+  other: 'Yêu cầu khác'
+};
+
+function isLeadInquiryType(value: unknown): value is LeadInquiryType {
+  return typeof value === 'string' && leadInquiryTypes.includes(value as LeadInquiryType);
+}
 
 export type LeadWorkspaceFilters = {
   view: LeadWorkspaceView;
   status?: OperationalLeadStatus;
+  inquiryType?: LeadInquiryType;
   assignee?: string;
   source?: string;
   q?: string;
@@ -51,6 +75,8 @@ export function normalizeLeadWorkspaceQuery(
   const view = firstString(searchParams.view) === 'pipeline' ? 'pipeline' : 'table';
   const rawStatus = firstString(searchParams.status);
   const status = isOperationalLeadStatus(rawStatus) ? rawStatus : undefined;
+  const rawInquiryType = firstString(searchParams.inquiry);
+  const inquiryType = isLeadInquiryType(rawInquiryType) ? rawInquiryType : undefined;
   const rawAssignee = firstString(searchParams.assignee)?.trim();
   const assignee = rawAssignee && uuidPattern.test(rawAssignee) ? rawAssignee : undefined;
   const source = normalizeShortText(searchParams.source);
@@ -59,6 +85,7 @@ export function normalizeLeadWorkspaceQuery(
   return {
     view,
     ...(status ? {status} : {}),
+    ...(inquiryType ? {inquiryType} : {}),
     ...(assignee ? {assignee} : {}),
     ...(source ? {source} : {}),
     ...(q ? {q} : {})
@@ -74,6 +101,7 @@ export function buildLeadWorkspaceHref(
 
   if (next.view === 'pipeline') params.set('view', 'pipeline');
   if (next.status) params.set('status', next.status);
+  if (next.inquiryType) params.set('inquiry', next.inquiryType);
   if (next.assignee) params.set('assignee', next.assignee);
   if (next.source) params.set('source', next.source);
   if (next.q) params.set('q', next.q);
