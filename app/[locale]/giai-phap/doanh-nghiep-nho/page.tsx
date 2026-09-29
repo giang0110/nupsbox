@@ -60,7 +60,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
       ]}
       analysisVi="Bài toán của doanh nghiệp nhỏ thường không phải “thiếu một phòng kho” mà là dùng sai loại diện tích. Mỗi mét vuông văn phòng bị biến thành nơi chất đồ vừa làm giảm trải nghiệm làm việc vừa không được tổ chức như một khu lưu trữ. Tách hai chức năng giúp doanh nghiệp nhìn rõ hơn chi phí của từng loại không gian."
       analysisEn="For a small business, the issue is often not simply 'needing another stockroom' but using the wrong type of space. Office area filled with boxes is neither an effective workplace nor a well-run storage zone. Separating the two makes the cost and purpose of each space much clearer."
-      relatedBlogSlug="kho-rieng-hay-mo-rong-van-phong"
+      relatedBlogSlug="kho-hay-mo-rong-van-phong"
       relatedBlogTitleVi="Đọc phân tích: Thuê kho riêng hay mở rộng văn phòng? →"
       relatedBlogTitleEn="Read: Separate storage or a larger office? →"
     />
