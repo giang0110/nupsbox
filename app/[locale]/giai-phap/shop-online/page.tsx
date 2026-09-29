@@ -20,6 +20,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   return (
     <SolutionPage
       locale={locale}
+      storyKey="shop-online"
       titleVi="Kho mini cho shop online"
       titleEn="Mini storage for online sellers"
       bodyVi="Tách tồn kho khỏi không gian sống và biến kho thành một điểm vận hành có cấu trúc: nhập hàng, phân loại, lấy hàng và kiểm kê rõ ràng hơn."
