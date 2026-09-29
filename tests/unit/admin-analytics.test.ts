@@ -38,6 +38,7 @@ describe('admin lead analytics', () => {
         utm_source: 'facebook',
         utm_campaign: 'warehouse-launch',
         landing_page: '/lien-he?lead=private',
+        inquiry_type: 'storage',
         need_type: 'sme',
         preferred_language: 'vi'
       },
@@ -48,6 +49,7 @@ describe('admin lead analytics', () => {
         utm_source: null,
         utm_campaign: null,
         landing_page: '/bang-gia#quote',
+        inquiry_type: 'quote',
         need_type: 'personal',
         preferred_language: 'en'
       },
@@ -58,6 +60,7 @@ describe('admin lead analytics', () => {
         utm_source: null,
         utm_campaign: null,
         landing_page: null,
+        inquiry_type: 'storage',
         need_type: 'sme',
         preferred_language: 'vi'
       }
@@ -85,7 +88,12 @@ describe('admin lead analytics', () => {
     ]);
     expect(result.byLandingPage.map(item => item.label)).toContain('/lien-he');
     expect(result.byLandingPage.map(item => item.label)).not.toContain('/lien-he?lead=private');
-    expect(result.byNeedType[0]).toMatchObject({key: 'sme', count: 2});
+    expect(result.byInquiryType.map(item => [item.key, item.count])).toEqual([
+      ['storage', 2],
+      ['quote', 1]
+    ]);
+    expect(result.byNeedType).toHaveLength(1);
+    expect(result.byNeedType[0]).toMatchObject({key: 'sme', count: 2, share: 1});
     expect(result.byLanguage.map(item => [item.label, item.count])).toEqual([
       ['Tiếng Việt', 2],
       ['English', 1]

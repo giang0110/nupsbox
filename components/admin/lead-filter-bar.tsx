@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import {
   buildLeadWorkspaceHref,
+  leadInquiryTypeLabels,
+  leadInquiryTypes,
   leadStatusMeta,
   type LeadWorkspaceFilters
 } from '@/features/admin/lead-workspace';
@@ -18,6 +20,7 @@ export function LeadFilterBar({
 }) {
   const clearHref = buildLeadWorkspaceHref(filters, {
     status: undefined,
+    inquiryType: undefined,
     assignee: undefined,
     source: undefined,
     q: undefined
@@ -28,7 +31,7 @@ export function LeadFilterBar({
   return (
     <form
       method="get"
-      className="grid gap-3 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(13rem,2fr)_repeat(3,minmax(10rem,1fr))_auto_auto]"
+      className="grid gap-3 rounded-2xl border border-[var(--nupsbox-border)] bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-[minmax(13rem,2fr)_repeat(4,minmax(10rem,1fr))_auto_auto]"
     >
       <div className="flex flex-wrap gap-2 md:col-span-2 xl:col-span-full">
         <Link
@@ -72,6 +75,22 @@ export function LeadFilterBar({
           {operationalLeadStatuses.map((status) => (
             <option key={status} value={status}>
               {leadStatusMeta[status].label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="grid gap-1.5 text-xs font-bold text-[var(--nupsbox-slate)]">
+        Loại yêu cầu
+        <select
+          name="inquiry"
+          defaultValue={filters.inquiryType ?? ''}
+          className="min-h-11 rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 text-sm text-[var(--nupsbox-navy)]"
+        >
+          <option value="">Tất cả</option>
+          {leadInquiryTypes.map((inquiryType) => (
+            <option key={inquiryType} value={inquiryType}>
+              {leadInquiryTypeLabels[inquiryType]}
             </option>
           ))}
         </select>

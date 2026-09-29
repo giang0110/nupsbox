@@ -8,6 +8,7 @@ export const MAX_LEAD_EXPORT_ROWS = 5000;
 export function buildLeadExportHref(filters: LeadWorkspaceFilters): string {
   const params = new URLSearchParams();
   if (filters.status) params.set('status', filters.status);
+  if (filters.inquiryType) params.set('inquiry', filters.inquiryType);
   if (filters.assignee) params.set('assignee', filters.assignee);
   if (filters.source) params.set('source', filters.source);
   if (filters.q) params.set('q', filters.q);
@@ -86,7 +87,7 @@ function mapExportLead(row: Record<string, unknown>): AdminLeadRow {
 }
 
 export async function listAdminLeadsForExport(
-  filters: Pick<LeadWorkspaceFilters, 'status' | 'assignee' | 'source' | 'q'>,
+  filters: Pick<LeadWorkspaceFilters, 'status' | 'inquiryType' | 'assignee' | 'source' | 'q'>,
   maxRows = MAX_LEAD_EXPORT_ROWS
 ): Promise<AdminLeadRow[]> {
   const supabase = await createSupabaseServerClient();
@@ -103,6 +104,7 @@ export async function listAdminLeadsForExport(
       .range(offset, end);
 
     if (filters.status) query = query.eq('status', filters.status);
+    if (filters.inquiryType) query = query.eq('inquiry_type', filters.inquiryType);
     if (filters.assignee) query = query.eq('assigned_to', filters.assignee);
     if (filters.source) query = query.eq('source', filters.source);
 

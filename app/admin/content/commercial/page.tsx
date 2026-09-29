@@ -19,7 +19,7 @@ export default async function AdminCommercialContentPage() {
         <AdminPageHeader
           eyebrow="COMMERCIAL CMS"
           title="Thông tin thương mại"
-          description="Quản lý hồ sơ doanh nghiệp, dịch vụ, năng lực, CTA và SEO song ngữ. Các block/key được allowlist cố định để tránh biến CMS thành trình chỉnh sửa cấu hình tùy ý."
+          description="Quản lý hồ sơ doanh nghiệp, 4 nhóm dịch vụ, năng lực, CTA và SEO theo từng trang bằng nội dung song ngữ. Các block/key vẫn được allowlist cố định để tránh biến CMS thành trình chỉnh sửa cấu hình tùy ý."
         />
 
         <div className="grid gap-5">

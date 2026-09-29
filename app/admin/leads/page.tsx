@@ -27,6 +27,7 @@ export default async function AdminLeadsPage({
   const [leads, assignees, sources] = await Promise.all([
     listAdminLeads({
       status: query.status,
+      inquiryType: query.inquiryType,
       assignee: query.assignee,
       source: query.source,
       q: query.q,

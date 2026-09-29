@@ -52,21 +52,31 @@ describe('public accessibility and SEO polish', () => {
   });
 
   it('gives the main public landing pages route-specific metadata', () => {
-    const pages: Array<[string, string]> = [
+    const staticPages: Array<[string, string]> = [
       ['app/[locale]/kho-mini/page.tsx', 'units'],
       ['app/[locale]/bang-gia/page.tsx', 'pricing'],
       ['app/[locale]/dia-diem/page.tsx', 'locations'],
-      ['app/[locale]/giai-phap/page.tsx', 'solutions'],
       ['app/[locale]/cach-thue/page.tsx', 'how-it-works'],
-      ['app/[locale]/ve-nupsbox/page.tsx', 'about'],
-      ['app/[locale]/cau-hoi-thuong-gap/page.tsx', 'faq'],
-      ['app/[locale]/lien-he/page.tsx', 'contact']
+      ['app/[locale]/cau-hoi-thuong-gap/page.tsx', 'faq']
     ];
 
-    for (const [path, key] of pages) {
+    for (const [path, key] of staticPages) {
       const page = source(path);
       expect(page).toContain('export function generateMetadata');
       expect(page).toContain(`createStaticPageMetadata(params, '${key}'`);
+    }
+
+    const cmsPages: Array<[string, string, string]> = [
+      ['app/[locale]/giai-phap/page.tsx', 'solutions', 'commercial.pageSeo.solutions'],
+      ['app/[locale]/ve-nupsbox/page.tsx', 'about', 'commercial.pageSeo.about'],
+      ['app/[locale]/lien-he/page.tsx', 'contact', 'commercial.pageSeo.contact']
+    ];
+
+    for (const [path, key, selector] of cmsPages) {
+      const page = source(path);
+      expect(page).toContain('export async function generateMetadata');
+      expect(page).toContain(`getStaticSeoRoute('${key}')`);
+      expect(page).toContain(selector);
     }
   });
 });

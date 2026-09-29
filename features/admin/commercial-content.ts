@@ -24,7 +24,7 @@ export const CommercialBlockInputSchema = z.object({
   active: z.boolean().default(true),
   sortOrder: z.coerce.number().int().min(0).max(1000)
 }).superRefine((value, ctx) => {
-  if (value.blockKey !== 'seo') {
+  if (!value.blockKey.startsWith('seo')) {
     if (!value.contentVi.eyebrow) ctx.addIssue({code: 'custom', path: ['contentVi', 'eyebrow'], message: 'eyebrow_required'});
     if (!value.contentEn.eyebrow) ctx.addIssue({code: 'custom', path: ['contentEn', 'eyebrow'], message: 'eyebrow_required'});
   }
@@ -52,9 +52,16 @@ export type AdminCommercialBlock = {
 const defaultOrder: Record<CommercialBlockKey, number> = {
   company_profile: 10,
   services: 20,
+  service_shop_online: 21,
+  service_small_business: 22,
+  service_inventory: 23,
+  service_personal: 24,
   capabilities: 30,
   commercial_cta: 40,
-  seo: 50
+  seo: 50,
+  seo_solutions: 51,
+  seo_about: 52,
+  seo_contact: 53
 };
 
 function valueToCopy(value: Json | null, fallback: CommercialCopy): CommercialCopy {

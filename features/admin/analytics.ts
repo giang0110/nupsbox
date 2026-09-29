@@ -38,6 +38,7 @@ export type AdminLeadAnalytics = {
   funnel: AdminLeadFunnelStage[];
   byStatus: Array<{status: OperationalLeadStatus; count: number; share: number}>;
   bySource: AdminAnalyticsBreakdownItem[];
+  byInquiryType: AdminAnalyticsBreakdownItem[];
   byNeedType: AdminAnalyticsBreakdownItem[];
   byLandingPage: AdminAnalyticsBreakdownItem[];
   byLanguage: AdminAnalyticsBreakdownItem[];
@@ -52,6 +53,7 @@ type AnalyticsLeadRow = {
   utm_source: string | null;
   utm_campaign: string | null;
   landing_page: string | null;
+  inquiry_type: string;
   need_type: string;
   preferred_language: string;
 };
@@ -165,6 +167,7 @@ export function summarizeLeadAnalytics(
   const wonLeads = statusCounts.won;
   const activeLeads = activeStatuses.reduce((sum, status) => sum + statusCounts[status], 0);
   const statusDenominator = safeTotal || 1;
+  const storageRows = rows.filter(row => row.inquiry_type === 'storage');
 
   const reached = {
     lead: safeTotal,
@@ -197,7 +200,8 @@ export function summarizeLeadAnalytics(
       share: statusCounts[status] / statusDenominator
     })),
     bySource: breakdown(rows, acquisitionSource),
-    byNeedType: breakdown(rows, row => row.need_type || 'other', 6),
+    byInquiryType: breakdown(rows, row => row.inquiry_type || 'storage', 6),
+    byNeedType: breakdown(storageRows, row => row.need_type || 'other', 6),
     byLandingPage: breakdown(rows, row => normalizeLandingPage(row.landing_page), 8),
     byLanguage: breakdown(rows, row => row.preferred_language === 'en' ? 'English' : 'Tiếng Việt', 4),
     byCampaign: breakdown(rows, campaign, 8),
@@ -229,7 +233,7 @@ export async function getAdminLeadAnalytics(
       .gte('created_at', fromIso),
     supabase
       .from('leads')
-      .select('created_at, status, source, utm_source, utm_campaign, landing_page, need_type, preferred_language')
+      .select('created_at, status, source, utm_source, utm_campaign, landing_page, inquiry_type, need_type, preferred_language')
       .gte('created_at', fromIso)
       .order('created_at', {ascending: false})
       .limit(1000)
