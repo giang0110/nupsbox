@@ -8,7 +8,7 @@ import {SectionHeading} from '@/components/ui/section-heading';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
-import {getCommercialContent} from '@/features/content/commercial-content';
+import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
   return createStaticPageMetadata(params, 'solutions', {
@@ -28,7 +28,7 @@ export default async function SolutionsPage({params}: {params: Promise<{locale: 
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const vi = locale === 'vi';
-  const commercial = await getCommercialContent(locale);
+  const commercial = await getCommercialContent(locale).catch(() => getCommercialFallback(locale));
   const items = [
     ['/giai-phap/shop-online' as const, vi ? 'Shop online' : 'Online sellers', vi ? 'Tách hàng khỏi không gian sống và vận hành shop gọn hơn.' : 'Separate inventory from living space and run the shop with less clutter.'],
     ['/giai-phap/doanh-nghiep-nho' as const, vi ? 'Doanh nghiệp nhỏ' : 'Small business', vi ? 'Thêm không gian cho hàng mẫu, thiết bị và tồn kho.' : 'Add room for samples, equipment and inventory.'],
