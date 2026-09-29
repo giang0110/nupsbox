@@ -15,7 +15,7 @@ export function buildConversionHref(
   context: ConversionContext = {}
 ): string {
   if (intent === 'finder') {
-    return locale === 'vi' ? '/#storage-finder' : '/en#storage-finder';
+    return locale === 'vi' ? '/kho-mini#storage-finder' : '/en/storage-units#storage-finder';
   }
 
   const base = intent === 'quote'
