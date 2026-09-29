@@ -10,6 +10,7 @@ import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation} from '@/features/catalog/public-catalog';
 import {getPublicLocationGallery} from '@/features/content/public-media';
 import {getPublicSiteSettings} from '@/features/content/site-settings';
+import {getCommercialContent} from '@/features/content/commercial-content';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
@@ -30,9 +31,10 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
   if (!isSupportedLocale(locale)) notFound();
   setRequestLocale(locale);
   const vi = locale === 'vi';
-  const [location, settings] = await Promise.all([
+  const [location, settings, commercial] = await Promise.all([
     getMarketingFeaturedLocation(locale),
-    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, facebookUrl: null, openingHours: {}}))
+    getPublicSiteSettings().catch(() => ({phone: null, zaloUrl: null, email: null, facebookUrl: null, openingHours: {}})),
+    getCommercialContent(locale)
   ]);
   const galleryItems = location ? await getPublicLocationGallery(location.id, locale) : [];
 
@@ -40,20 +42,16 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
     <main>
       <PageIntro
         tone="navy"
-        eyebrow="SAVE SPACE. LIVE LARGE."
-        title={vi ? 'NupsBox — dịch vụ lưu trữ với thông tin rõ ràng.' : 'NupsBox — storage services with clear information.'}
-        description={vi
-          ? 'NupsBox cung cấp thông tin về giải pháp lưu trữ, cơ sở và kênh liên hệ cho khách hàng có nhu cầu tại TP.HCM.'
-          : 'NupsBox publishes information about storage solutions, facilities and contact channels for customers in Ho Chi Minh City.'}
+        eyebrow={commercial.companyProfile.eyebrow ?? 'NUPSBOX'}
+        title={commercial.companyProfile.title}
+        description={commercial.companyProfile.description}
       />
 
       <Section>
         <SectionHeading
-          eyebrow={vi ? 'CÁCH NUPSBOX CÔNG BỐ THÔNG TIN' : 'HOW NUPSBOX PUBLISHES INFORMATION'}
-          title={vi ? 'Thông tin trước, trao đổi sau.' : 'Information first, conversation next.'}
-          description={vi
-            ? 'Website chỉ hiển thị loại kho, giá và thông tin vận hành khi có dữ liệu tương ứng; những gì cần xác nhận sẽ được ghi rõ là cần xác nhận.'
-            : 'The website displays unit, pricing and operational details only when the corresponding data exists; anything requiring confirmation is labeled accordingly.'}
+          eyebrow={commercial.capabilities.eyebrow ?? (vi ? 'CƠ SỞ & NĂNG LỰC' : 'FACILITIES & CAPABILITY')}
+          title={commercial.capabilities.title}
+          description={commercial.capabilities.description}
         />
       </Section>
 
@@ -82,7 +80,7 @@ export default async function Page({params}: {params: Promise<{locale:string}>})
         </Section>
       ) : null}
 
-      <FinalCta locale={locale}/>
+      <FinalCta locale={locale} content={commercial.cta}/>
     </main>
   );
 }
