@@ -5,17 +5,20 @@ import {Container} from '@/components/ui/container';
 import {buttonClassName} from '@/components/ui/button';
 import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
 import {getFacilityMedia} from '@/features/content/facility-media';
+import type {CommercialCopy} from '@/features/content/commercial-content';
 
 export function Hero({
   locale,
   location,
   units,
-  hasGallery = false
+  hasGallery = false,
+  copy
 }: {
   locale: 'vi' | 'en';
   location: PublicLocation | null;
   units: PublicUnitType[];
   hasGallery?: boolean;
+  copy?: CommercialCopy;
 }) {
   const vi = locale === 'vi';
   const minArea = units.length ? Math.min(...units.map((unit) => unit.areaM2)) : null;
@@ -28,20 +31,20 @@ export function Hero({
         <div className="home-hero-copy relative z-10 max-w-[40rem]">
           <p className="flex items-center gap-2 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-white/58">
             <MapPin size={13} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />
-            {vi ? 'THÔNG TIN THƯƠNG MẠI • TP.HCM' : 'COMMERCIAL INFORMATION • HO CHI MINH CITY'}
+            {copy?.eyebrow ?? (vi ? 'THÔNG TIN THƯƠNG MẠI • TP.HCM' : 'COMMERCIAL INFORMATION • HO CHI MINH CITY')}
           </p>
 
           <h1
             id="home-hero-title"
             className="home-hero-title mt-4 max-w-[11.5em] text-[clamp(3rem,5vw,4.75rem)] font-extrabold leading-[.98] tracking-[-0.052em]"
           >
-            {vi ? 'NupsBox — hiểu dịch vụ trước khi quyết định.' : 'NupsBox — understand the service before you decide.'}
+            {copy?.title ?? (vi ? 'NupsBox — hiểu dịch vụ trước khi quyết định.' : 'NupsBox — understand the service before you decide.')}
           </h1>
 
           <p className="home-hero-description mt-5 max-w-[36rem] text-base leading-7 text-white/68 sm:text-[1.05rem]">
-            {vi
+            {copy?.description ?? (vi
               ? 'Khám phá giải pháp lưu trữ, cơ sở, hình ảnh thực tế và thông tin liên hệ của NupsBox. Website ưu tiên thông tin rõ ràng để bạn chủ động đánh giá trước khi trao đổi.'
-              : 'Explore NupsBox storage solutions, facilities, real imagery and contact information. The website prioritizes clear information so you can assess the service before getting in touch.'}
+              : 'Explore NupsBox storage solutions, facilities, real imagery and contact information. The website prioritizes clear information so you can assess the service before getting in touch.')}
           </p>
 
           <div className="home-hero-actions mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
