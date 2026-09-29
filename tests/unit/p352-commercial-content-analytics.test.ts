@@ -66,15 +66,15 @@ describe('P3.52 commercial content expansion and conversion analytics', () => {
 
   it('wires public service cards, page SEO and admin enquiry analytics', () => {
     const solutions = source('app/[locale]/giai-phap/page.tsx');
-    const aboutLayout = source('app/[locale]/ve-nupsbox/layout.tsx');
-    const contactLayout = source('app/[locale]/lien-he/layout.tsx');
+    const aboutPage = source('app/[locale]/ve-nupsbox/page.tsx');
+    const contactPage = source('app/[locale]/lien-he/page.tsx');
     const analytics = source('features/admin/analytics.ts');
     const filterBar = source('components/admin/lead-filter-bar.tsx');
 
     expect(solutions).toContain('commercial.serviceGroups.shopOnline');
     expect(solutions).toContain('commercial.pageSeo.solutions');
-    expect(aboutLayout).toContain('commercial.pageSeo.about');
-    expect(contactLayout).toContain('commercial.pageSeo.contact');
+    expect(aboutPage).toContain('commercial.pageSeo.about');
+    expect(contactPage).toContain('commercial.pageSeo.contact');
     expect(analytics).toContain('byInquiryType');
     expect(analytics).toContain("row.inquiry_type === 'storage'");
     expect(filterBar).toContain('name="inquiry"');
