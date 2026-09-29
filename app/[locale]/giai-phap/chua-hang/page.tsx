@@ -20,6 +20,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   return (
     <SolutionPage
       locale={locale}
+      kind="inventory"
       titleVi="Kho chứa hàng linh hoạt"
       titleEn="Flexible inventory storage"
       bodyVi="Bổ sung không gian cho lượng hàng bạn chưa cần đặt tại cửa hàng hoặc văn phòng."
