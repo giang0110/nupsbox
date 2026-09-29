@@ -10,6 +10,7 @@ const lead: AdminLeadDetail = {
   phone: '0900000000',
   email: 'an@example.com',
   message: 'Cần kho gần Tân Phú',
+  inquiryType: 'storage',
   needType: 'inventory',
   status: 'qualified',
   preferredLanguage: 'vi',
@@ -58,7 +59,8 @@ describe('admin lead detail layout', () => {
       'href',
       'mailto:an@example.com'
     );
-    expect(screen.getByRole('heading', {name: 'Nhu cầu lưu trữ'})).toBeInTheDocument();
+    expect(screen.getByRole('heading', {name: 'Yêu cầu thương mại'})).toBeInTheDocument();
+    expect(screen.getByText('Tư vấn lưu trữ')).toBeInTheDocument();
     expect(container.querySelector('details')).toBeInTheDocument();
     expect(screen.getByText('Nguồn & attribution')).toBeInTheDocument();
   });

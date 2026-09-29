@@ -2,27 +2,28 @@ import {ArrowUpRight, Building2, Newspaper, PackageSearch} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
+import type {CommercialCopy} from '@/features/content/commercial-content';
 
-export function CommercialOverview({locale}: {locale: 'vi' | 'en'}) {
+export function CommercialOverview({locale, services, capabilities}: {locale: 'vi' | 'en'; services?: CommercialCopy; capabilities?: CommercialCopy}) {
   const vi = locale === 'vi';
   const items = [
     {
       href: '/giai-phap' as const,
       icon: PackageSearch,
-      eyebrow: vi ? 'DỊCH VỤ' : 'SERVICES',
-      title: vi ? 'Giải pháp lưu trữ' : 'Storage solutions',
-      body: vi
+      eyebrow: services?.eyebrow ?? (vi ? 'DỊCH VỤ' : 'SERVICES'),
+      title: services?.title ?? (vi ? 'Giải pháp lưu trữ' : 'Storage solutions'),
+      body: services?.description ?? (vi
         ? 'Tìm hiểu các nhóm nhu cầu NupsBox đang phục vụ cho shop online, doanh nghiệp nhỏ, hàng hóa và cá nhân.'
-        : 'Explore the storage needs NupsBox serves for online sellers, small businesses, inventory and personal use.'
+        : 'Explore the storage needs NupsBox serves for online sellers, small businesses, inventory and personal use.')
     },
     {
       href: '/dia-diem' as const,
       icon: Building2,
-      eyebrow: vi ? 'CƠ SỞ & NĂNG LỰC' : 'FACILITIES & CAPABILITY',
-      title: vi ? 'Không gian và hình ảnh thực tế' : 'Facilities and real imagery',
-      body: vi
+      eyebrow: capabilities?.eyebrow ?? (vi ? 'CƠ SỞ & NĂNG LỰC' : 'FACILITIES & CAPABILITY'),
+      title: capabilities?.title ?? (vi ? 'Không gian và hình ảnh thực tế' : 'Facilities and real imagery'),
+      body: capabilities?.description ?? (vi
         ? 'Xem địa điểm, thông tin cơ sở và thư viện hình ảnh đã được công bố để đánh giá trước khi liên hệ.'
-        : 'Review published locations, facility information and real imagery before making an enquiry.'
+        : 'Review published locations, facility information and real imagery before making an enquiry.')
     },
     {
       href: '/blog' as const,

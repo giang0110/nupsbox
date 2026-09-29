@@ -1,5 +1,25 @@
 export type LeadNeedType = 'shop_online' | 'sme' | 'inventory' | 'personal' | 'documents' | 'other';
 export type LeadEstimatedVolume = 'under_20_boxes' | 'boxes_20_50' | 'over_50_boxes' | 'unknown';
+export type LeadInquiryType =
+  | 'service_advice'
+  | 'quote'
+  | 'partnership'
+  | 'facility_info'
+  | 'storage'
+  | 'other';
+
+export function normalizeLeadInquiryType(value: string | undefined): LeadInquiryType {
+  switch (value) {
+    case 'service_advice':
+    case 'quote':
+    case 'partnership':
+    case 'facility_info':
+    case 'storage':
+      return value;
+    default:
+      return 'service_advice';
+  }
+}
 
 export function normalizeLeadNeed(value: string | undefined): LeadNeedType {
   switch (value) {

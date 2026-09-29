@@ -15,7 +15,7 @@ select policies_are('public', 'media_assets', array['media_assets_admin_delete',
 select policies_are('public', 'faqs', array['faqs_authenticated_read', 'faqs_public_read', 'faqs_staff_insert', 'faqs_staff_update'], 'faqs use explicit Phase 2 CMS policies');
 select policies_are('public', 'blog_posts', array['blog_posts_authenticated_read', 'blog_posts_public_read', 'blog_posts_staff_insert', 'blog_posts_staff_update'], 'blog posts use explicit Phase 2 CMS policies');
 select policies_are('public', 'blog_translations', array['blog_translations_authenticated_read', 'blog_translations_public_read', 'blog_translations_staff_insert', 'blog_translations_staff_update'], 'blog translations use explicit Phase 2 CMS policies');
-select policies_are('public', 'content_blocks', array['content_blocks_authenticated_read', 'content_blocks_public_read'], 'content blocks remain internal read-only for authenticated users');
+select policies_are('public', 'content_blocks', array['content_blocks_authenticated_read', 'content_blocks_public_read', 'content_blocks_staff_insert', 'content_blocks_staff_update'], 'content blocks expose explicit read and staff mutation policies');
 
 select policy_roles_are('public', 'locations', 'locations_public_read', array['anon'], 'catalog anonymous read remains public');
 select policy_roles_are('public', 'locations', 'locations_authenticated_read', array['authenticated'], 'internal location read is authenticated only');
@@ -54,8 +54,8 @@ select is(
       and cmd in ('INSERT', 'UPDATE', 'ALL')
       and 'authenticated' = any(roles)
   ),
-  0,
-  'content blocks expose no authenticated mutation policy'
+  2,
+  'content blocks expose explicit insert/update mutation policies only'
 );
 
 select ok(

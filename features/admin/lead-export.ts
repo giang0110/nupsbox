@@ -34,7 +34,8 @@ export function buildLeadCsv(
     'Điện thoại',
     'Email',
     'Trạng thái',
-    'Nhu cầu',
+    'Loại yêu cầu',
+    'Nhu cầu lưu trữ',
     'Ngôn ngữ',
     'Nguồn',
     'UTM Source',
@@ -50,6 +51,7 @@ export function buildLeadCsv(
     lead.phone,
     lead.email ?? '',
     lead.status,
+    lead.inquiryType,
     lead.needType,
     lead.preferredLanguage,
     lead.source ?? '',
@@ -70,6 +72,7 @@ function mapExportLead(row: Record<string, unknown>): AdminLeadRow {
     phone: String(row.phone ?? ''),
     email: typeof row.email === 'string' && row.email ? row.email : null,
     message: null,
+    inquiryType: String(row.inquiry_type ?? 'storage'),
     needType: String(row.need_type ?? 'other'),
     status: isOperationalLeadStatus(row.status) ? row.status : 'new',
     preferredLanguage: row.preferred_language === 'en' ? 'en' : 'vi',
@@ -95,7 +98,7 @@ export async function listAdminLeadsForExport(
     const end = Math.min(offset + pageSize - 1, safeMax - 1);
     let query = supabase
       .from('leads')
-      .select('id, full_name, phone, email, need_type, status, preferred_language, source, utm_source, utm_campaign, assigned_to, created_at, updated_at')
+      .select('id, full_name, phone, email, inquiry_type, need_type, status, preferred_language, source, utm_source, utm_campaign, assigned_to, created_at, updated_at')
       .order('created_at', {ascending: false})
       .range(offset, end);
 

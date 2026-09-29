@@ -23,6 +23,7 @@ describe('admin navigation', () => {
       '/admin/catalog/unit-types',
       '/admin/catalog/pricing',
       '/admin/content',
+      '/admin/content/commercial',
       '/admin/content/faq',
       '/admin/content/blog',
       '/admin/content/calendar',
@@ -44,6 +45,7 @@ describe('admin navigation', () => {
     expect(staffHrefs).toContain('/admin/analytics');
     expect(staffHrefs).toContain('/admin/seo');
     expect(staffHrefs).toContain('/admin/content/calendar');
+    expect(staffHrefs).toContain('/admin/content/commercial');
     expect(adminHrefs).toContain('/admin/seo');
   });
 

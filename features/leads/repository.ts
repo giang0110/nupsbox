@@ -30,6 +30,7 @@ export async function insertLeadRequest(input: PublicLeadRequest) {
       phone: input.phone,
       email: input.email ?? null,
       preferredLanguage: input.preferredLanguage,
+      inquiryType: input.inquiryType,
       locationId: input.locationId ?? null,
       unitTypeId: input.unitTypeId ?? null,
       needType: input.needType,

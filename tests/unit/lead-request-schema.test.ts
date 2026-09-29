@@ -11,7 +11,9 @@ const base = {
 
 describe('public lead request schema', () => {
   it('keeps lead-only submissions backward compatible', () => {
-    expect(PublicLeadRequestSchema.parse(base).appointment).toBeUndefined();
+    const parsed = PublicLeadRequestSchema.parse(base);
+    expect(parsed.appointment).toBeUndefined();
+    expect(parsed.inquiryType).toBe('storage');
   });
 
   it('accepts an optional pending appointment request with default duration', () => {

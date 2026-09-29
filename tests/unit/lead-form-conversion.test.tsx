@@ -37,12 +37,13 @@ describe('lead form conversion measurement', () => {
     vi.unstubAllGlobals();
   });
 
-  it('tracks a successful lead without adding analytics fields to the API payload', async () => {
+  it('tracks a successful storage enquiry without adding analytics fields to the API payload', async () => {
     render(
       <LeadForm
         locale="vi"
         locationId="loc-1"
         unitTypeId="unit-1"
+        inquiryType="storage"
         needType="sme"
         estimatedVolume="unknown"
       />
@@ -50,7 +51,7 @@ describe('lead form conversion measurement', () => {
 
     fireEvent.change(screen.getByLabelText('Tên'), {target: {value: 'Nguyen Van A'}});
     fireEvent.change(screen.getByLabelText('Số điện thoại'), {target: {value: '0900000000'}});
-    fireEvent.submit(screen.getByRole('button', {name: 'Gửi yêu cầu tư vấn'}).closest('form')!);
+    fireEvent.submit(screen.getByRole('button', {name: 'Gửi yêu cầu'}).closest('form')!);
 
     const status = await screen.findByRole('status');
     await waitFor(() => expect(status).toHaveFocus());
@@ -58,7 +59,8 @@ describe('lead form conversion measurement', () => {
     expect(trackEvent).toHaveBeenCalledWith('lead_submit', {
       outcome: 'success',
       locale: 'vi',
-      mode: 'quote',
+      mode: 'general',
+      inquiryType: 'storage',
       appointmentRequested: false,
       hasLocation: true,
       hasUnit: true,
@@ -73,6 +75,7 @@ describe('lead form conversion measurement', () => {
     expect(body).toMatchObject({
       fullName: 'Nguyen Van A',
       phone: '0900000000',
+      inquiryType: 'storage',
       locationId: 'loc-1',
       unitTypeId: 'unit-1',
       needType: 'sme',
@@ -84,14 +87,17 @@ describe('lead form conversion measurement', () => {
     expect(body).not.toHaveProperty('hasUnit');
   });
 
-  it('focuses rate-limit feedback and records only non-sensitive funnel context', async () => {
+  it('hides storage fields for a general enquiry and records only non-sensitive analytics context', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false, status: 429}));
 
     render(<LeadForm locale="en" />);
 
+    expect(screen.queryByLabelText('Storage need')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Estimated volume')).not.toBeInTheDocument();
+
     fireEvent.change(screen.getByLabelText('Name'), {target: {value: 'Example User'}});
     fireEvent.change(screen.getByLabelText('Phone'), {target: {value: '0900000000'}});
-    fireEvent.submit(screen.getByRole('button', {name: 'Request advice'}).closest('form')!);
+    fireEvent.submit(screen.getByRole('button', {name: 'Send enquiry'}).closest('form')!);
 
     const alert = await screen.findByRole('alert');
     await waitFor(() => expect(alert).toHaveFocus());
@@ -99,7 +105,8 @@ describe('lead form conversion measurement', () => {
     expect(trackEvent).toHaveBeenCalledWith('lead_submit', expect.objectContaining({
       outcome: 'rate_limited',
       locale: 'en',
-      mode: 'quote',
+      mode: 'general',
+      inquiryType: 'service_advice',
       hasLocation: false,
       hasUnit: false
     }));
@@ -109,5 +116,14 @@ describe('lead form conversion measurement', () => {
     expect(analyticsPayload).not.toHaveProperty('phone');
     expect(analyticsPayload).not.toHaveProperty('email');
     expect(analyticsPayload).not.toHaveProperty('message');
+  });
+
+  it('reveals storage questions only when storage advice is selected', () => {
+    render(<LeadForm locale="vi" />);
+
+    expect(screen.queryByLabelText('Bạn cần kho cho')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Bạn muốn liên hệ về'), {target: {value: 'storage'}});
+    expect(screen.getByLabelText('Bạn cần kho cho')).toBeInTheDocument();
+    expect(screen.getByLabelText('Lượng hàng ước tính')).toBeInTheDocument();
   });
 });

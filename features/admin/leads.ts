@@ -17,6 +17,7 @@ export type AdminLeadRow = {
   phone: string;
   email: string | null;
   message: string | null;
+  inquiryType: string;
   needType: string;
   status: OperationalLeadStatus;
   preferredLanguage: 'vi' | 'en';
@@ -117,6 +118,7 @@ function mapLeadRow(row: Record<string, unknown>): AdminLeadRow {
     phone: String(row.phone ?? ''),
     email: nullableString(row.email),
     message: nullableString(row.message),
+    inquiryType: String(row.inquiry_type ?? 'storage'),
     needType: String(row.need_type ?? 'other'),
     status,
     preferredLanguage: row.preferred_language === 'en' ? 'en' : 'vi',
@@ -175,7 +177,7 @@ export async function listAdminLeads(
   const limit = Math.min(Math.max(options.limit ?? 50, 1), 100);
   let query = supabase
     .from('leads')
-    .select('id, full_name, phone, email, message, need_type, status, preferred_language, source, utm_source, utm_campaign, assigned_to, created_at, updated_at')
+    .select('id, full_name, phone, email, message, inquiry_type, need_type, status, preferred_language, source, utm_source, utm_campaign, assigned_to, created_at, updated_at')
     .order('created_at', {ascending: false})
     .limit(limit);
 
@@ -223,7 +225,7 @@ export async function getAdminLeadDetail(leadId: string): Promise<AdminLeadDetai
   const supabase = await createSupabaseServerClient();
   const {data: lead, error: leadError} = await supabase
     .from('leads')
-    .select('id, full_name, phone, email, message, need_type, estimated_volume, preferred_language, location_id, unit_type_id, source, utm_source, utm_medium, utm_campaign, utm_content, landing_page, referrer, status, assigned_to, created_at, updated_at')
+    .select('id, full_name, phone, email, message, inquiry_type, need_type, estimated_volume, preferred_language, location_id, unit_type_id, source, utm_source, utm_medium, utm_campaign, utm_content, landing_page, referrer, status, assigned_to, created_at, updated_at')
     .eq('id', leadId)
     .maybeSingle();
 

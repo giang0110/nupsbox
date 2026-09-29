@@ -15,7 +15,7 @@ export function buildConversionHref(
   context: ConversionContext = {}
 ): string {
   if (intent === 'finder') {
-    return locale === 'vi' ? '/#storage-finder' : '/en#storage-finder';
+    return locale === 'vi' ? '/kho-mini#storage-finder' : '/en/storage-units#storage-finder';
   }
 
   const base = intent === 'quote'
@@ -23,6 +23,7 @@ export function buildConversionHref(
     : (locale === 'vi' ? '/dat-kho' : '/en/book-storage');
 
   const params = new URLSearchParams();
+  if (intent === 'quote') params.set('inquiry', 'quote');
   if (context.unitSlug) params.set('unit', context.unitSlug);
   if (context.locationSlug) params.set('location', context.locationSlug);
   if (context.unitId) params.set('unitId', context.unitId);

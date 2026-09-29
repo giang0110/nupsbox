@@ -25,6 +25,7 @@ const lead = {
   phone: '0900000000',
   email: null,
   message: null,
+  inquiryType: 'storage',
   needType: 'inventory',
   status: 'new' as const,
   preferredLanguage: 'vi' as const,

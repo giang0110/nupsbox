@@ -12,6 +12,7 @@ const lead = {
   phone: '0900000000',
   email: 'an@example.com',
   message: 'Cần kho gần Tân Phú',
+  inquiryType: 'storage',
   needType: 'inventory',
   status: 'qualified' as const,
   preferredLanguage: 'vi' as const,

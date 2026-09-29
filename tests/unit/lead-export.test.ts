@@ -12,6 +12,7 @@ const lead: AdminLeadRow = {
   phone: '+84901234567',
   email: 'customer@example.com',
   message: 'Sensitive free-form message must not be exported',
+  inquiryType: 'partnership',
   needType: 'sme',
   status: 'new',
   preferredLanguage: 'vi',
@@ -55,6 +56,7 @@ describe('lead CSV export contracts', () => {
     expect(csv).toContain('"\'=2+2"');
     expect(csv).toContain('"\'+84901234567"');
     expect(csv).toContain('"Admin User"');
+    expect(csv).toContain('"partnership"');
     expect(csv).not.toContain('Sensitive free-form message must not be exported');
   });
 });
