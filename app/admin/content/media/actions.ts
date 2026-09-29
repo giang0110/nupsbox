@@ -327,6 +327,23 @@ export async function deleteMediaAsset(
       };
     }
 
+    const {data: editorialReferences, error: editorialReferenceError} = await supabase
+      .from('media_editorial_links')
+      .select('id, context_type, context_key')
+      .eq('media_id', id)
+      .limit(1);
+
+    if (editorialReferenceError) {
+      return {status: 'error', message: 'Chưa thể kiểm tra editorial mapping. Vui lòng thử lại.'};
+    }
+
+    if ((editorialReferences ?? []).length > 0) {
+      return {
+        status: 'error',
+        message: 'Ảnh đang được gán cho Blog/Solution/Topic. Hãy gỡ Editorial Media Mapping trước khi xoá ảnh.'
+      };
+    }
+
     const {data: deletedRows, error: deleteMetadataError} = await supabase
       .from('media_assets')
       .delete()
