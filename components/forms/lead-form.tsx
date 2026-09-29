@@ -48,7 +48,7 @@ export function LeadForm({
 }: Props) {
   const vi = locale === 'vi';
   const searchParams = useSearchParams();
-  const initialInquiryType: LeadInquiryType = appointmentMode || unitTypeId ? 'storage' : inquiryType;
+  const initialInquiryType: LeadInquiryType = appointmentMode ? 'storage' : inquiryType;
   const [selectedInquiryType, setSelectedInquiryType] = useState<LeadInquiryType>(initialInquiryType);
   const [state, setState] = useState<'idle' | 'submitting' | 'success' | 'error' | 'rate_limited'>('idle');
   const [wantsViewing, setWantsViewing] = useState(false);
