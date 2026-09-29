@@ -43,6 +43,7 @@ describe('lead form conversion measurement', () => {
         locale="vi"
         locationId="loc-1"
         unitTypeId="unit-1"
+        inquiryType="storage"
         needType="sme"
         estimatedVolume="unknown"
       />
