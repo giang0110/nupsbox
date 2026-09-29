@@ -22,6 +22,13 @@ test('quote context preserves selected unit without exposing storage-volume ques
   await expect(page.getByLabel(/^Email/)).not.toHaveAttribute('required', '');
 });
 
+test('explicit quote intent stays quote even when a unit is selected', async ({page}) => {
+  await page.goto('/lien-he?inquiry=quote&unit=s');
+  await expect(page.getByText(/Kho S/i)).toBeVisible();
+  await expect(page.getByLabel(/bạn muốn liên hệ về/i)).toHaveValue('quote');
+  await expect(page.getByLabel(/bạn cần kho cho/i)).toHaveCount(0);
+});
+
 test('viewing flow clearly says the requested time is not a reservation', async ({page}) => {
   await page.goto('/dat-kho?unit=s&location=tan-phu');
   await expect(page.getByText(/Kho S/i)).toBeVisible();
