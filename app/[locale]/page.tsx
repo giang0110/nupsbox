@@ -12,7 +12,7 @@ import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
 import {getMarketingFaqs} from '@/features/content/faqs';
 import {getPublicLocationGallery} from '@/features/content/public-media';
-import {getCommercialContent} from '@/features/content/commercial-content';
+import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 import {selectHomepageUnits} from '@/features/home/content';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
 import {getStaticSeoRoute} from '@/features/seo/routes';
@@ -43,7 +43,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
     getMarketingUnits(locale),
     getMarketingFeaturedLocation(locale),
     getMarketingFaqs(locale),
-    getCommercialContent(locale)
+    getCommercialContent(locale).catch(() => getCommercialFallback(locale))
   ]);
 
   const featuredUnits = selectHomepageUnits(units).slice(0, 3);
