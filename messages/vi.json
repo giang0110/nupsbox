@@ -10,21 +10,28 @@
     "about": "Về NupsBox",
     "contact": "Liên hệ",
     "quote": "Nhận báo giá",
-    "findStorage": "Tìm kho phù hợp"
+    "findStorage": "Tìm kho phù hợp",
+    "services": "Dịch vụ",
+    "facilities": "Cơ sở & năng lực",
+    "news": "Tin tức",
+    "commercialContact": "Liên hệ tư vấn"
   },
   "home": {
-    "eyebrow": "MINI STORAGE • TP.HCM",
-    "title": "Có kho tại TP.HCM. Không cần thuê cả mặt bằng.",
-    "subtitle": "Không gian kho riêng linh hoạt dành cho shop online và doanh nghiệp nhỏ — tiết kiệm chi phí, gần khách hàng và mở rộng khi bạn cần.",
-    "primaryCta": "Tìm kho phù hợp",
-    "secondaryCta": "Xem bảng giá"
+    "eyebrow": "THÔNG TIN THƯƠNG MẠI • TP.HCM",
+    "title": "NupsBox — hiểu dịch vụ trước khi quyết định.",
+    "subtitle": "Thông tin về dịch vụ lưu trữ, cơ sở, hình ảnh thực tế, bài viết và kênh liên hệ của NupsBox.",
+    "primaryCta": "Khám phá dịch vụ",
+    "secondaryCta": "Liên hệ NupsBox"
   },
   "actions": {
     "phone": "Gọi",
     "zalo": "Zalo",
     "findStorage": "Tìm kho",
     "quote": "Báo giá",
-    "viewing": "Xem kho"
+    "viewing": "Xem kho",
+    "services": "Dịch vụ",
+    "contact": "Liên hệ",
+    "inquiry": "Gửi yêu cầu"
   },
   "storageFinder": {}
 }
