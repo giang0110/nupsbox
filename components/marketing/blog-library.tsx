@@ -18,10 +18,12 @@ const dateFormatEn = new Intl.DateTimeFormat('en-US', {dateStyle: 'medium'});
 
 export function BlogLibrary({
   cards,
-  locale
+  locale,
+  visuals = {}
 }: {
   cards: PublicBlogCard[];
   locale: 'vi' | 'en';
+  visuals?: Record<string, {url: string; alt: string; source: 'blog' | 'topic'}>;
 }) {
   const [activeTopic, setActiveTopic] = useState<'all' | EditorialTopicId>('all');
   const vi = locale === 'vi';
@@ -73,16 +75,19 @@ export function BlogLibrary({
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visible.map(post => {
           const profile = getEditorialProfile(post.slug);
+          const mappedVisual = visuals[post.slug];
+          const displayUrl = post.coverUrl ?? mappedVisual?.url ?? null;
+          const displayAlt = post.coverUrl ? (post.coverAlt ?? '') : (mappedVisual?.alt ?? '');
           return (
             <article
               key={post.id}
               className="group overflow-hidden rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_20px_54px_rgba(7,26,56,.08)]"
             >
               <Link href={hrefFor(post.slug)} className="relative block aspect-[16/9] overflow-hidden">
-                {post.coverUrl ? (
+                {displayUrl ? (
                   <Image
-                    src={post.coverUrl}
-                    alt={post.coverAlt ?? ''}
+                    src={displayUrl}
+                    alt={displayAlt}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     className="object-cover transition duration-500 group-hover:scale-[1.02]"
@@ -90,6 +95,11 @@ export function BlogLibrary({
                 ) : (
                   <EditorialCover slug={post.slug} locale={locale} className="absolute inset-0" />
                 )}
+                {!post.coverUrl && mappedVisual ? (
+                  <span className="absolute bottom-3 left-3 rounded-full border border-white/15 bg-black/45 px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.11em] text-white/90 backdrop-blur">
+                    {vi ? 'Ảnh cơ sở NupsBox' : 'Real NupsBox imagery'}
+                  </span>
+                ) : null}
               </Link>
 
               <div className="flex min-h-[250px] flex-col p-6">
