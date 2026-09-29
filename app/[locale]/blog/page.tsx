@@ -4,11 +4,14 @@ import Link from 'next/link';
 import {ArrowRight, ExternalLink} from 'lucide-react';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
+import {BlogLibrary} from '@/components/marketing/blog-library';
+import {EditorialCover} from '@/components/marketing/editorial-cover';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
 import {isSupportedLocale} from '@/i18n/routing';
 import {getPublishedBlogCards} from '@/features/content/blog';
+import {getEditorialProfile, getEditorialTopicLabel} from '@/features/content/editorial-taxonomy';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
 const dateFormatVi = new Intl.DateTimeFormat('vi-VN', {dateStyle: 'medium'});
@@ -37,6 +40,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   const [featured, ...rest] = posts;
   const hrefFor = (slug: string) => vi ? '/blog/' + slug : '/en/blog/' + slug;
   const formatter = vi ? dateFormatVi : dateFormatEn;
+  const featuredProfile = featured ? getEditorialProfile(featured.slug) : null;
 
   return (
     <main>
@@ -48,10 +52,10 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
           : 'Not just service promotion. NupsBox analyzes inventory organization, space sizing, stock control and the decisions to make before renting.'}
       />
 
-      {featured ? (
+      {featured && featuredProfile ? (
         <Section size="compact">
           <div className="grid overflow-hidden rounded-[2rem] bg-[var(--nupsbox-navy)] text-white lg:grid-cols-[.95fr_1.05fr]">
-            <div className="relative min-h-[300px] lg:min-h-[440px]">
+            <div className="relative min-h-[300px] lg:min-h-[420px]">
               {featured.coverUrl ? (
                 <Image
                   src={featured.coverUrl}
@@ -62,24 +66,32 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,211,26,.22),transparent_30%),linear-gradient(145deg,#0d2d62,#071a38_70%)]" />
+                <EditorialCover slug={featured.slug} locale={locale} className="absolute inset-0" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.55)] to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.5)] to-transparent" />
               <div className="absolute left-5 top-5 rounded-full border border-white/15 bg-black/20 px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)] backdrop-blur">
                 {vi ? 'BÀI PHÂN TÍCH NỔI BẬT' : 'FEATURED ANALYSIS'}
               </div>
             </div>
 
             <article className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
-              <p className="text-xs font-bold text-white/50">
-                {featured.publishedAt ? formatter.format(new Date(featured.publishedAt)) : ''}
-              </p>
-              <h2 className="mt-3 text-[clamp(2rem,3.8vw,3.5rem)] font-extrabold leading-[1.04] tracking-[-0.045em]">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-white/10 px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-[var(--nupsbox-yellow)]">
+                  {getEditorialTopicLabel(featuredProfile.topic, locale)}
+                </span>
+                <span className="text-xs font-bold text-white/50">
+                  {featured.publishedAt ? formatter.format(new Date(featured.publishedAt)) : ''}
+                </span>
+              </div>
+              <h2 className="mt-4 text-[clamp(2rem,3.8vw,3.5rem)] font-extrabold leading-[1.04] tracking-[-0.045em]">
                 {featured.title}
               </h2>
               {featured.excerpt ? (
                 <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">{featured.excerpt}</p>
               ) : null}
+              <p className="mt-5 max-w-2xl border-l-2 border-[var(--nupsbox-yellow)] pl-4 text-sm leading-6 text-white/72">
+                {vi ? featuredProfile.questionVi : featuredProfile.questionEn}
+              </p>
               <div className="mt-7 flex flex-wrap items-center gap-4">
                 <Link
                   href={hrefFor(featured.slug)}
@@ -112,12 +124,12 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
               {vi ? 'THƯ VIỆN CHUYÊN SÂU' : 'DEEP-DIVE LIBRARY'}
             </p>
             <h2 className="mt-3 text-[clamp(2rem,3.5vw,3.25rem)] font-extrabold leading-[1.04] tracking-[-0.04em] text-[var(--nupsbox-navy)]">
-              {vi ? 'Từ bài toán không gian đến cách vận hành.' : 'From space constraints to operating discipline.'}
+              {vi ? 'Chọn đúng chủ đề, đi thẳng vào vấn đề.' : 'Choose a topic and go straight to the problem.'}
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--nupsbox-slate)]">
               {vi
-                ? 'Các bài tập trung vào quyết định có thể áp dụng: bố trí SKU, hàng chậm luân chuyển, kiểm kê, mở rộng văn phòng hay thuê kho, và cách chọn diện tích mà không thuê dư.'
-                : 'Articles focus on actionable decisions: SKU layout, slow movers, stock checks, office expansion versus storage, and choosing space without over-renting.'}
+                ? 'Lọc nhanh theo bài toán: chọn diện tích, shop online, tồn kho, doanh nghiệp hay nhu cầu cá nhân. Mỗi bài tập trung vào một quyết định có thể áp dụng.'
+                : 'Filter by the problem you are solving: space sizing, e-commerce, inventory, business or personal storage. Each article focuses on an actionable decision.'}
             </p>
           </div>
           <p className="text-sm font-bold text-[var(--nupsbox-slate)]">
@@ -126,33 +138,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
         </div>
 
         {rest.length ? (
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {rest.map((post, index) => (
-              <article
-                key={post.id}
-                className="group flex min-h-[300px] flex-col rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-[0_20px_54px_rgba(7,26,56,.08)]"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs font-black text-[var(--nupsbox-blue)]">0{index + 2}</span>
-                  <span className="text-xs font-bold text-[var(--nupsbox-muted)]">
-                    {post.publishedAt ? formatter.format(new Date(post.publishedAt)) : ''}
-                  </span>
-                </div>
-                <h3 className="mt-8 text-xl font-extrabold leading-snug tracking-[-0.03em] text-[var(--nupsbox-navy)]">
-                  <Link href={hrefFor(post.slug)} className="hover:text-[var(--nupsbox-blue)]">{post.title}</Link>
-                </h3>
-                {post.excerpt ? (
-                  <p className="mt-3 line-clamp-4 text-sm leading-6 text-[var(--nupsbox-slate)]">{post.excerpt}</p>
-                ) : null}
-                <div className="mt-auto pt-6">
-                  <Link href={hrefFor(post.slug)} className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--nupsbox-blue)] hover:underline">
-                    {vi ? 'Đọc bài' : 'Read article'}
-                    <ArrowRight size={15} aria-hidden="true" />
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
+          <BlogLibrary cards={rest} locale={locale} />
         ) : featured ? null : (
           <div className="mt-8 rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white p-7 text-[var(--nupsbox-slate)]">
             <p className="font-extrabold text-[var(--nupsbox-navy)]">
