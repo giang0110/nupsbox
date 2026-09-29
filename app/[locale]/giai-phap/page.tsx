@@ -12,11 +12,11 @@ import {createStaticPageMetadata} from '@/features/seo/static-page';
 export function generateMetadata({params}: {params: Promise<{locale: string}>}): Promise<Metadata> {
   return createStaticPageMetadata(params, 'solutions', {
     vi: {
-      title: 'Giải pháp lưu trữ',
+      title: 'Dịch vụ & giải pháp lưu trữ',
       description: 'Khám phá giải pháp lưu trữ theo nhu cầu của shop online, doanh nghiệp nhỏ, hàng tồn và cá nhân.'
     },
     en: {
-      title: 'Storage solutions',
+      title: 'Services & storage solutions',
       description: 'Explore storage solutions for online sellers, small businesses, inventory and personal storage needs.'
     }
   });
@@ -37,17 +37,17 @@ export default async function SolutionsPage({params}: {params: Promise<{locale: 
   return (
     <main>
       <PageIntro
-        eyebrow={vi ? 'GIẢI PHÁP' : 'SOLUTIONS'}
-        title={vi ? 'Giải pháp lưu trữ NupsBox' : 'NupsBox storage solutions'}
+        eyebrow={vi ? 'DỊCH VỤ' : 'SERVICES'}
+        title={vi ? 'Dịch vụ và giải pháp lưu trữ NupsBox' : 'NupsBox services and storage solutions'}
         description={vi
-          ? 'Bắt đầu từ tình huống của bạn, sau đó dùng Storage Finder để xác định loại kho phù hợp hơn.'
-          : 'Start with your situation, then use Storage Finder to narrow down a suitable unit.'}
+          ? 'Khám phá các nhóm nhu cầu NupsBox đang phục vụ, sau đó xem thêm thông tin cơ sở hoặc liên hệ để xác nhận phương án phù hợp.'
+          : 'Explore the needs NupsBox currently serves, then review facility information or contact us to confirm a suitable option.'}
       />
 
       <Section>
         <SectionHeading
-          eyebrow={vi ? 'CHỌN TÌNH HUỐNG GẦN NHẤT' : 'CHOOSE THE CLOSEST SITUATION'}
-          title={vi ? 'Một nhu cầu rõ ràng giúp chọn kho nhanh hơn.' : 'A clear use case makes the next choice easier.'}
+          eyebrow={vi ? 'NHÓM DỊCH VỤ' : 'SERVICE GROUPS'}
+          title={vi ? 'Thông tin dịch vụ theo từng nhu cầu sử dụng.' : 'Service information organized by use case.'}
         />
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {items.map(([href, title, body], index) => (
