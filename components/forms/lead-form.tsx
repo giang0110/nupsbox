@@ -8,7 +8,11 @@ import {trackEvent} from '@/features/analytics/events';
 import {Button} from '@/components/ui/button';
 import {TrackedContactLink} from '@/components/marketing/tracked-contact-link';
 import {LeadFormFields} from './lead-form-fields';
-import type {LeadEstimatedVolume, LeadNeedType} from '@/features/leads/intake';
+import type {
+  LeadEstimatedVolume,
+  LeadInquiryType,
+  LeadNeedType
+} from '@/features/leads/intake';
 import {ConversionSummary} from './conversion-summary';
 
 type Props = {
@@ -20,6 +24,7 @@ type Props = {
   unitTypeId?: string;
   unitName?: string | null;
   locationName?: string | null;
+  inquiryType?: LeadInquiryType;
   needType?: LeadNeedType;
   estimatedVolume?: LeadEstimatedVolume;
   appointmentMode?: boolean;
@@ -36,12 +41,15 @@ export function LeadForm({
   unitTypeId,
   unitName,
   locationName,
+  inquiryType = 'service_advice',
   needType = 'other',
   estimatedVolume = 'unknown',
   appointmentMode = false
 }: Props) {
   const vi = locale === 'vi';
   const searchParams = useSearchParams();
+  const initialInquiryType: LeadInquiryType = appointmentMode || unitTypeId ? 'storage' : inquiryType;
+  const [selectedInquiryType, setSelectedInquiryType] = useState<LeadInquiryType>(initialInquiryType);
   const [state, setState] = useState<'idle' | 'submitting' | 'success' | 'error' | 'rate_limited'>('idle');
   const [wantsViewing, setWantsViewing] = useState(false);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -60,13 +68,15 @@ export function LeadForm({
   function trackSubmission(
     outcome: SubmitOutcome,
     appointmentRequested: boolean,
+    submittedInquiryType: LeadInquiryType,
     submittedNeedType: LeadNeedType,
     submittedEstimatedVolume: LeadEstimatedVolume
   ) {
     trackEvent('lead_submit', {
       outcome,
       locale,
-      mode: appointmentMode ? 'viewing' : 'quote',
+      mode: appointmentMode ? 'viewing' : 'general',
+      inquiryType: submittedInquiryType,
       appointmentRequested,
       hasLocation: Boolean(locationId),
       hasUnit: Boolean(unitTypeId),
@@ -82,8 +92,15 @@ export function LeadForm({
     const form = new FormData(formElement);
     const attribution = {...readPersistedAttribution(), ...captureUtm(searchParams)};
 
-    const submittedNeedType = String(form.get('needType') ?? needType) as LeadNeedType;
-    const submittedEstimatedVolume = String(form.get('estimatedVolume') ?? estimatedVolume) as LeadEstimatedVolume;
+    const submittedInquiryType = (appointmentMode
+      ? 'storage'
+      : String(form.get('inquiryType') ?? selectedInquiryType)) as LeadInquiryType;
+    const submittedNeedType = (submittedInquiryType === 'storage'
+      ? String(form.get('needType') ?? needType)
+      : 'other') as LeadNeedType;
+    const submittedEstimatedVolume = (submittedInquiryType === 'storage'
+      ? String(form.get('estimatedVolume') ?? estimatedVolume)
+      : 'unknown') as LeadEstimatedVolume;
 
     let appointment;
     try {
@@ -93,7 +110,13 @@ export function LeadForm({
         String(form.get('viewingNote') ?? '')
       );
     } catch {
-      trackSubmission('validation_error', appointmentMode && wantsViewing, submittedNeedType, submittedEstimatedVolume);
+      trackSubmission(
+        'validation_error',
+        appointmentMode && wantsViewing,
+        submittedInquiryType,
+        submittedNeedType,
+        submittedEstimatedVolume
+      );
       setState('error');
       return;
     }
@@ -105,6 +128,7 @@ export function LeadForm({
       message: String(form.get('message') ?? ''),
       website: String(form.get('website') ?? ''),
       preferredLanguage: locale,
+      inquiryType: submittedInquiryType,
       locationId,
       unitTypeId,
       needType: submittedNeedType,
@@ -123,23 +147,24 @@ export function LeadForm({
       });
 
       if (response.status === 429) {
-        trackSubmission('rate_limited', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
+        trackSubmission('rate_limited', Boolean(appointment), submittedInquiryType, submittedNeedType, submittedEstimatedVolume);
         setState('rate_limited');
         return;
       }
 
       if (!response.ok) {
-        trackSubmission('error', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
+        trackSubmission('error', Boolean(appointment), submittedInquiryType, submittedNeedType, submittedEstimatedVolume);
         setState('error');
         return;
       }
 
-      trackSubmission('success', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
+      trackSubmission('success', Boolean(appointment), submittedInquiryType, submittedNeedType, submittedEstimatedVolume);
       setState('success');
       formElement.reset();
       setWantsViewing(false);
+      setSelectedInquiryType(initialInquiryType);
     } catch {
-      trackSubmission('network_error', Boolean(appointment), submittedNeedType, submittedEstimatedVolume);
+      trackSubmission('network_error', Boolean(appointment), submittedInquiryType, submittedNeedType, submittedEstimatedVolume);
       setState('error');
     }
   }
@@ -155,7 +180,11 @@ export function LeadForm({
       >
         <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.13em] text-[var(--nupsbox-blue)]">{vi ? 'ĐÃ GỬI' : 'SENT'}</p>
         <h2 className="mt-2 text-2xl font-extrabold tracking-[-0.025em]">{vi ? 'Đã nhận yêu cầu.' : 'Request received.'}</h2>
-        <p className="mt-3 leading-7 text-[var(--nupsbox-slate)]">{appointmentMode ? (vi ? 'NupsBox sẽ liên hệ xác nhận lịch xem kho. Đây chưa phải giữ chỗ.' : 'NupsBox will contact you to confirm the viewing time. This is not a reservation.') : (vi ? 'NupsBox sẽ liên hệ với bạn để xác nhận nhu cầu và bước tiếp theo.' : 'NupsBox will contact you to confirm your needs and the next step.')}</p>
+        <p className="mt-3 leading-7 text-[var(--nupsbox-slate)]">
+          {appointmentMode
+            ? (vi ? 'NupsBox sẽ liên hệ xác nhận lịch xem kho. Đây chưa phải giữ chỗ.' : 'NupsBox will contact you to confirm the viewing time. This is not a reservation.')
+            : (vi ? 'NupsBox sẽ liên hệ để phản hồi nội dung bạn cần trao đổi.' : 'NupsBox will contact you about the information you requested.')}
+        </p>
       </div>
     );
   }
@@ -166,6 +195,9 @@ export function LeadForm({
       <ConversionSummary locale={locale} unitName={unitName} locationName={locationName} appointmentMode={appointmentMode} />
       <LeadFormFields
         locale={locale}
+        inquiryType={selectedInquiryType}
+        onInquiryTypeChange={setSelectedInquiryType}
+        lockInquiryType={appointmentMode}
         defaultNeedType={needType}
         defaultEstimatedVolume={estimatedVolume}
       />
@@ -198,7 +230,11 @@ export function LeadForm({
       ) : null}
 
       <Button type="submit" size="lg" disabled={state === 'submitting'}>
-        {state === 'submitting' ? (vi ? 'Đang gửi…' : 'Sending…') : (appointmentMode ? (vi ? 'Gửi yêu cầu đặt lịch' : 'Send viewing request') : (vi ? 'Gửi yêu cầu tư vấn' : 'Request advice'))}
+        {state === 'submitting'
+          ? (vi ? 'Đang gửi…' : 'Sending…')
+          : appointmentMode
+            ? (vi ? 'Gửi yêu cầu đặt lịch' : 'Send viewing request')
+            : (vi ? 'Gửi yêu cầu' : 'Send enquiry')}
       </Button>
 
       {state === 'error' || state === 'rate_limited' ? (
@@ -208,44 +244,27 @@ export function LeadForm({
           role="alert"
           className="rounded-xl bg-red-50 p-4 text-sm text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
         >
-          <p>{state === 'rate_limited' ? (vi ? 'Bạn đã gửi nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau.' : 'Too many requests were sent recently. Please try again later.') : (vi ? 'Không gửi được yêu cầu lúc này. Vui lòng kiểm tra lại thông tin và thời gian xem kho.' : 'We could not submit your request right now. Please check the form and viewing time.')}</p>
+          <p>{state === 'rate_limited' ? (vi ? 'Bạn đã gửi nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau.' : 'Too many requests were sent recently. Please try again later.') : (vi ? 'Không gửi được yêu cầu lúc này. Vui lòng kiểm tra lại thông tin.' : 'We could not submit your request right now. Please check the form.')}</p>
           {fallbackPhone || fallbackZalo || fallbackFacebook ? (
             <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
               {fallbackPhone ? (
-                <TrackedContactLink
-                  href={`tel:${fallbackPhone}`}
-                  label={vi ? 'Gọi NupsBox' : 'Call NupsBox'}
-                  kind="phone"
-                  placement="lead-form-error"
-                  showIcon={false}
-                  className="font-bold underline"
-                />
+                <TrackedContactLink href={`tel:${fallbackPhone}`} label={vi ? 'Gọi NupsBox' : 'Call NupsBox'} kind="phone" placement="lead-form-error" showIcon={false} className="font-bold underline" />
               ) : null}
               {fallbackZalo ? (
-                <TrackedContactLink
-                  href={fallbackZalo}
-                  label="Zalo"
-                  kind="zalo"
-                  placement="lead-form-error"
-                  showIcon={false}
-                  className="font-bold underline"
-                />
+                <TrackedContactLink href={fallbackZalo} label="Zalo" kind="zalo" placement="lead-form-error" showIcon={false} className="font-bold underline" />
               ) : null}
               {fallbackFacebook ? (
-                <TrackedContactLink
-                  href={fallbackFacebook}
-                  label="Facebook"
-                  kind="facebook"
-                  placement="lead-form-error"
-                  showIcon={false}
-                  className="font-bold underline"
-                />
+                <TrackedContactLink href={fallbackFacebook} label="Facebook" kind="facebook" placement="lead-form-error" showIcon={false} className="font-bold underline" />
               ) : null}
             </p>
           ) : null}
         </div>
       ) : null}
-      <p className="text-xs leading-5 text-[var(--nupsbox-slate)]">{vi ? 'Thông tin này chỉ được dùng để NupsBox phản hồi yêu cầu thuê kho của bạn.' : 'This information is used only to respond to your storage enquiry.'}</p>
+      <p className="text-xs leading-5 text-[var(--nupsbox-slate)]">
+        {vi
+          ? 'Thông tin này chỉ được dùng để NupsBox phản hồi yêu cầu bạn đã gửi.'
+          : 'This information is used only to respond to the enquiry you submitted.'}
+      </p>
     </form>
   );
 }
