@@ -7,17 +7,19 @@ function source(path: string) {
 }
 
 describe('P3.13 premium visual refinement', () => {
-  it('places real warehouse imagery before the choice hub', () => {
+  it('keeps the commercial overview and real imagery near the top of the homepage', () => {
     const home = source('app/[locale]/page.tsx');
-    expect(home.indexOf('      <WarehouseGallery')).toBeGreaterThan(home.indexOf('      <Hero'));
-    expect(home.indexOf('      <WarehouseGallery')).toBeLessThan(home.indexOf('      <HomeChoiceHub'));
+    expect(home.indexOf('      <CommercialOverview')).toBeGreaterThan(home.indexOf('      <Hero'));
+    expect(home.indexOf('      <WarehouseGallery')).toBeGreaterThan(home.indexOf('      <CommercialOverview'));
+    expect(home.indexOf('      <WarehouseGallery')).toBeLessThan(home.indexOf('      <HomeProofBento'));
   });
 
   it('keeps the mobile bar at two primary columns with a contact sheet', () => {
     const mobile = source('components/marketing/mobile-action-bar.tsx');
     expect(mobile).toContain('grid-cols-2');
     expect(mobile).toContain('mobile-contact-sheet');
-    expect(mobile).toContain("'Liên hệ'");
+    expect(mobile).toContain("t('contact')");
+    expect(mobile).toContain("t('inquiry')");
     expect(mobile).not.toContain('grid-cols-3');
   });
 
