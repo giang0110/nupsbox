@@ -138,7 +138,15 @@ export async function getCommercialContent(locale: Locale): Promise<CommercialCo
     .in('block_key', [...commercialBlockKeys])
     .order('sort_order', {ascending: true});
 
-  if (error) throw error;
+  if (error) {
+    return {
+      companyProfile: fallback.company_profile,
+      services: fallback.services,
+      capabilities: fallback.capabilities,
+      cta: fallback.commercial_cta,
+      seo: fallback.seo
+    };
+  }
 
   const rows = new Map(
     (data ?? []).map((row) => [
