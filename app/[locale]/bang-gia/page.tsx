@@ -9,6 +9,7 @@ import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {FinalCta} from '@/components/marketing/final-cta';
 import {EmptyCatalogConversion} from '@/components/marketing/empty-catalog-conversion';
 import {getMarketingUnits} from '@/features/catalog/public-catalog';
+import {getPublicUnitMediaMap} from '@/features/content/public-media';
 import {isSupportedLocale} from '@/i18n/routing';
 import {createStaticPageMetadata} from '@/features/seo/static-page';
 
@@ -30,6 +31,7 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
   if (!isSupportedLocale(rawLocale)) notFound();
   setRequestLocale(rawLocale);
   const units = await getMarketingUnits(rawLocale);
+  const unitVisuals = await getPublicUnitMediaMap(units.map(unit => unit.id), rawLocale);
   const vi = rawLocale === 'vi';
 
   return (
@@ -80,7 +82,7 @@ export default async function PricingPage({params}: {params: Promise<{locale: st
                 ? 'Các thẻ chỉ hiển thị dữ liệu đang có; giá trống sẽ tiếp tục hiển thị “Liên hệ báo giá”.'
                 : 'Cards show only current data; missing prices remain “Contact for pricing”.'}
             />
-            <div className="mt-8"><UnitCompare units={units} locale={rawLocale} /></div>
+            <div className="mt-8"><UnitCompare units={units} locale={rawLocale} visuals={unitVisuals} /></div>
           </>
         ) : (
           <EmptyCatalogConversion locale={rawLocale} context="pricing" />
