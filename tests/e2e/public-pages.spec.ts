@@ -17,22 +17,21 @@ for (const route of routes) {
   });
 }
 
-test('header exposes the finder as the primary public action', async ({page}) => {
+test('header exposes commercial contact as the primary public action', async ({page}) => {
   await page.goto('/');
-  await expect(page.getByRole('link', {name: /tìm kho phù hợp/i}).first()).toHaveAttribute('href', /#storage-finder$/);
+  await expect(page.getByRole('link', {name: /liên hệ tư vấn|contact us/i}).first()).toHaveAttribute('href', /\/lien-he$|\/contact$/);
 });
 
-test('solution page keeps one clear finder next action', async ({page}) => {
+test('solution detail pages retain a clear supporting next action', async ({page}) => {
   await page.goto('/giai-phap/shop-online');
   await expect(page.getByRole('heading', {level: 1})).toHaveCount(1);
-  await expect(page.getByRole('link', {name: /tìm kho phù hợp/i}).last()).toBeVisible();
+  await expect(page.getByRole('link', {name: /tìm kho phù hợp|liên hệ NupsBox|contact NupsBox/i}).last()).toBeVisible();
 });
 
 test('English pricing route renders localized heading', async ({page}) => {
   await page.goto('/en/pricing');
   await expect(page.getByRole('heading', {level: 1, name: 'Mini storage pricing'})).toBeVisible();
 });
-
 
 for (const route of ['/giai-phap', '/cach-thue', '/ve-nupsbox', '/cau-hoi-thuong-gap']) {
   test(`${route} keeps its primary heading compact and premium on desktop`, async ({page}) => {
