@@ -3,24 +3,21 @@ import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 describe('compact homepage composition', () => {
-  it('uses seven compact information-first primary blocks including the CMS warehouse gallery', () => {
+  it('uses four focused primary blocks and moves depth to drill-down pages', () => {
     const source = readFileSync(join(process.cwd(), 'app/[locale]/page.tsx'), 'utf8');
 
     expect(source).toContain('<Hero');
-    expect(source).toContain('hasGallery={galleryItems.length > 0}');
-    expect(source).toContain('<CommercialOverview');
-    expect(source).toContain('<HomeProofBento');
-    expect(source).toContain('<WarehouseGallery');
-    expect(source).toContain('<HomeLocationJourney');
-    expect(source).toContain('<HomeFaq');
+    expect(source).toContain('<HomeDecisionHub');
+    expect(source).toContain('<HomeInsights');
     expect(source).toContain('<FinalCta');
 
-    expect(source).not.toContain('<HomeChoiceHub');
-    expect(source).not.toContain('<UseCases');
-    expect(source).not.toContain('<Gallery');
-    expect(source).not.toContain('<SecurityBenefits');
-    expect(source).not.toContain('<CostComparison');
-    expect(source).not.toContain('<HowItWorks');
-    expect(source).not.toContain('<SocialProof');
+    expect(source).not.toContain('<CommercialOverview');
+    expect(source).not.toContain('<HomeProofBento');
+    expect(source).not.toContain('<WarehouseGallery');
+    expect(source).not.toContain('<HomeLocationJourney');
+    expect(source).not.toContain('<HomeFaq');
+
+    expect(source).not.toContain('getMarketingFaqs');
+    expect(source).not.toContain('getPublicLocationGallery');
   });
 });
