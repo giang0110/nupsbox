@@ -17,6 +17,7 @@ export const LeadInputSchema = z.object({
   ),
   email: optionalEmail,
   preferredLanguage: z.enum(['vi', 'en']).default('vi'),
+  inquiryType: z.enum(['service_advice', 'quote', 'partnership', 'facility_info', 'storage', 'other']).default('storage'),
   locationId: z.uuid().optional(),
   unitTypeId: z.uuid().optional(),
   needType: z.enum(['shop_online', 'sme', 'inventory', 'personal', 'documents', 'other']).default('other'),
