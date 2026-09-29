@@ -23,6 +23,7 @@ export type LeadStatus =
   | 'lost';
 export type NeedType = 'shop_online' | 'sme' | 'inventory' | 'personal' | 'documents' | 'other';
 export type EstimatedVolume = 'under_20_boxes' | 'boxes_20_50' | 'over_50_boxes' | 'unknown';
+export type InquiryType = 'service_advice' | 'quote' | 'partnership' | 'facility_info' | 'storage' | 'other';
 export type MediaCategory = 'hero' | 'location' | 'unit' | 'security' | 'exterior' | 'lifestyle' | 'blog';
 
 export type Database = {
@@ -349,6 +350,7 @@ export type Database = {
           estimated_volume: EstimatedVolume;
           full_name: string;
           id: string;
+          inquiry_type: InquiryType;
           landing_page: string | null;
           location_id: string | null;
           message: string | null;
@@ -372,6 +374,7 @@ export type Database = {
           estimated_volume?: EstimatedVolume;
           full_name: string;
           id?: string;
+          inquiry_type?: InquiryType;
           landing_page?: string | null;
           location_id?: string | null;
           message?: string | null;
@@ -395,6 +398,7 @@ export type Database = {
           estimated_volume?: EstimatedVolume;
           full_name?: string;
           id?: string;
+          inquiry_type?: InquiryType;
           landing_page?: string | null;
           location_id?: string | null;
           message?: string | null;
