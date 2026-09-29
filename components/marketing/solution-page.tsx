@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import {ArrowRight, CheckCircle2, CircleDot, Lightbulb, Rows3} from 'lucide-react';
+import {RealMediaStory} from '@/components/marketing/real-media-story';
 import {PageIntro} from '@/components/ui/page-intro';
 import {Section} from '@/components/ui/section';
+import {getPublicEditorialMedia} from '@/features/content/editorial-media';
 import {ConversionCta} from './conversion-cta';
 import {FinalCta} from './final-cta';
 
@@ -10,7 +12,7 @@ type InsightItem = {
   body: string;
 };
 
-export function SolutionPage({
+export async function SolutionPage({
   locale,
   titleVi,
   titleEn,
@@ -26,7 +28,8 @@ export function SolutionPage({
   analysisEn,
   relatedBlogSlug,
   relatedBlogTitleVi,
-  relatedBlogTitleEn
+  relatedBlogTitleEn,
+  storyKey
 }: {
   locale: 'vi' | 'en';
   titleVi: string;
@@ -44,12 +47,14 @@ export function SolutionPage({
   relatedBlogSlug: string;
   relatedBlogTitleVi: string;
   relatedBlogTitleEn: string;
+  storyKey: 'shop-online' | 'small-business' | 'inventory' | 'personal';
 }) {
   const vi = locale === 'vi';
   const fit = vi ? fitVi : fitEn;
   const operating = vi ? operatingVi : operatingEn;
   const checklist = vi ? checklistVi : checklistEn;
   const articleHref = vi ? '/blog/' + relatedBlogSlug : '/en/blog/' + relatedBlogSlug;
+  const storyMedia = await getPublicEditorialMedia('solution', storyKey, locale, 2);
 
   return (
     <main>
@@ -117,6 +122,12 @@ export function SolutionPage({
             </ul>
           </article>
         </div>
+
+        {storyMedia.length ? (
+          <div className="mt-5">
+            <RealMediaStory items={storyMedia} locale={locale} compact />
+          </div>
+        ) : null}
 
         <aside className="mt-5 grid gap-5 rounded-[1.75rem] bg-[var(--nupsbox-navy)] p-6 text-white sm:p-8 lg:grid-cols-[auto_1fr_auto] lg:items-center">
           <span className="grid size-12 place-items-center rounded-full bg-white/10 text-[var(--nupsbox-yellow)]">
