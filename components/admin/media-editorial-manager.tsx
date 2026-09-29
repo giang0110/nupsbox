@@ -24,6 +24,14 @@ const topicOptions = [
   {key: 'personal', label: 'Chủ đề · Cá nhân'}
 ] as const;
 
+function weakAlt(item: AdminMedia | undefined) {
+  if (!item) return true;
+  const vi = item.altVi.trim().toLowerCase();
+  const en = item.altEn.trim().toLowerCase();
+  const generic = new Set(['nupsbox', 'nupsbox storage']);
+  return vi.length < 10 || en.length < 10 || generic.has(vi) || generic.has(en);
+}
+
 function contextLabel(link: AdminMediaEditorialLink, blogs: AdminBlog[]) {
   if (link.contextType === 'solution') {
     return solutionOptions.find(option => option.key === link.contextKey)?.label ?? link.contextKey;
@@ -137,6 +145,7 @@ export function MediaEditorialManager({
                     label={item?.isPublic ? 'Public' : 'Private'}
                     tone={item?.isPublic ? 'success' : 'warning'}
                   />
+                  {weakAlt(item) ? <AdminStatusBadge label="Alt yếu" tone="warning" /> : null}
                 </div>
                 <p className="mt-2 truncate text-sm font-black text-[var(--nupsbox-navy)]">
                   {contextLabel(link, blogs)}
@@ -144,6 +153,11 @@ export function MediaEditorialManager({
                 <p className="mt-1 line-clamp-1 text-xs text-[var(--nupsbox-slate)]">
                   {item?.altVi || item?.storagePath || link.mediaId}
                 </p>
+                {weakAlt(item) ? (
+                  <p className="mt-1 text-xs font-bold text-amber-700">
+                    Nên sửa alt VI/EN theo đúng nội dung ảnh trước khi dùng rộng rãi.
+                  </p>
+                ) : null}
                 <div className="mt-2 flex items-center justify-between gap-3">
                   <span className="text-xs font-bold text-[var(--nupsbox-muted)]">sort {link.sortOrder}</span>
                   {canEdit ? (
