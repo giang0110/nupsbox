@@ -10,12 +10,14 @@ describe('lead workspace URL model', () => {
     expect(normalizeLeadWorkspaceQuery({
       view: 'pipeline',
       status: 'viewing',
+      inquiry: 'quote',
       assignee: '51af3597-3eef-47a2-a008-2399be9ac8f6',
       source: 'website',
       q: '  Nguyễn An  '
     })).toEqual({
       view: 'pipeline',
       status: 'viewing',
+      inquiryType: 'quote',
       assignee: '51af3597-3eef-47a2-a008-2399be9ac8f6',
       source: 'website',
       q: 'Nguyễn An'
@@ -26,6 +28,7 @@ describe('lead workspace URL model', () => {
     expect(normalizeLeadWorkspaceQuery({
       view: 'grid',
       status: 'deleted',
+      inquiry: 'invalid',
       assignee: 'not-a-uuid',
       source: '   ',
       q: '   '
@@ -34,9 +37,9 @@ describe('lead workspace URL model', () => {
 
   it('builds a shareable URL and omits the default table view', () => {
     expect(buildLeadWorkspaceHref(
-      {view: 'pipeline', status: 'new', q: 'An'},
+      {view: 'pipeline', status: 'new', inquiryType: 'partnership', q: 'An'},
       {status: 'qualified'}
-    )).toBe('/admin/leads?view=pipeline&status=qualified&q=An');
+    )).toBe('/admin/leads?view=pipeline&status=qualified&inquiry=partnership&q=An');
 
     expect(buildLeadWorkspaceHref(
       {view: 'table', status: 'new'},
