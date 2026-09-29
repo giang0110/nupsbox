@@ -20,6 +20,7 @@ export default async function Page({params}: {params: Promise<{locale: string}>}
   return (
     <SolutionPage
       locale={locale}
+      kind="shop-online"
       titleVi="Kho mini cho shop online"
       titleEn="Mini storage for online sellers"
       bodyVi="Tách hàng hóa khỏi nhà ở và vận hành shop từ một điểm lưu trữ gọn tại TP.HCM."
