@@ -23,6 +23,7 @@ describe('Phase 2 CRM lead detail projection', () => {
         phone: '0900000000',
         email: 'an@example.com',
         message: 'Cần kho gần Tân Phú',
+        inquiry_type: 'storage',
         need_type: 'inventory',
         estimated_volume: 'boxes_20_50',
         preferred_language: 'vi',
@@ -61,6 +62,7 @@ describe('Phase 2 CRM lead detail projection', () => {
       fullName: 'Nguyễn An',
       status: 'qualified',
       assignedTo: '51af3597-3eef-47a2-a008-2399be9ac8f6',
+      inquiryType: 'storage',
       estimatedVolume: 'boxes_20_50',
       locationId: '3bb8f237-ce72-4c5b-8eba-25a470b87a42',
       unitTypeId: null,
@@ -98,6 +100,7 @@ describe('Phase 2 CRM lead detail projection', () => {
         phone: '0900000000',
         email: null,
         message: null,
+        inquiry_type: 'service_advice',
         need_type: 'other',
         estimated_volume: 'unknown',
         preferred_language: 'en',
@@ -117,6 +120,7 @@ describe('Phase 2 CRM lead detail projection', () => {
       [],
       []
     )).toMatchObject({
+      inquiryType: 'service_advice',
       assignedTo: null,
       locationId: null,
       unitTypeId: null,
