@@ -8,6 +8,7 @@ import {FinalCta} from '@/components/marketing/final-cta';
 import {isSupportedLocale} from '@/i18n/routing';
 import {getMarketingFeaturedLocation, getMarketingUnits} from '@/features/catalog/public-catalog';
 import {getPublishedBlogCards} from '@/features/content/blog';
+import {getBlogVisualMap} from '@/features/content/blog-visuals';
 import {getCommercialContent, getCommercialFallback} from '@/features/content/commercial-content';
 import {selectHomepageUnits} from '@/features/home/content';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
@@ -43,6 +44,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
   ]);
 
   const featuredUnits = selectHomepageUnits(units).slice(0, 3);
+  const insightVisuals = await getBlogVisualMap(posts.slice(0, 3).map(post => post.slug), locale);
 
   return (
     <main>
@@ -58,7 +60,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
         units={featuredUnits}
         commercial={commercial}
       />
-      <HomeInsights locale={locale} posts={posts} />
+      <HomeInsights locale={locale} posts={posts} visuals={insightVisuals} />
       <FinalCta locale={locale} content={commercial.cta} />
     </main>
   );
