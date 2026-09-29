@@ -1,6 +1,15 @@
 import {AdminPanel} from '@/components/admin/admin-primitives';
 import type {AdminLeadDetail} from '@/features/admin/leads';
 
+const inquiryTypeLabels: Record<string, string> = {
+  service_advice: 'Tư vấn dịch vụ',
+  quote: 'Báo giá',
+  partnership: 'Hợp tác',
+  facility_info: 'Thông tin cơ sở',
+  storage: 'Tư vấn lưu trữ',
+  other: 'Yêu cầu khác'
+};
+
 const needTypeLabels: Record<string, string> = {
   shop_online: 'Bán hàng online',
   sme: 'Doanh nghiệp nhỏ / SME',
@@ -57,17 +66,22 @@ export function LeadContextPanels({
   return (
     <div className={className}>
       <AdminPanel
-        title="Nhu cầu lưu trữ"
-        description="Thông tin nghiệp vụ cần ưu tiên khi trao đổi với khách hàng."
+        title="Yêu cầu thương mại"
+        description="Loại yêu cầu được ghi nhận có cấu trúc; thông tin lưu trữ chỉ có ý nghĩa khi khách chọn tư vấn lưu trữ."
       >
         <dl className="grid gap-3 sm:grid-cols-2">
-          <Field label="Nhu cầu" value={needTypeLabels[lead.needType] ?? lead.needType} />
-          <Field
-            label="Quy mô ước tính"
-            value={volumeLabels[lead.estimatedVolume] ?? lead.estimatedVolume}
-          />
+          <Field label="Loại yêu cầu" value={inquiryTypeLabels[lead.inquiryType] ?? lead.inquiryType} />
+          {lead.inquiryType === 'storage' ? (
+            <>
+              <Field label="Nhu cầu lưu trữ" value={needTypeLabels[lead.needType] ?? lead.needType} />
+              <Field
+                label="Quy mô ước tính"
+                value={volumeLabels[lead.estimatedVolume] ?? lead.estimatedVolume}
+              />
+              <Field label="Loại kho" value={unitTypeLabel} fallbackId={lead.unitTypeId} />
+            </>
+          ) : null}
           <Field label="Địa điểm" value={locationLabel} fallbackId={lead.locationId} />
-          <Field label="Loại kho" value={unitTypeLabel} fallbackId={lead.unitTypeId} />
         </dl>
         {lead.message ? (
           <div className="mt-4 rounded-xl border border-[var(--nupsbox-border)] p-4">
