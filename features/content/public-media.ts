@@ -48,3 +48,45 @@ export async function getPublicLocationGallery(
     return [];
   }
 }
+
+
+export async function getPublicUnitMediaMap(
+  unitIds: string[],
+  locale: AppLocale
+): Promise<Record<string, PublicGalleryItem>> {
+  const uniqueUnitIds = [...new Set(unitIds.map(id => id.trim()).filter(Boolean))];
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  if (!url || url.includes('example.supabase.co') || !uniqueUnitIds.length) return {};
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {data, error} = await supabase
+      .from('media_assets')
+      .select('id, unit_type_id, storage_path, alt_vi, alt_en, category, sort_order, created_at')
+      .eq('is_public', true)
+      .in('unit_type_id', uniqueUnitIds)
+      .in('category', ['unit', 'hero', 'lifestyle', 'location'])
+      .order('sort_order', {ascending: true})
+      .order('created_at', {ascending: true});
+
+    if (error) throw error;
+
+    const result: Record<string, PublicGalleryItem> = {};
+    for (const row of data ?? []) {
+      const unitId = row.unit_type_id;
+      if (!unitId || result[unitId]) continue;
+      const {data: publicData} = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(row.storage_path);
+      result[unitId] = {
+        id: row.id,
+        url: publicData.publicUrl,
+        alt: locale === 'vi' ? row.alt_vi : row.alt_en,
+        category: row.category,
+        sortOrder: row.sort_order
+      };
+    }
+
+    return result;
+  } catch {
+    return {};
+  }
+}

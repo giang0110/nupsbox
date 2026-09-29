@@ -5,6 +5,7 @@ import {UnitCard} from './unit-card';
 import {formatMonthlyPrice} from '@/features/catalog/price';
 import {toggleComparedUnit} from '@/features/catalog/compare';
 import type {PublicUnitType} from '@/features/catalog/types';
+import type {PublicGalleryItem} from '@/features/content/public-media';
 import {trackEvent} from '@/features/analytics/events';
 import {ConversionCta} from '@/components/marketing/conversion-cta';
 
@@ -18,7 +19,7 @@ function availabilityLabel(status: PublicUnitType['availabilityStatus'], locale:
   }
 }
 
-export function UnitCompare({units, locale}: {units: PublicUnitType[]; locale: 'vi' | 'en'}) {
+export function UnitCompare({units, locale, visuals = {}}: {units: PublicUnitType[]; locale: 'vi' | 'en'; visuals?: Record<string, PublicGalleryItem>}) {
   const vi = locale === 'vi';
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selectedUnits = useMemo(
@@ -121,6 +122,7 @@ export function UnitCompare({units, locale}: {units: PublicUnitType[]; locale: '
             compareSelected={selectedIds.includes(unit.id)}
             compareDisabled={selectedIds.length >= 3}
             onCompareToggle={() => toggle(unit.id)}
+            visual={visuals[unit.id]}
           />
         ))}
       </div>

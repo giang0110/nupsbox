@@ -1,7 +1,9 @@
+import Image from 'next/image';
 import {Link} from '@/i18n/navigation';
 import {ConversionCta} from '@/components/marketing/conversion-cta';
 import {formatMonthlyPrice} from '@/features/catalog/price';
 import type {PublicUnitType} from '@/features/catalog/types';
+import type {PublicGalleryItem} from '@/features/content/public-media';
 
 function availabilityLabel(status: PublicUnitType['availabilityStatus'], locale: 'vi' | 'en') {
   const vi = locale === 'vi';
@@ -22,30 +24,49 @@ export function UnitCard({
   locale,
   compareSelected = false,
   compareDisabled = false,
-  onCompareToggle
+  onCompareToggle,
+  visual
 }: {
   unit: PublicUnitType;
   locale: 'vi' | 'en';
   compareSelected?: boolean;
   compareDisabled?: boolean;
   onCompareToggle?: () => void;
+  visual?: PublicGalleryItem;
 }) {
   const vi = locale === 'vi';
   const price = formatMonthlyPrice(unit.promoPrice ?? unit.monthlyPrice, locale);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white shadow-[0_12px_36px_rgba(7,26,56,.06)] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(8,70,168,.28)] hover:shadow-[0_22px_52px_rgba(7,26,56,.10)]">
-      <div className="relative overflow-hidden bg-[var(--nupsbox-navy)] p-5 text-white sm:p-6">
-        <div aria-hidden="true" className="absolute -right-12 -top-16 size-44 rounded-full border border-white/8 bg-white/[0.03]" />
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[0.68rem] font-extrabold tracking-[0.14em] text-[var(--nupsbox-yellow)]">MINI STORAGE</p>
-            <h2 className="mt-2.5 text-2xl font-extrabold tracking-[-0.03em] sm:text-[1.75rem]">{unit.name}</h2>
-            <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-white">{unit.areaM2.toFixed(2)}<span className="ml-1 text-base font-bold tracking-normal text-white/60">m²</span></p>
+      <div className="relative min-h-[190px] overflow-hidden bg-[var(--nupsbox-navy)] text-white">
+        {visual ? (
+          <>
+            <Image
+              src={visual.url}
+              alt={visual.alt}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.94)] via-[rgba(7,26,56,.48)] to-black/10" />
+          </>
+        ) : (
+          <div aria-hidden="true" className="absolute -right-12 -top-16 size-44 rounded-full border border-white/8 bg-white/[0.03]" />
+        )}
+        <div className="relative z-10 flex min-h-[190px] flex-col justify-between p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-[0.68rem] font-extrabold tracking-[0.14em] text-[var(--nupsbox-yellow)]">
+              {visual ? (vi ? 'ẢNH THỰC TẾ' : 'REAL UNIT IMAGE') : 'MINI STORAGE'}
+            </p>
+            <span className="max-w-36 rounded-full border border-white/12 bg-black/25 px-3 py-1 text-right text-[0.7rem] font-semibold leading-4 text-white/82 backdrop-blur-sm">
+              {availabilityLabel(unit.availabilityStatus, locale)}
+            </span>
           </div>
-          <span className="max-w-36 rounded-full border border-white/12 bg-white/8 px-3 py-1 text-right text-[0.7rem] font-semibold leading-4 text-white/76">
-            {availabilityLabel(unit.availabilityStatus, locale)}
-          </span>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-[-0.03em] sm:text-[1.75rem]">{unit.name}</h2>
+            <p className="mt-2 text-4xl font-black tracking-[-0.05em] text-white">{unit.areaM2.toFixed(2)}<span className="ml-1 text-base font-bold tracking-normal text-white/60">m²</span></p>
+          </div>
         </div>
       </div>
 

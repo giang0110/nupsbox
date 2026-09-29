@@ -1,4 +1,5 @@
 import type {Metadata} from 'next';
+import Image from 'next/image';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
 import {ArrowLeft, Ruler} from 'lucide-react';
@@ -11,6 +12,7 @@ import {Section} from '@/components/ui/section';
 import {SectionHeading} from '@/components/ui/section-heading';
 import {formatMonthlyPrice} from '@/features/catalog/price';
 import {getMarketingUnitBySlug} from '@/features/catalog/public-catalog';
+import {getPublicUnitMediaMap} from '@/features/content/public-media';
 import {createLocalizedMetadata} from '@/features/seo/metadata';
 import {absoluteUrl, getStaticSeoRoute, unitSeoRoute} from '@/features/seo/routes';
 import {isSupportedLocale} from '@/i18n/routing';
@@ -53,6 +55,8 @@ export default async function StorageDetailPage({params}: {params: Promise<{loca
   if (!unit) notFound();
 
   const vi = rawLocale === 'vi';
+  const unitVisuals = await getPublicUnitMediaMap([unit.id], rawLocale);
+  const unitVisual = unitVisuals[unit.id];
   const price = formatMonthlyPrice(unit.promoPrice ?? unit.monthlyPrice, rawLocale);
   const homeRoute = getStaticSeoRoute('home');
   const unitsRoute = getStaticSeoRoute('units');
@@ -124,6 +128,15 @@ export default async function StorageDetailPage({params}: {params: Promise<{loca
           </div>
 
           <aside className="overflow-hidden rounded-[1.75rem] border border-[var(--nupsbox-border)] bg-white shadow-[0_18px_50px_rgba(7,26,56,.08)]">
+            {unitVisual ? (
+              <figure className="relative aspect-[16/9] bg-[var(--nupsbox-navy)]">
+                <Image src={unitVisual.url} alt={unitVisual.alt} fill sizes="(max-width: 1024px) 100vw, 42vw" className="object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.72)] via-transparent to-transparent" />
+                <figcaption className="absolute inset-x-0 bottom-0 p-4 text-[0.65rem] font-black uppercase tracking-[0.12em] text-white">
+                  {vi ? 'ẢNH LOẠI KHO' : 'REAL UNIT IMAGE'}
+                </figcaption>
+              </figure>
+            ) : null}
             <div className="bg-[var(--nupsbox-navy)] p-6 text-white">
               <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">
                 {vi ? 'THÔNG TIN HIỆN TẠI' : 'CURRENT INFORMATION'}
