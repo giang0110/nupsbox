@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(43);
+select plan(45);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'locations', 'locations exists');
@@ -12,6 +12,7 @@ select has_table('public', 'content_blocks', 'content blocks exists');
 select has_table('public', 'blog_posts', 'blog posts exists');
 select has_table('public', 'blog_translations', 'blog translations exists');
 select has_table('public', 'leads', 'leads exists');
+select has_column('public', 'leads', 'inquiry_type', 'leads track structured enquiry type');
 select has_table('public', 'lead_notes', 'lead notes exists');
 select has_table('public', 'lead_status_history', 'lead status history exists');
 select has_table('public', 'audit_log', 'audit log exists');
@@ -134,6 +135,7 @@ select has_trigger('public', 'faqs', 'faqs_cms_audit', 'faq mutations are audite
 select has_trigger('public', 'blog_posts', 'blog_posts_cms_audit', 'blog post mutations are audited');
 select has_trigger('public', 'blog_translations', 'blog_translations_cms_audit', 'blog translation mutations are audited');
 select has_trigger('public', 'site_settings', 'site_settings_cms_audit', 'site setting mutations are audited');
+select has_trigger('public', 'content_blocks', 'content_blocks_cms_audit', 'commercial content block mutations are audited');
 
 select * from finish();
 rollback;
