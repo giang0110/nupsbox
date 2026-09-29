@@ -1,7 +1,7 @@
 import {expect, test} from '@playwright/test';
 
-test('guides a small online shop from need to recommendation and conversion', async ({page}) => {
-  await page.goto('/');
+test('keeps the legacy finder as a supporting tool on the unit-information page', async ({page}) => {
+  await page.goto('/kho-mini');
   const finder = page.getByRole('region', {name: /kho nào phù hợp/i});
 
   await expect(finder.getByText(/bước 1/i)).toBeVisible();
