@@ -7,16 +7,16 @@ const desktopViewports = [
 ];
 
 for (const viewport of desktopViewports) {
-  test(`homepage hero completes its narrative at ${viewport.width}x${viewport.height}`, async ({page}) => {
+  test(`commercial homepage hero completes its narrative at ${viewport.width}x${viewport.height}`, async ({page}) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
 
-    const hero = page.getByRole('region', {name: /không gian vừa đủ|right amount of space/i});
+    const hero = page.getByRole('region', {name: /NupsBox.*hiểu dịch vụ|NupsBox.*understand the service/i});
     const header = page.locator('header').first();
     const heading = hero.getByRole('heading', {level: 1});
-    const primary = hero.getByRole('link', {name: /tìm kho phù hợp/i});
-    const secondary = hero.getByRole('link', {name: /xem bảng giá|xem hình ảnh thực tế|view pricing|view real facility photos/i});
-    const trust = hero.getByText(/^(ảnh thực tế|real photos)$/i);
+    const primary = hero.getByRole('link', {name: /khám phá dịch vụ|explore services/i});
+    const secondary = hero.getByRole('link', {name: /xem hình ảnh thực tế|liên hệ NupsBox|view real facility photos|contact NupsBox/i});
+    const trust = hero.getByText(/^(thông tin công khai|published information)$/i);
 
     const headerBox = await header.boundingBox();
     const headingBox = await heading.boundingBox();
@@ -37,7 +37,7 @@ test('homepage reserves black weight for the primary display hierarchy', async (
   await page.goto('/');
 
   const legacyHeavySectionHeadings = await page.locator('main h2.font-black:visible').evaluateAll(
-    (headings) => headings.filter((heading) => !heading.closest('article') && !heading.closest('#storage-finder')).length
+    (headings) => headings.filter((heading) => !heading.closest('article')).length
   );
   expect(legacyHeavySectionHeadings).toBe(0);
 });
@@ -49,10 +49,9 @@ test('homepage stays free of horizontal overflow on desktop', async ({page}) => 
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
 });
 
-
-test('finder keeps a lighter hierarchy and practical desktop footprint', async ({page}) => {
+test('finder keeps a lighter hierarchy and practical desktop footprint on the storage information page', async ({page}) => {
   await page.setViewportSize({width: 1366, height: 768});
-  await page.goto('/');
+  await page.goto('/kho-mini');
 
   const finder = page.getByRole('region', {name: /kho nào phù hợp/i});
   const heading = finder.getByRole('heading', {name: /kho nào phù hợp/i});
@@ -67,7 +66,6 @@ test('finder keeps a lighter hierarchy and practical desktop footprint', async (
   await expect(firstChoice).toHaveAttribute('aria-pressed', 'true');
 });
 
-
 for (const route of ['/kho-mini', '/bang-gia', '/dia-diem']) {
   test(`${route} uses the compact premium page-intro hierarchy`, async ({page}) => {
     await page.setViewportSize({width: 1366, height: 768});
@@ -80,7 +78,6 @@ for (const route of ['/kho-mini', '/bang-gia', '/dia-diem']) {
     expect(box?.y ?? 999).toBeLessThan(250);
   });
 }
-
 
 for (const route of ['/lien-he', '/dat-kho']) {
   test(`${route} keeps its conversion intro compact on laptop viewports`, async ({page}) => {
@@ -98,7 +95,6 @@ for (const route of ['/lien-he', '/dat-kho']) {
   });
 }
 
-
 for (const route of ['/lien-he', '/dat-kho']) {
   test(`${route} keeps the conversion form within the first desktop viewport`, async ({page}) => {
     await page.setViewportSize({width: 1366, height: 768});
@@ -113,7 +109,6 @@ for (const route of ['/lien-he', '/dat-kho']) {
     expect(fieldBox?.y ?? 999).toBeLessThan(760);
   });
 }
-
 
 test('mobile sticky chrome does not cover the homepage content', async ({page}) => {
   await page.setViewportSize({width: 390, height: 844});
@@ -138,22 +133,21 @@ test('tablet homepage remains overflow-free with readable hierarchy', async ({pa
   await page.goto('/');
 
   await expect(page.getByRole('heading', {level: 1})).toBeVisible();
-  await expect(page.getByRole('link', {name: /tìm kho phù hợp/i}).first()).toBeVisible();
+  await expect(page.getByRole('link', {name: /khám phá dịch vụ|explore services/i}).first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
 });
 
-
-test('homepage hero stays complete in a low-height desktop viewport', async ({page}) => {
+test('commercial homepage hero stays complete in a low-height desktop viewport', async ({page}) => {
   const viewport = {width: 1536, height: 670};
   await page.setViewportSize(viewport);
   await page.goto('/');
 
-  const hero = page.getByRole('region', {name: /không gian vừa đủ|right amount of space/i});
+  const hero = page.getByRole('region', {name: /NupsBox.*hiểu dịch vụ|NupsBox.*understand the service/i});
   const heading = hero.getByRole('heading', {level: 1});
-  const description = hero.locator('p').filter({hasText: /Kho mini linh hoạt|Flexible mini storage/i}).first();
-  const primary = hero.getByRole('link', {name: /tìm kho phù hợp/i});
-  const secondary = hero.getByRole('link', {name: /xem bảng giá|xem hình ảnh thực tế|view pricing|view real facility photos/i});
-  const trust = hero.getByText(/^(ảnh thực tế|real photos)$/i);
+  const description = hero.locator('p').filter({hasText: /Khám phá giải pháp lưu trữ|Explore NupsBox storage solutions/i}).first();
+  const primary = hero.getByRole('link', {name: /khám phá dịch vụ|explore services/i});
+  const secondary = hero.getByRole('link', {name: /xem hình ảnh thực tế|liên hệ NupsBox|view real facility photos|contact NupsBox/i});
+  const trust = hero.getByText(/^(thông tin công khai|published information)$/i);
 
   const headingBox = await heading.boundingBox();
   const descriptionBox = await description.boundingBox();
