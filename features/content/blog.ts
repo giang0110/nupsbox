@@ -32,6 +32,23 @@ function bodyObject(value: unknown): Record<string, unknown> {
     : {};
 }
 
+function collectText(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(collectText);
+  if (!value || typeof value !== 'object') return [];
+  const node = value as Record<string, unknown>;
+  const own = typeof node.text === 'string' ? [node.text] : [];
+  return own.concat(collectText(node.content));
+}
+
+export function estimateBlogReadingMinutes(body: Record<string, unknown>): number {
+  const words = collectText(body)
+    .join(' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 220));
+}
+
 export async function getPublishedBlogSlugs(): Promise<string[]> {
   if (!databaseEnabled()) return [];
 
