@@ -24,27 +24,27 @@ function databaseEnabled() {
   return Boolean(supabaseUrl && !supabaseUrl.includes('example.supabase.co'));
 }
 
-export async function getPublicEditorialMedia(
+export async function getPublicEditorialMediaForContexts(
   contextType: MediaEditorialContextType,
-  contextKey: string,
+  contextKeys: string[],
   locale: AppLocale,
-  limit = 3
-): Promise<PublicEditorialMedia[]> {
-  if (!databaseEnabled()) return [];
+  limitPerContext = 1
+): Promise<Record<string, PublicEditorialMedia[]>> {
+  const keys = [...new Set(contextKeys.map(key => key.trim()).filter(Boolean))];
+  if (!databaseEnabled() || !keys.length) return {};
 
   try {
     const supabase = await createSupabaseServerClient();
     const {data: links, error: linkError} = await supabase
       .from('media_editorial_links')
-      .select('id, media_id, role, sort_order')
+      .select('id, media_id, context_key, role, sort_order, created_at')
       .eq('context_type', contextType)
-      .eq('context_key', contextKey)
+      .in('context_key', keys)
       .order('sort_order', {ascending: true})
-      .order('created_at', {ascending: true})
-      .limit(Math.max(limit, 1));
+      .order('created_at', {ascending: true});
 
     if (linkError) throw linkError;
-    if (!links?.length) return [];
+    if (!links?.length) return {};
 
     const mediaIds = [...new Set(links.map(link => link.media_id))];
     const {data: mediaRows, error: mediaError} = await supabase
@@ -55,17 +55,22 @@ export async function getPublicEditorialMedia(
 
     if (mediaError) throw mediaError;
     const mediaById = new Map((mediaRows ?? []).map(row => [row.id, row]));
+    const grouped: Record<string, PublicEditorialMedia[]> = {};
+    const safeLimit = Math.max(limitPerContext, 1);
 
-    return links.flatMap(link => {
+    for (const link of links) {
       const media = mediaById.get(link.media_id);
-      if (!media) return [];
+      if (!media) continue;
+
+      const existing = grouped[link.context_key] ?? [];
+      if (existing.length >= safeLimit) continue;
 
       const publicUrl = supabase.storage
         .from(MEDIA_BUCKET)
         .getPublicUrl(media.storage_path)
         .data.publicUrl;
 
-      return [{
+      existing.push({
         linkId: link.id,
         mediaId: media.id,
         url: publicUrl,
@@ -73,9 +78,27 @@ export async function getPublicEditorialMedia(
         category: media.category,
         role: link.role,
         sortOrder: link.sort_order
-      }];
-    });
+      });
+      grouped[link.context_key] = existing;
+    }
+
+    return grouped;
   } catch {
-    return [];
+    return {};
   }
+}
+
+export async function getPublicEditorialMedia(
+  contextType: MediaEditorialContextType,
+  contextKey: string,
+  locale: AppLocale,
+  limit = 3
+): Promise<PublicEditorialMedia[]> {
+  const grouped = await getPublicEditorialMediaForContexts(
+    contextType,
+    [contextKey],
+    locale,
+    limit
+  );
+  return grouped[contextKey] ?? [];
 }
