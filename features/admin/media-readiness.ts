@@ -23,6 +23,8 @@ export type OverusedMedia = {
   usageCount: number;
 };
 
+export type MediaRemediationIssue = 'weak-alt' | 'broken-mapping' | 'overused';
+
 export type MediaReadinessSummary = {
   totalContexts: number;
   coveredContexts: number;
@@ -31,6 +33,9 @@ export type MediaReadinessSummary = {
   weakAltCount: number;
   brokenMappingCount: number;
   overusedMediaCount: number;
+  weakAltMediaIds: string[];
+  brokenMappingIds: string[];
+  brokenMappingMediaIds: string[];
   items: VisualCoverageItem[];
   overusedMedia: OverusedMedia[];
 };
@@ -45,7 +50,7 @@ const solutionContexts = [
 const locationCategories = new Set(['hero', 'location', 'unit', 'security', 'exterior', 'lifestyle']);
 const unitCategories = new Set(['unit', 'hero', 'lifestyle', 'location']);
 
-function hasWeakAlt(item: AdminMedia) {
+export function hasWeakMediaAlt(item: AdminMedia) {
   const vi = item.altVi.trim().toLowerCase();
   const en = item.altEn.trim().toLowerCase();
   const generic = new Set(['nupsbox', 'nupsbox storage']);
@@ -149,7 +154,15 @@ export function buildMediaReadinessSummary({
     });
   }
 
-  const brokenMappingCount = links.filter(link => !publicMediaIds.has(link.mediaId)).length;
+  const weakAltMediaIds = publicMedia.filter(hasWeakMediaAlt).map(item => item.id);
+  const brokenMappings = links.filter(link => !publicMediaIds.has(link.mediaId));
+  const brokenMappingIds = brokenMappings.map(link => link.id);
+  const brokenMappingMediaIds = [...new Set(
+    brokenMappings
+      .map(link => link.mediaId)
+      .filter(mediaId => mediaById.has(mediaId))
+  )];
+  const brokenMappingCount = brokenMappings.length;
   const usageByMedia = new Map<string, Set<string>>();
 
   function addUsage(mediaId: string | null | undefined, key: string) {
@@ -187,10 +200,24 @@ export function buildMediaReadinessSummary({
     coveredContexts,
     missingContexts,
     score: totalContexts ? Math.round((coveredContexts / totalContexts) * 100) : 100,
-    weakAltCount: publicMedia.filter(hasWeakAlt).length,
+    weakAltCount: weakAltMediaIds.length,
     brokenMappingCount,
     overusedMediaCount: overusedMedia.length,
+    weakAltMediaIds,
+    brokenMappingIds,
+    brokenMappingMediaIds,
     items,
     overusedMedia
   };
+}
+
+
+export function getMediaIdsForRemediation(
+  summary: MediaReadinessSummary,
+  issue: MediaRemediationIssue | null
+): Set<string> | null {
+  if (!issue) return null;
+  if (issue === 'weak-alt') return new Set(summary.weakAltMediaIds);
+  if (issue === 'broken-mapping') return new Set(summary.brokenMappingMediaIds);
+  return new Set(summary.overusedMedia.map(item => item.mediaId));
 }
