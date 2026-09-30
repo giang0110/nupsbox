@@ -1,6 +1,7 @@
 import {ArrowRight, Boxes, BriefcaseBusiness, House, MapPin, PackageSearch, Store} from 'lucide-react';
 import {Link} from '@/i18n/navigation';
 import {Section} from '@/components/ui/section';
+import {ConversionCta} from '@/components/marketing/conversion-cta';
 import type {PublicLocation, PublicUnitType} from '@/features/catalog/types';
 import type {CommercialContent} from '@/features/content/commercial-content';
 
@@ -104,13 +105,25 @@ export function HomeDecisionHub({
               </div>
             </dl>
 
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
-              <Link href="/dia-diem" className="text-sm font-bold text-white hover:underline">
-                {vi ? 'Xem cơ sở →' : 'View facilities →'}
-              </Link>
-              <Link href="/cau-hoi-thuong-gap" className="text-sm font-bold text-white/70 hover:text-white hover:underline">
-                {vi ? 'Câu hỏi thường gặp →' : 'FAQs →'}
-              </Link>
+            <div className="mt-6">
+              <ConversionCta
+                locale={locale}
+                intent="finder"
+                placement="home-decision-hub"
+                size="md"
+                className="w-full sm:w-auto"
+              >
+                {vi ? 'Nhận gợi ý phù hợp' : 'Get a recommendation'}
+                <ArrowRight size={16} aria-hidden="true" />
+              </ConversionCta>
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                <Link href="/dia-diem" className="text-sm font-bold text-white hover:underline">
+                  {vi ? 'Xem cơ sở →' : 'View facilities →'}
+                </Link>
+                <Link href="/cau-hoi-thuong-gap" className="text-sm font-bold text-white/70 hover:text-white hover:underline">
+                  {vi ? 'Câu hỏi thường gặp →' : 'FAQs →'}
+                </Link>
+              </div>
             </div>
           </div>
         </aside>
