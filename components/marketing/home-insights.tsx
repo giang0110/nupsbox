@@ -87,7 +87,7 @@ export function HomeInsights({
 
         <div className="divide-y divide-[var(--nupsbox-border)] border-t border-[var(--nupsbox-border)] lg:border-l lg:border-t-0">
           {rest.map(post => (
-            <article key={post.id} className="p-5.5 sm:p-6">
+            <article key={post.id} className="p-5 sm:p-6">
               <p className="text-xs font-bold text-[var(--nupsbox-muted)]">
                 {post.publishedAt ? (vi ? dateFormatVi : dateFormatEn).format(new Date(post.publishedAt)) : ''}
               </p>
