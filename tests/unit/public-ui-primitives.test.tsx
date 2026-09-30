@@ -31,7 +31,7 @@ describe('public UI primitives', () => {
 
   it('uses the refined compact section density', () => {
     const {container} = render(<Section size="compact"><p>Compact</p></Section>);
-    expect(container.firstElementChild).toHaveClass('py-12');
+    expect(container.firstElementChild).toHaveClass('py-10');
   });
 
   it('renders a reusable page intro with one semantic h1', () => {
