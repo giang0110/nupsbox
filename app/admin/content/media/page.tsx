@@ -5,6 +5,7 @@ import {AdminEmptyState, AdminPanel, AdminStatusBadge} from '@/components/admin/
 import {MediaBulkManager} from '@/components/admin/media-bulk-manager';
 import {MediaEditorialManager} from '@/components/admin/media-editorial-manager';
 import {MediaMetadataForm} from '@/components/admin/media-metadata-form';
+import {MediaReadinessDashboard} from '@/components/admin/media-readiness-dashboard';
 import {MediaUploadForm} from '@/components/admin/media-upload-form';
 import {Container} from '@/components/ui/container';
 import {listAdminBlogs} from '@/features/admin/blog';
@@ -13,6 +14,7 @@ import {listAdminMedia} from '@/features/admin/media';
 import {listAdminMediaEditorialLinks} from '@/features/admin/media-editorial';
 import {listAdminUnitTypes} from '@/features/admin/unit-types';
 import {summarizeMediaLaunch} from '@/features/admin/media-launch';
+import {buildMediaReadinessSummary} from '@/features/admin/media-readiness';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 
@@ -49,6 +51,13 @@ export default async function AdminMediaPage({
   const selectedLocation = locations.find(location => location.id === defaultLocationId);
   const selectedUnit = units.find(unit => unit.id === defaultUnitTypeId);
   const launch = summarizeMediaLaunch(visibleMedia);
+  const mediaReadiness = buildMediaReadinessSummary({
+    media: mediaRows,
+    links: editorialLinks,
+    blogs,
+    locations,
+    units
+  });
   const locationSlugById = Object.fromEntries(locations.map(location => [location.id, location.slug]));
   const unitSlugById = Object.fromEntries(units.map(unit => [unit.id, unit.slug]));
 
@@ -99,6 +108,8 @@ export default async function AdminMediaPage({
           ) : null}
         </AdminPanel>
 
+        <MediaReadinessDashboard summary={mediaReadiness} />
+
         {canCreate ? (
           <MediaUploadForm
             locationOptions={locationOptions}
@@ -112,12 +123,14 @@ export default async function AdminMediaPage({
           <MediaBulkManager media={visibleMedia} locationOptions={locationOptions} />
         ) : null}
 
-        <MediaEditorialManager
-          media={mediaRows}
-          links={editorialLinks}
-          blogs={blogs}
-          canEdit={canEdit}
-        />
+        <div id="editorial-media-mapping" className="scroll-mt-24">
+          <MediaEditorialManager
+            media={mediaRows}
+            links={editorialLinks}
+            blogs={blogs}
+            canEdit={canEdit}
+          />
+        </div>
 
         <section aria-labelledby="media-library-title">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
