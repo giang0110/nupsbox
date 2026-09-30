@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import {ImageIcon, Link2, Trash2} from 'lucide-react';
 import {
   createMediaEditorialLink,
@@ -47,21 +48,33 @@ export function MediaEditorialManager({
   media,
   links,
   blogs,
-  canEdit
+  canEdit,
+  defaultContext,
+  linkFilter = 'all'
 }: {
   media: AdminMedia[];
   links: AdminMediaEditorialLink[];
   blogs: AdminBlog[];
   canEdit: boolean;
+  defaultContext?: string;
+  linkFilter?: 'all' | 'broken';
 }) {
   const mediaById = new Map(media.map(item => [item.id, item]));
-  const usableMedia = media.filter(item => item.publicUrl);
+  const usableMedia = media.filter(item => item.isPublic && item.publicUrl);
+  const visibleLinks = linkFilter === 'broken'
+    ? links.filter(link => !mediaById.get(link.mediaId)?.isPublic)
+    : links;
 
   return (
     <AdminPanel
       title="Editorial Media Mapping"
       description="Gán ảnh thật vào Blog, Solution hoặc chủ đề. Public site chỉ hiển thị mapping khi asset vẫn đang ở trạng thái Công khai."
-      actions={<AdminStatusBadge label={links.length + ' mapping'} tone={links.length ? 'success' : 'neutral'} />}
+      actions={
+        <AdminStatusBadge
+          label={linkFilter === 'broken' ? visibleLinks.length + ' mapping lỗi' : links.length + ' mapping'}
+          tone={linkFilter === 'broken' && visibleLinks.length ? 'warning' : links.length ? 'success' : 'neutral'}
+        />
+      }
     >
       {canEdit ? (
         <form action={createMediaEditorialLink} className="grid gap-3 rounded-2xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-4 lg:grid-cols-[1.35fr_1.35fr_.7fr_.55fr_auto] lg:items-end">
@@ -79,7 +92,7 @@ export function MediaEditorialManager({
 
           <label className="text-xs font-bold text-[var(--nupsbox-slate)]">
             Đích sử dụng
-            <select name="context" required className="mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 text-sm text-[var(--nupsbox-navy)]">
+            <select name="context" required defaultValue={defaultContext ?? ''} className="mt-1 min-h-11 w-full rounded-xl border border-[var(--nupsbox-border)] bg-white px-3 text-sm text-[var(--nupsbox-navy)]">
               <option value="">Chọn ngữ cảnh…</option>
               <optgroup label="Solution">
                 {solutionOptions.map(option => (
@@ -124,8 +137,19 @@ export function MediaEditorialManager({
         </p>
       )}
 
+      {linkFilter === 'broken' ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm font-bold text-amber-900">
+            Đang hiển thị mapping trỏ tới asset private hoặc không còn tồn tại.
+          </p>
+          <Link href="/admin/content/media#editorial-media-mapping" className="text-sm font-black text-[var(--nupsbox-blue)] hover:underline">
+            Xem tất cả mapping
+          </Link>
+        </div>
+      ) : null}
+
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        {links.length ? links.map(link => {
+        {visibleLinks.length ? visibleLinks.map(link => {
           const item = mediaById.get(link.mediaId);
           return (
             <article key={link.id} className="grid grid-cols-[88px_1fr] overflow-hidden rounded-2xl border border-[var(--nupsbox-border)] bg-white">
@@ -175,7 +199,9 @@ export function MediaEditorialManager({
           );
         }) : (
           <p className="lg:col-span-2 rounded-xl border border-dashed border-[var(--nupsbox-border)] p-5 text-sm text-[var(--nupsbox-slate)]">
-            Chưa có editorial mapping. Public site sẽ tiếp tục dùng visual cover dự phòng.
+            {linkFilter === 'broken'
+              ? 'Không còn editorial mapping lỗi/private trong hàng đợi này.'
+              : 'Chưa có editorial mapping. Public site sẽ tiếp tục dùng visual cover dự phòng.'}
           </p>
         )}
       </div>

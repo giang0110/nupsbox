@@ -10,7 +10,13 @@ const kindLabel: Record<VisualCoverageKind, string> = {
   blog: 'Blog'
 };
 
-export function MediaReadinessDashboard({summary}: {summary: MediaReadinessSummary}) {
+export function MediaReadinessDashboard({
+  summary,
+  activeIssue = null
+}: {
+  summary: MediaReadinessSummary;
+  activeIssue?: 'weak-alt' | 'broken-mapping' | 'overused' | null;
+}) {
   const missing = summary.items.filter(item => !item.ready);
 
   return (
@@ -25,18 +31,38 @@ export function MediaReadinessDashboard({summary}: {summary: MediaReadinessSumma
       }
     >
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {[
-          ['Surface đã phủ', summary.coveredContexts + '/' + summary.totalContexts],
-          ['Đang thiếu ảnh', summary.missingContexts],
-          ['Alt yếu', summary.weakAltCount],
-          ['Mapping lỗi/private', summary.brokenMappingCount],
-          ['Ảnh dùng >3 ngữ cảnh', summary.overusedMediaCount]
-        ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-3">
-            <p className="text-xs font-bold text-[var(--nupsbox-slate)]">{label}</p>
-            <p className="mt-1 text-2xl font-black text-[var(--nupsbox-navy)]">{value}</p>
-          </div>
-        ))}
+        <div className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-3">
+          <p className="text-xs font-bold text-[var(--nupsbox-slate)]">Surface đã phủ</p>
+          <p className="mt-1 text-2xl font-black text-[var(--nupsbox-navy)]">{summary.coveredContexts}/{summary.totalContexts}</p>
+        </div>
+        <div className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-3">
+          <p className="text-xs font-bold text-[var(--nupsbox-slate)]">Đang thiếu ảnh</p>
+          <p className="mt-1 text-2xl font-black text-[var(--nupsbox-navy)]">{summary.missingContexts}</p>
+        </div>
+        <Link
+          href="/admin/content/media?issue=weak-alt#media-library"
+          aria-current={activeIssue === 'weak-alt' ? 'page' : undefined}
+          className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-3 transition hover:border-[var(--nupsbox-blue)] aria-[current=page]:border-[var(--nupsbox-blue)] aria-[current=page]:bg-blue-50"
+        >
+          <p className="text-xs font-bold text-[var(--nupsbox-slate)]">Alt yếu</p>
+          <p className="mt-1 text-2xl font-black text-[var(--nupsbox-navy)]">{summary.weakAltCount}</p>
+        </Link>
+        <Link
+          href="/admin/content/media?issue=broken-mapping#editorial-media-mapping"
+          aria-current={activeIssue === 'broken-mapping' ? 'page' : undefined}
+          className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-3 transition hover:border-[var(--nupsbox-blue)] aria-[current=page]:border-[var(--nupsbox-blue)] aria-[current=page]:bg-blue-50"
+        >
+          <p className="text-xs font-bold text-[var(--nupsbox-slate)]">Mapping lỗi/private</p>
+          <p className="mt-1 text-2xl font-black text-[var(--nupsbox-navy)]">{summary.brokenMappingCount}</p>
+        </Link>
+        <Link
+          href="/admin/content/media?issue=overused#media-library"
+          aria-current={activeIssue === 'overused' ? 'page' : undefined}
+          className="rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] p-3 transition hover:border-[var(--nupsbox-blue)] aria-[current=page]:border-[var(--nupsbox-blue)] aria-[current=page]:bg-blue-50"
+        >
+          <p className="text-xs font-bold text-[var(--nupsbox-slate)]">Ảnh dùng &gt;3 ngữ cảnh</p>
+          <p className="mt-1 text-2xl font-black text-[var(--nupsbox-navy)]">{summary.overusedMediaCount}</p>
+        </Link>
       </div>
 
       {missing.length ? (
@@ -75,8 +101,12 @@ export function MediaReadinessDashboard({summary}: {summary: MediaReadinessSumma
             <h3 className="font-black text-[var(--nupsbox-navy)]">Quality signals</h3>
           </div>
           <div className="mt-3 grid gap-2 text-sm leading-6 text-[var(--nupsbox-slate)]">
-            {summary.weakAltCount ? <p>• {summary.weakAltCount} asset public có alt VI/EN quá ngắn hoặc generic.</p> : null}
-            {summary.brokenMappingCount ? <p>• {summary.brokenMappingCount} editorial mapping đang trỏ tới asset private hoặc không còn tồn tại.</p> : null}
+            {summary.weakAltCount ? (
+              <p>• {summary.weakAltCount} asset public có alt VI/EN quá ngắn hoặc generic. <Link href="/admin/content/media?issue=weak-alt#media-library" className="font-black text-[var(--nupsbox-blue)] hover:underline">Xử lý →</Link></p>
+            ) : null}
+            {summary.brokenMappingCount ? (
+              <p>• {summary.brokenMappingCount} editorial mapping đang trỏ tới asset private hoặc không còn tồn tại. <Link href="/admin/content/media?issue=broken-mapping#editorial-media-mapping" className="font-black text-[var(--nupsbox-blue)] hover:underline">Xử lý →</Link></p>
+            ) : null}
             {summary.overusedMedia.length ? (
               <div>
                 <p>• Ảnh tái sử dụng nhiều ngữ cảnh:</p>
@@ -84,6 +114,11 @@ export function MediaReadinessDashboard({summary}: {summary: MediaReadinessSumma
                   {summary.overusedMedia.slice(0, 5).map(item => (
                     <li key={item.mediaId}>— {item.label} · {item.usageCount} ngữ cảnh</li>
                   ))}
+                  <li>
+                    <Link href="/admin/content/media?issue=overused#media-library" className="font-black text-[var(--nupsbox-blue)] hover:underline">
+                      Mở hàng đợi ảnh dùng nhiều →
+                    </Link>
+                  </li>
                 </ul>
               </div>
             ) : null}

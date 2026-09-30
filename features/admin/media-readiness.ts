@@ -23,6 +23,8 @@ export type OverusedMedia = {
   usageCount: number;
 };
 
+export type MediaRemediationIssue = 'weak-alt' | 'broken-mapping' | 'overused';
+
 export type MediaReadinessSummary = {
   totalContexts: number;
   coveredContexts: number;
@@ -31,6 +33,9 @@ export type MediaReadinessSummary = {
   weakAltCount: number;
   brokenMappingCount: number;
   overusedMediaCount: number;
+  weakAltMediaIds: string[];
+  brokenMappingIds: string[];
+  brokenMappingMediaIds: string[];
   items: VisualCoverageItem[];
   overusedMedia: OverusedMedia[];
 };
@@ -45,7 +50,7 @@ const solutionContexts = [
 const locationCategories = new Set(['hero', 'location', 'unit', 'security', 'exterior', 'lifestyle']);
 const unitCategories = new Set(['unit', 'hero', 'lifestyle', 'location']);
 
-function hasWeakAlt(item: AdminMedia) {
+export function hasWeakMediaAlt(item: AdminMedia) {
   const vi = item.altVi.trim().toLowerCase();
   const en = item.altEn.trim().toLowerCase();
   const generic = new Set(['nupsbox', 'nupsbox storage']);
@@ -89,7 +94,7 @@ export function buildMediaReadinessSummary({
       label: solution.label,
       ready,
       source: ready ? 'mapping' : 'missing',
-      href: '/admin/content/media#editorial-media-mapping',
+      href: `/admin/content/media?context=${encodeURIComponent(`solution:${solution.key}`)}#editorial-media-mapping`,
       note: ready ? 'Có mapping tới asset public.' : 'Thiếu mapping solution tới asset public.'
     });
   }
@@ -104,7 +109,7 @@ export function buildMediaReadinessSummary({
       label: `Loại kho · ${unit.nameVi}`,
       ready,
       source: ready ? 'asset' : 'missing',
-      href: `/admin/content/media?unit=${unit.id}`,
+      href: `/admin/content/media?unit=${unit.id}#media-upload`,
       note: ready ? 'Có asset public gắn đúng loại kho.' : 'Thiếu asset public gắn đúng unit_type_id.'
     });
   }
@@ -119,7 +124,7 @@ export function buildMediaReadinessSummary({
       label: `Địa điểm · ${location.nameVi}`,
       ready,
       source: ready ? 'asset' : 'missing',
-      href: `/admin/content/media?location=${location.id}`,
+      href: `/admin/content/media?location=${location.id}#media-upload`,
       note: ready ? 'Có gallery asset public cho địa điểm.' : 'Thiếu gallery asset public gắn đúng location_id.'
     });
   }
@@ -138,7 +143,7 @@ export function buildMediaReadinessSummary({
       source,
       href: source === 'cover'
         ? '/admin/content/blog'
-        : '/admin/content/media#editorial-media-mapping',
+        : `/admin/content/media?context=${encodeURIComponent(`blog:${blog.slug}`)}#editorial-media-mapping`,
       note: source === 'cover'
         ? 'Có cover public.'
         : source === 'mapping'
@@ -149,7 +154,15 @@ export function buildMediaReadinessSummary({
     });
   }
 
-  const brokenMappingCount = links.filter(link => !publicMediaIds.has(link.mediaId)).length;
+  const weakAltMediaIds = publicMedia.filter(hasWeakMediaAlt).map(item => item.id);
+  const brokenMappings = links.filter(link => !publicMediaIds.has(link.mediaId));
+  const brokenMappingIds = brokenMappings.map(link => link.id);
+  const brokenMappingMediaIds = [...new Set(
+    brokenMappings
+      .map(link => link.mediaId)
+      .filter(mediaId => mediaById.has(mediaId))
+  )];
+  const brokenMappingCount = brokenMappings.length;
   const usageByMedia = new Map<string, Set<string>>();
 
   function addUsage(mediaId: string | null | undefined, key: string) {
@@ -187,10 +200,30 @@ export function buildMediaReadinessSummary({
     coveredContexts,
     missingContexts,
     score: totalContexts ? Math.round((coveredContexts / totalContexts) * 100) : 100,
-    weakAltCount: publicMedia.filter(hasWeakAlt).length,
+    weakAltCount: weakAltMediaIds.length,
     brokenMappingCount,
     overusedMediaCount: overusedMedia.length,
+    weakAltMediaIds,
+    brokenMappingIds,
+    brokenMappingMediaIds,
     items,
     overusedMedia
   };
+}
+
+
+export function getMediaIdsForRemediation(
+  summary: MediaReadinessSummary,
+  issue: MediaRemediationIssue | null
+): Set<string> | null {
+  if (!issue) return null;
+  if (issue === 'weak-alt') return new Set(summary.weakAltMediaIds);
+  if (issue === 'broken-mapping') return new Set(summary.brokenMappingMediaIds);
+  return new Set(summary.overusedMedia.map(item => item.mediaId));
+}
+
+
+export function parseMediaRemediationIssue(value: string | undefined): MediaRemediationIssue | null {
+  if (value === 'weak-alt' || value === 'broken-mapping' || value === 'overused') return value;
+  return null;
 }
