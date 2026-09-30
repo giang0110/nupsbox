@@ -46,7 +46,7 @@ export function HomeInsights({
       </div>
 
       <div className="mt-7 grid overflow-hidden rounded-[2rem] border border-[var(--nupsbox-border)] bg-white lg:grid-cols-[1.35fr_.65fr]">
-        <article className="group grid gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_170px] sm:items-start sm:p-8 lg:p-10">
+        <article className="group grid gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_minmax(220px,.8fr)] sm:items-center sm:p-7 lg:p-8">
           <div>
             <p className="text-xs font-bold text-[var(--nupsbox-muted)]">
               {featured.publishedAt ? (vi ? dateFormatVi : dateFormatEn).format(new Date(featured.publishedAt)) : ''}
@@ -55,7 +55,7 @@ export function HomeInsights({
               <Link href={hrefFor(featured.slug)} className="transition hover:text-[var(--nupsbox-blue)]">{featured.title}</Link>
             </h3>
             {featured.excerpt ? (
-              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--nupsbox-slate)]">{featured.excerpt}</p>
+              <p className="mt-4 line-clamp-3 max-w-3xl text-base leading-7 text-[var(--nupsbox-slate)]">{featured.excerpt}</p>
             ) : null}
             <Link href={hrefFor(featured.slug)} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--nupsbox-navy)] px-5 text-sm font-bold text-white">
               {vi ? 'Đọc phân tích' : 'Read analysis'}
@@ -66,14 +66,14 @@ export function HomeInsights({
           {featuredVisual ? (
             <Link
               href={hrefFor(featured.slug)}
-              className="relative hidden aspect-square overflow-hidden rounded-[1.35rem] bg-[var(--nupsbox-surface)] sm:block"
+              className="relative hidden overflow-hidden rounded-[1.35rem] bg-[var(--nupsbox-surface)] sm:block sm:aspect-[4/3]"
               aria-label={featuredVisual.alt}
             >
               <Image
                 src={featuredVisual.url}
                 alt={featuredVisual.alt}
                 fill
-                sizes="170px"
+                sizes="(max-width: 1024px) 38vw, 360px"
                 className="object-cover transition duration-500 group-hover:scale-[1.025]"
               />
               {featuredVisual.mapped ? (
@@ -87,7 +87,7 @@ export function HomeInsights({
 
         <div className="divide-y divide-[var(--nupsbox-border)] border-t border-[var(--nupsbox-border)] lg:border-l lg:border-t-0">
           {rest.map(post => (
-            <article key={post.id} className="p-6 sm:p-7">
+            <article key={post.id} className="p-5 sm:p-6">
               <p className="text-xs font-bold text-[var(--nupsbox-muted)]">
                 {post.publishedAt ? (vi ? dateFormatVi : dateFormatEn).format(new Date(post.publishedAt)) : ''}
               </p>

@@ -27,7 +27,7 @@ export function Hero({
   return (
     <section aria-labelledby="home-hero-title" className="relative overflow-hidden bg-[var(--nupsbox-navy)] text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_15%,rgba(8,70,168,.28),transparent_38%),linear-gradient(180deg,transparent_60%,rgba(0,0,0,.08))]" />
-      <Container className="home-hero-grid relative grid gap-8 py-10 sm:py-12 lg:grid-cols-[.92fr_1.08fr] lg:items-center lg:gap-14 lg:py-16">
+      <Container className="home-hero-grid relative grid gap-8 py-9 sm:py-11 lg:grid-cols-[.92fr_1.08fr] lg:items-center lg:gap-14 lg:py-14">
         <div className="home-hero-copy relative z-10 max-w-[40rem]">
           <p className="flex items-center gap-2 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-white/58">
             <MapPin size={13} className="text-[var(--nupsbox-yellow)]" aria-hidden="true" />
@@ -64,7 +64,7 @@ export function Hero({
             )}
           </div>
 
-          <div className="home-hero-trust mt-8 grid max-w-[34rem] grid-cols-3 border-y border-white/10 py-4 text-sm">
+          <div className="home-hero-trust mt-7 grid max-w-[34rem] grid-cols-3 border-y border-white/10 py-3.5 text-sm">
             <div className="pr-4">
               <p className="font-extrabold text-white">{publishedUseCases} {vi ? 'nhóm nhu cầu' : 'use cases'}</p>
               <p className="mt-1 text-xs leading-5 text-white/52">{vi ? 'Shop · SME · Hàng tồn · Cá nhân' : 'Online · SME · Inventory · Personal'}</p>
@@ -81,40 +81,44 @@ export function Hero({
         </div>
 
         {location && facilityMedia ? (
-          <figure className="home-hero-image group relative min-h-[390px] overflow-hidden rounded-[2rem] lg:h-[clamp(440px,36vw,540px)] lg:min-h-0">
-            <Image
-              src={facilityMedia.imageUrl}
-              alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 54vw"
-              className="object-cover transition duration-700 ease-out group-hover:scale-[1.02]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.75)] via-transparent to-black/10" />
-            <figcaption className="absolute inset-x-5 bottom-5 sm:inset-x-7 sm:bottom-7">
-              <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">{location.name}</p>
-              <p className="mt-2 max-w-xl text-lg font-bold leading-7 text-white sm:text-xl">{location.address}</p>
-            </figcaption>
+          <figure className="home-hero-image group relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-2 shadow-[0_28px_90px_rgba(0,0,0,.18)] lg:h-[clamp(410px,34vw,500px)] lg:min-h-0">
+            <div className="relative h-full min-h-[344px] overflow-hidden rounded-[1.55rem] lg:min-h-0">
+              <Image
+                src={facilityMedia.imageUrl}
+                alt={vi ? `Hình ảnh cơ sở ${location.name}` : `Facility image for ${location.name}`}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 54vw"
+                className="object-cover transition duration-700 ease-out group-hover:scale-[1.02]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[rgba(7,26,56,.8)] via-transparent to-black/10" />
+              <figcaption className="absolute inset-x-5 bottom-5 sm:inset-x-7 sm:bottom-7">
+                <p className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[var(--nupsbox-yellow)]">{location.name}</p>
+                <p className="mt-2 max-w-xl text-lg font-bold leading-7 text-white sm:text-xl">{location.address}</p>
+              </figcaption>
+            </div>
           </figure>
         ) : (
-          <div className="home-hero-image relative grid min-h-[390px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,#0d2d62,#071a38_65%,#091f43)] p-7 lg:h-[clamp(440px,36vw,540px)] lg:min-h-0">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(255,211,26,.16),transparent_28%)]" />
-            <div className="relative z-10 self-end">
-              <span className="grid size-12 place-items-center rounded-full border border-white/15 text-[var(--nupsbox-yellow)]">
-                <Boxes size={22} aria-hidden="true" />
-              </span>
-              <h2 className="mt-5 max-w-md text-2xl font-extrabold tracking-[-0.03em]">
-                {location
-                  ? location.name
-                  : (vi ? 'Không gian kho được cập nhật theo từng cơ sở.' : 'Storage information is updated by facility.')}
-              </h2>
-              <p className="mt-3 max-w-md text-sm leading-6 text-white/60">
-                {location
-                  ? location.address
-                  : (vi
-                      ? 'Thông tin cơ sở, dịch vụ và hình ảnh được công bố khi dữ liệu đã sẵn sàng.'
-                      : 'Facility, service and imagery details are published when the information is ready.')}
-              </p>
+          <div className="home-hero-image relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-2 lg:h-[clamp(410px,34vw,500px)] lg:min-h-0">
+            <div className="relative grid h-full min-h-[344px] overflow-hidden rounded-[1.55rem] bg-[linear-gradient(145deg,#0d2d62,#071a38_65%,#091f43)] p-7 lg:min-h-0">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(255,211,26,.16),transparent_28%)]" />
+              <div className="relative z-10 self-end">
+                <span className="grid size-12 place-items-center rounded-full border border-white/15 text-[var(--nupsbox-yellow)]">
+                  <Boxes size={22} aria-hidden="true" />
+                </span>
+                <h2 className="mt-5 max-w-md text-2xl font-extrabold tracking-[-0.03em]">
+                  {location
+                    ? location.name
+                    : (vi ? 'Không gian kho được cập nhật theo từng cơ sở.' : 'Storage information is updated by facility.')}
+                </h2>
+                <p className="mt-3 max-w-md text-sm leading-6 text-white/60">
+                  {location
+                    ? location.address
+                    : (vi
+                        ? 'Thông tin cơ sở, dịch vụ và hình ảnh được công bố khi dữ liệu đã sẵn sàng.'
+                        : 'Facility, service and imagery details are published when the information is ready.')}
+                </p>
+              </div>
             </div>
           </div>
         )}

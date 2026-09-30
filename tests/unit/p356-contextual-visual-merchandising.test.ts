@@ -47,7 +47,7 @@ describe('P3.56 contextual visual merchandising', () => {
     expect(home).toContain('getBlogVisualMap');
     expect(home).toContain('visuals={insightVisuals}');
     expect(insights).toContain('featuredVisual');
-    expect(insights).toContain('sm:grid-cols-[minmax(0,1fr)_170px]');
+    expect(insights).toContain('sm:grid-cols-[minmax(0,1fr)_minmax(220px,.8fr)]');
     expect(compact).toContain("expect(source).toContain('<HomeInsights')");
   });
 });
