@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import {ImageIcon, Link2, Trash2} from 'lucide-react';
 import {
   createMediaEditorialLink,
@@ -141,9 +142,9 @@ export function MediaEditorialManager({
           <p className="text-sm font-bold text-amber-900">
             Đang hiển thị mapping trỏ tới asset private hoặc không còn tồn tại.
           </p>
-          <a href="/admin/content/media#editorial-media-mapping" className="text-sm font-black text-[var(--nupsbox-blue)] hover:underline">
+          <Link href="/admin/content/media#editorial-media-mapping" className="text-sm font-black text-[var(--nupsbox-blue)] hover:underline">
             Xem tất cả mapping
-          </a>
+          </Link>
         </div>
       ) : null}
 
