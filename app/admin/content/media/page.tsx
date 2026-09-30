@@ -14,7 +14,11 @@ import {listAdminMedia} from '@/features/admin/media';
 import {listAdminMediaEditorialLinks} from '@/features/admin/media-editorial';
 import {listAdminUnitTypes} from '@/features/admin/unit-types';
 import {summarizeMediaLaunch} from '@/features/admin/media-launch';
-import {buildMediaReadinessSummary} from '@/features/admin/media-readiness';
+import {
+  buildMediaReadinessSummary,
+  getMediaIdsForRemediation,
+  parseMediaRemediationIssue
+} from '@/features/admin/media-readiness';
 import {can} from '@/features/auth/permissions';
 import {requireAdminUser} from '@/features/auth/require-admin-user';
 
@@ -29,6 +33,12 @@ export default async function AdminMediaPage({
   const params = await searchParams;
   const requestedLocationId = Array.isArray(params.location) ? params.location[0] : params.location;
   const requestedUnitId = Array.isArray(params.unit) ? params.unit[0] : params.unit;
+  const requestedIssue = Array.isArray(params.issue) ? params.issue[0] : params.issue;
+  const requestedContext = Array.isArray(params.context) ? params.context[0] : params.context;
+  const activeIssue = parseMediaRemediationIssue(requestedIssue);
+  const defaultEditorialContext = requestedContext && /^(solution|blog|topic):[a-z0-9]+(?:-[a-z0-9]+)*$/.test(requestedContext)
+    ? requestedContext
+    : undefined;
 
   const [mediaRows, locations, units, editorialLinks, blogs] = await Promise.all([
     listAdminMedia(),
@@ -44,13 +54,6 @@ export default async function AdminMediaPage({
   const unitOptions = units.map((unit) => ({id: unit.id, label: unit.nameVi + ' · ' + unit.areaM2 + ' m²'}));
   const defaultLocationId = locations.some(location => location.id === requestedLocationId) ? requestedLocationId : undefined;
   const defaultUnitTypeId = units.some(unit => unit.id === requestedUnitId) ? requestedUnitId : undefined;
-  const visibleMedia = mediaRows.filter(media =>
-    (!defaultLocationId || media.locationId === defaultLocationId) &&
-    (!defaultUnitTypeId || media.unitTypeId === defaultUnitTypeId)
-  );
-  const selectedLocation = locations.find(location => location.id === defaultLocationId);
-  const selectedUnit = units.find(unit => unit.id === defaultUnitTypeId);
-  const launch = summarizeMediaLaunch(visibleMedia);
   const mediaReadiness = buildMediaReadinessSummary({
     media: mediaRows,
     links: editorialLinks,
@@ -58,6 +61,15 @@ export default async function AdminMediaPage({
     locations,
     units
   });
+  const remediationMediaIds = getMediaIdsForRemediation(mediaReadiness, activeIssue);
+  const visibleMedia = mediaRows.filter(media =>
+    (!defaultLocationId || media.locationId === defaultLocationId) &&
+    (!defaultUnitTypeId || media.unitTypeId === defaultUnitTypeId) &&
+    (!remediationMediaIds || remediationMediaIds.has(media.id))
+  );
+  const selectedLocation = locations.find(location => location.id === defaultLocationId);
+  const selectedUnit = units.find(unit => unit.id === defaultUnitTypeId);
+  const launch = summarizeMediaLaunch(visibleMedia);
   const locationSlugById = Object.fromEntries(locations.map(location => [location.id, location.slug]));
   const unitSlugById = Object.fromEntries(units.map(unit => [unit.id, unit.slug]));
 
@@ -70,11 +82,26 @@ export default async function AdminMediaPage({
           description="Upload ảnh, quản lý metadata/location và gán ảnh thật vào Blog, Solution hoặc chủ đề editorial mà không trộn lẫn asset gốc."
         />
 
-        {selectedLocation || selectedUnit ? (
+        {selectedLocation || selectedUnit || activeIssue ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--nupsbox-border)] bg-[var(--nupsbox-surface)] px-4 py-3">
-            <p className="text-sm font-bold text-[var(--nupsbox-navy)]">
-              Đang tập trung media cho: {[selectedLocation?.nameVi, selectedUnit?.nameVi].filter(Boolean).join(' · ')}
-            </p>
+            <div>
+              <p className="text-sm font-bold text-[var(--nupsbox-navy)]">
+                Đang tập trung media cho: {
+                  [
+                    selectedLocation?.nameVi,
+                    selectedUnit?.nameVi,
+                    activeIssue === 'weak-alt' ? 'Alt text yếu' : null,
+                    activeIssue === 'broken-mapping' ? 'Mapping lỗi/private' : null,
+                    activeIssue === 'overused' ? 'Ảnh dùng nhiều ngữ cảnh' : null
+                  ].filter(Boolean).join(' · ')
+                }
+              </p>
+              {activeIssue ? (
+                <p className="mt-1 text-xs text-[var(--nupsbox-slate)]">
+                  Đây là hàng đợi remediation; lưu hoặc gỡ mapping xong, tải lại trang để số lượng cập nhật.
+                </p>
+              ) : null}
+            </div>
             <Link href="/admin/content/media" className="text-sm font-bold text-[var(--nupsbox-blue)] hover:underline">
               Xem toàn bộ media
             </Link>
@@ -108,15 +135,17 @@ export default async function AdminMediaPage({
           ) : null}
         </AdminPanel>
 
-        <MediaReadinessDashboard summary={mediaReadiness} />
+        <MediaReadinessDashboard summary={mediaReadiness} activeIssue={activeIssue} />
 
         {canCreate ? (
-          <MediaUploadForm
-            locationOptions={locationOptions}
-            unitOptions={unitOptions}
-            defaultLocationId={defaultLocationId}
-            defaultUnitTypeId={defaultUnitTypeId}
-          />
+          <div id="media-upload" className="scroll-mt-24">
+            <MediaUploadForm
+              locationOptions={locationOptions}
+              unitOptions={unitOptions}
+              defaultLocationId={defaultLocationId}
+              defaultUnitTypeId={defaultUnitTypeId}
+            />
+          </div>
         ) : null}
 
         {canEdit && visibleMedia.length ? (
@@ -129,10 +158,12 @@ export default async function AdminMediaPage({
             links={editorialLinks}
             blogs={blogs}
             canEdit={canEdit}
+            defaultContext={defaultEditorialContext}
+            linkFilter={activeIssue === 'broken-mapping' ? 'broken' : 'all'}
           />
         </div>
 
-        <section aria-labelledby="media-library-title">
+        <section id="media-library" aria-labelledby="media-library-title" className="scroll-mt-24">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[var(--nupsbox-blue)]">THƯ VIỆN MEDIA</p>
@@ -157,6 +188,7 @@ export default async function AdminMediaPage({
                   unitOptions={unitOptions}
                   locationSlugById={locationSlugById}
                   unitSlugById={unitSlugById}
+                  remediationIssue={activeIssue}
                 />
               ))
             ) : (
