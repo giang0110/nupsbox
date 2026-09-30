@@ -221,3 +221,9 @@ export function getMediaIdsForRemediation(
   if (issue === 'broken-mapping') return new Set(summary.brokenMappingMediaIds);
   return new Set(summary.overusedMedia.map(item => item.mediaId));
 }
+
+
+export function parseMediaRemediationIssue(value: string | undefined): MediaRemediationIssue | null {
+  if (value === 'weak-alt' || value === 'broken-mapping' || value === 'overused') return value;
+  return null;
+}
