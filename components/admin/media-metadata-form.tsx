@@ -8,6 +8,7 @@ import {
   AdminStatusBadge
 } from '@/components/admin/admin-primitives';
 import type {AdminMedia} from '@/features/admin/media';
+import {hasWeakMediaAlt, type MediaRemediationIssue} from '@/features/admin/media-readiness';
 import {AdminMutationForm} from '@/components/admin/admin-mutation-form';
 import {AdminSubmitButton} from '@/components/admin/admin-submit-button';
 
@@ -20,6 +21,8 @@ type Props = {
   unitOptions: Option[];
   locationSlugById?: Record<string, string>;
   unitSlugById?: Record<string, string>;
+  remediationIssue?: MediaRemediationIssue | null;
+  remediationUsageCount?: number;
 };
 
 const inputClass =
@@ -32,16 +35,29 @@ export function MediaMetadataForm({
   locationOptions,
   unitOptions,
   locationSlugById = {},
-  unitSlugById = {}
+  unitSlugById = {},
+  remediationIssue = null,
+  remediationUsageCount
 }: Props) {
   const locationLabel = locationOptions.find(option => option.id === media.locationId)?.label ?? null;
   const unitLabel = unitOptions.find(option => option.id === media.unitTypeId)?.label ?? null;
   const locationSlug = media.locationId ? locationSlugById[media.locationId] : undefined;
   const unitSlug = media.unitTypeId ? unitSlugById[media.unitTypeId] : undefined;
   const publicIssue = media.isPublic && (!media.altVi.trim() || !media.altEn.trim() || !media.locationId);
+  const weakAlt = media.isPublic && hasWeakMediaAlt(media);
+  const remediationMessage = remediationIssue === 'weak-alt'
+    ? 'Hàng đợi Alt yếu: mô tả cụ thể nội dung ảnh bằng cả VI và EN, tránh alt generic như “NupsBox”.'
+    : remediationIssue === 'broken-mapping'
+      ? 'Asset này đang private nhưng còn editorial mapping. Chỉ bật public nếu ảnh đã được xác minh; nếu không, gỡ mapping ở khu vực Editorial Media Mapping.'
+      : remediationIssue === 'overused'
+        ? `Ảnh đang được dùng ở ${remediationUsageCount ?? 'nhiều'} ngữ cảnh. Cân nhắc thay mapping bằng ảnh khác để giảm lặp hình.`
+        : null;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[var(--nupsbox-border)] bg-white shadow-sm">
+    <article
+      data-remediation={remediationIssue ?? undefined}
+      className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${remediationIssue ? 'border-amber-300 ring-1 ring-amber-100' : 'border-[var(--nupsbox-border)]'}`}
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--nupsbox-surface)]">
         {media.publicUrl ? (
           <Image
@@ -76,10 +92,18 @@ export function MediaMetadataForm({
           {media.storagePath}
         </p>
 
-        {publicIssue ? (
+        {remediationMessage ? (
+          <p role="status" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold leading-5 text-amber-900">
+            {remediationMessage}
+          </p>
+        ) : publicIssue ? (
           <p role="status" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold leading-5 text-amber-800">
             Ảnh đang public nhưng metadata chưa đủ tốt: cần alt VI/EN và location mapping.
           </p>
+        ) : null}
+
+        {weakAlt && remediationIssue !== 'weak-alt' ? (
+          <AdminStatusBadge label="Alt yếu" tone="warning" />
         ) : null}
 
         <div className="mt-3 grid gap-1.5 text-xs text-[var(--nupsbox-slate)]">
@@ -133,7 +157,7 @@ export function MediaMetadataForm({
           ) : null}
         </div>
 
-        <details className="group mt-4 border-t border-[var(--nupsbox-border)] pt-3">
+        <details open={Boolean(remediationIssue)} className="group mt-4 border-t border-[var(--nupsbox-border)] pt-3">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-2 text-sm font-black text-[var(--nupsbox-blue)] transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nupsbox-blue)]">
             <span className="inline-flex items-center gap-2">
               <Pencil size={15} aria-hidden="true" />
