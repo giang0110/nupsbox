@@ -62,6 +62,9 @@ export default async function AdminMediaPage({
     units
   });
   const remediationMediaIds = getMediaIdsForRemediation(mediaReadiness, activeIssue);
+  const overusedUsageByMediaId = new Map(
+    mediaReadiness.overusedMedia.map(item => [item.mediaId, item.usageCount])
+  );
   const visibleMedia = mediaRows.filter(media =>
     (!defaultLocationId || media.locationId === defaultLocationId) &&
     (!defaultUnitTypeId || media.unitTypeId === defaultUnitTypeId) &&
@@ -189,6 +192,7 @@ export default async function AdminMediaPage({
                   locationSlugById={locationSlugById}
                   unitSlugById={unitSlugById}
                   remediationIssue={activeIssue}
+                  remediationUsageCount={overusedUsageByMediaId.get(media.id)}
                 />
               ))
             ) : (
